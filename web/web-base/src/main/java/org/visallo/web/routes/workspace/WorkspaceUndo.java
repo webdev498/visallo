@@ -2,32 +2,30 @@ package org.visallo.web.routes.workspace;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
+import com.v5analytics.webster.ParameterizedHandler;
+import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Required;
 import org.json.JSONArray;
 import org.vertexium.*;
 import org.vertexium.util.IterableUtils;
-import org.visallo.core.config.Configuration;
 import org.visallo.core.model.ontology.OntologyRepository;
-import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.model.workspace.WorkspaceHelper;
-import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.model.workspace.diff.WorkspaceDiffHelper;
 import org.visallo.core.user.User;
 import org.visallo.core.util.SandboxStatusUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.BaseRequestHandler;
 import org.visallo.web.clientapi.model.*;
+import org.visallo.web.clientapi.util.ObjectMapperFactory;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class WorkspaceUndo extends BaseRequestHandler {
+public class WorkspaceUndo implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(WorkspaceUndo.class);
     private final Graph graph;
     private final WorkQueueRepository workQueueRepository;
@@ -38,14 +36,11 @@ public class WorkspaceUndo extends BaseRequestHandler {
 
     @Inject
     public WorkspaceUndo(
-            final Configuration configuration,
             final Graph graph,
-            final UserRepository userRepository,
             final WorkspaceHelper workspaceHelper,
-            final WorkspaceRepository workspaceRepository,
             final WorkQueueRepository workQueueRepository,
-            final OntologyRepository ontologyRepository) {
-        super(userRepository, workspaceRepository, configuration);
+            final OntologyRepository ontologyRepository
+    ) {
         this.graph = graph;
         this.workspaceHelper = workspaceHelper;
         this.workQueueRepository = workQueueRepository;
@@ -62,8 +57,13 @@ public class WorkspaceUndo extends BaseRequestHandler {
         }
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+    @Handle
+    public ClientApiWorkspaceUndoResponse handle(
+            @Required(name = "undoData") String undoDataString,
+            @ActiveWorkspaceId String workspaceId,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
         if (this.entityHasImageIri == null) {
             this.entityHasImageIri = ontologyRepository.getRequiredRelationshipIRIByIntent("entityHasImage");
         }
@@ -71,11 +71,7 @@ public class WorkspaceUndo extends BaseRequestHandler {
             this.artifactContainsImageOfEntityIri = ontologyRepository.getRequiredRelationshipIRIByIntent("artifactContainsImageOfEntity");
         }
 
-        String undoDataString = getRequiredParameter(request, "undoData");
-        ClientApiUndoItem[] undoData = getObjectMapper().readValue(undoDataString, ClientApiUndoItem[].class);
-        User user = getUser(request);
-        Authorizations authorizations = getAuthorizations(request, user);
-        String workspaceId = getActiveWorkspaceId(request);
+        ClientApiUndoItem[] undoData = ObjectMapperFactory.getInstance().readValue(undoDataString, ClientApiUndoItem[].class);
 
         LOGGER.debug("undoing:\n%s", Joiner.on("\n").join(undoData));
         ClientApiWorkspaceUndoResponse workspaceUndoResponse = new ClientApiWorkspaceUndoResponse();
@@ -83,7 +79,7 @@ public class WorkspaceUndo extends BaseRequestHandler {
         undoEdges(undoData, workspaceUndoResponse, workspaceId, Priority.HIGH, authorizations, user);
         undoProperties(undoData, workspaceUndoResponse, workspaceId, authorizations);
         LOGGER.debug("undoing results: %s", workspaceUndoResponse);
-        respondWithClientApiObject(response, workspaceUndoResponse);
+        return workspaceUndoResponse;
     }
 
     private void undoVertices(ClientApiUndoItem[] undoItem, ClientApiWorkspaceUndoResponse workspaceUndoResponse, String workspaceId, Priority priority, User user, Authorizations authorizations) {

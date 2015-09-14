@@ -234,6 +234,10 @@ public class Router extends HttpServlet {
                 handleBadRequest(response, (BadRequestException) e.getCause());
                 return;
             }
+            if (e.getCause() instanceof VisalloAccessDeniedException) {
+                handleAccessDenied(response, (VisalloAccessDeniedException) e.getCause());
+                return;
+            }
             throw new ServletException(e);
         } finally {
             if (trace != null) {
@@ -244,8 +248,12 @@ public class Router extends HttpServlet {
         }
     }
 
+    private void handleAccessDenied(HttpServletResponse response, VisalloAccessDeniedException accessDenied) throws IOException {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, accessDenied.getMessage());
+    }
+
     private void handleNotFound(HttpServletResponse response, VisalloResourceNotFoundException notFoundException) throws IOException {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, notFoundException.getMessage());
     }
 
     private void handleBadRequest(HttpServletResponse response, BadRequestException badRequestException) {

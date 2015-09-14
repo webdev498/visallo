@@ -74,11 +74,15 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
     }
 
     protected User getUser(HttpServletRequest request) {
+        return getUser(request, getUserRepository());
+    }
+
+    public static User getUser(HttpServletRequest request, UserRepository userRepository) {
         ProxyUser user = (ProxyUser) request.getAttribute("user");
         if (user != null) {
             return user;
         }
-        user = new ProxyUser(CurrentUser.getUserId(request), getUserRepository());
+        user = new ProxyUser(CurrentUser.getUserId(request), userRepository);
         request.setAttribute("user", user);
         return user;
     }

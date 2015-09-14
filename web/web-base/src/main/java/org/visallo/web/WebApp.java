@@ -59,6 +59,8 @@ public class WebApp extends App {
         App.registeredParameterProviderFactory(injector.getInstance(JustificationTextParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(BaseUrlParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(AuthorizationsParameterProviderFactory.class));
+        App.registeredParameterProviderFactory(injector.getInstance(TimeZoneParameterProviderFactory.class));
+        App.registeredParameterProviderFactory(injector.getInstance(LocaleParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(VisalloResponseParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(UserParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(FormulaEvaluatorUserContextParameterProviderFactory.class));
