@@ -144,7 +144,7 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         return result;
     }
 
-    public static String getParameter(final HttpServletRequest request, final String parameterName, final boolean optional) {
+    protected static String getParameter(final HttpServletRequest request, final String parameterName, final boolean optional) {
         final String paramValue = request.getParameter(parameterName);
 
         if (paramValue == null) {
