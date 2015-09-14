@@ -183,4 +183,8 @@ public class VisalloResponse {
     public void setStatus(int statusCode) {
         response.setStatus(statusCode);
     }
+
+    public void setContentLength(int length) {
+        response.setContentLength(length);
+    }
 }
