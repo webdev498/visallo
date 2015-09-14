@@ -25,11 +25,11 @@ import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.BadRequestException;
-import org.visallo.web.BaseRequestHandler;
 import org.visallo.web.VisalloResponse;
 import org.visallo.web.clientapi.model.ClientApiArtifactImportResponse;
 import org.visallo.web.clientapi.model.ClientApiImportProperty;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
+import org.visallo.web.util.HttpPartUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
@@ -142,7 +142,7 @@ public class VertexImport implements ParameterizedHandler {
             if (part.getName().equals("file")) {
                 String fileName = getFilename(part);
                 File outFile = new File(tempDir, fileName);
-                BaseRequestHandler.copyPartToFile(part, outFile);
+                HttpPartUtil.copyPartToFile(part, outFile);
                 addFileToFilesList(files, fileIndex.getAndIncrement(), outFile);
             } else if (part.getName().equals("conceptId")) {
                 String conceptId = IOUtils.toString(part.getInputStream(), "UTF8");

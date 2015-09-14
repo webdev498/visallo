@@ -1,6 +1,7 @@
 package org.visallo.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Preconditions;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -39,7 +40,7 @@ public class VisalloResponse {
         }
         try {
             String jsonObject = ObjectMapperFactory.getInstance().writeValueAsString(obj);
-            BaseRequestHandler.configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
+            configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
         } catch (JsonProcessingException e) {
             throw new VisalloException("Could not write json", e);
         }
@@ -91,15 +92,15 @@ public class VisalloResponse {
     }
 
     public void respondWithJson(JSONObject jsonObject) {
-        BaseRequestHandler.configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
+        configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
     }
 
     public void respondWithPlaintext(final String plaintext) {
-        BaseRequestHandler.configureResponse(ResponseTypes.PLAINTEXT, response, plaintext);
+        configureResponse(ResponseTypes.PLAINTEXT, response, plaintext);
     }
 
     public void respondWithHtml(final String html) {
-        BaseRequestHandler.configureResponse(ResponseTypes.HTML, response, html);
+        configureResponse(ResponseTypes.HTML, response, html);
     }
 
     public String generateETag(byte[] data) {
@@ -190,5 +191,43 @@ public class VisalloResponse {
 
     public void setCharacterEncoding(String charset) {
         response.setCharacterEncoding(charset);
+    }
+
+    public static void configureResponse(final ResponseTypes type, final HttpServletResponse response, final Object responseData) {
+        Preconditions.checkNotNull(response, "The provided response was invalid");
+        Preconditions.checkNotNull(responseData, "The provided data was invalid");
+
+        try {
+            switch (type) {
+                case JSON_OBJECT:
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(responseData.toString());
+                    break;
+                case JSON_ARRAY:
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(responseData.toString());
+                    break;
+                case PLAINTEXT:
+                    response.setContentType("text/plain");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(responseData.toString());
+                    break;
+                case HTML:
+                    response.setContentType("text/html");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(responseData.toString());
+                    break;
+                default:
+                    throw new VisalloException("Unsupported response type encountered");
+            }
+
+            if (response.getWriter().checkError()) {
+                throw new ConnectionClosedException();
+            }
+        } catch (IOException e) {
+            throw new VisalloException("Error occurred while writing response", e);
+        }
     }
 }

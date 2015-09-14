@@ -18,7 +18,7 @@ import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.vertexium.model.user.VertexiumUserRepository;
 import org.visallo.vertexium.model.workspace.VertexiumWorkspaceRepository;
 import org.visallo.web.BadRequestException;
-import org.visallo.web.BaseRequestHandler;
+import org.visallo.web.util.HttpPartUtil;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -60,7 +60,7 @@ public class Import implements ParameterizedHandler {
         for (Part part : request.getParts()) {
             if (part.getName().equals("workspace")) {
                 File outFile = File.createTempFile("visalloWorkspaceImport", "visalloworkspace");
-                BaseRequestHandler.copyPartToFile(part, outFile);
+                HttpPartUtil.copyPartToFile(part, outFile);
 
                 String workspaceId = getWorkspaceId(outFile);
 

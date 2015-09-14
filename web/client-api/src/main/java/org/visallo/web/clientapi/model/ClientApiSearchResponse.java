@@ -116,7 +116,7 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
         }
     }
 
-    public static class HistographAggregateResult extends AggregateResult {
+    public static class HistogramAggregateResult extends AggregateResult {
         private Map<String, Long> buckets = new HashMap<>();
 
         public Map<String, Long> getBuckets() {

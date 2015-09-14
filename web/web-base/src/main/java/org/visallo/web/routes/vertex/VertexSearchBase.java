@@ -1,7 +1,6 @@
 package org.visallo.web.routes.vertex;
 
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.vertexium.Authorizations;
@@ -16,27 +15,23 @@ import org.visallo.core.model.ontology.Concept;
 import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.core.model.user.UserRepository;
-import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.trace.Trace;
 import org.visallo.core.trace.TraceSpan;
-import org.visallo.core.user.User;
 import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.JSONUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.BaseRequestHandler;
 import org.visallo.web.clientapi.model.ClientApiSearchResponse;
 import org.visallo.web.clientapi.model.ClientApiVertex;
 import org.visallo.web.clientapi.model.ClientApiVertexSearchResponse;
 import org.visallo.web.clientapi.model.PropertyType;
+import org.visallo.web.parameterProviders.VisalloBaseParameterProvider;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.util.*;
 
-public abstract class VertexSearchBase extends BaseRequestHandler {
+public abstract class VertexSearchBase {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(VertexSearch.class);
     private final Graph graph;
     private final OntologyRepository ontologyRepository;
@@ -46,24 +41,22 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     public VertexSearchBase(
             final OntologyRepository ontologyRepository,
             final Graph graph,
-            final UserRepository userRepository,
-            final Configuration configuration,
-            final WorkspaceRepository workspaceRepository) {
-        super(userRepository, workspaceRepository, configuration);
+            final Configuration configuration
+    ) {
         this.ontologyRepository = ontologyRepository;
         this.graph = graph;
         defaultSearchResultCount = configuration.getInt(Configuration.DEFAULT_SEARCH_RESULT_COUNT, 100);
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+    protected ClientApiVertexSearchResponse handle(
+            HttpServletRequest request,
+            String workspaceId,
+            Authorizations authorizations
+    ) throws Exception {
         long totalStartTime = System.nanoTime();
 
         long startTime = System.nanoTime();
 
-        User user = getUser(request);
-        final Authorizations authorizations = getAuthorizations(request, user);
-        String workspaceId = getActiveWorkspaceId(request);
         JSONArray filterJson = getFilterJson(request);
 
         QueryAndData queryAndData = getQuery(request, authorizations);
@@ -72,9 +65,9 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
         applySortToQuery(queryAndData, request);
         applyAggregationsToQuery(queryAndData, request);
 
-        EnumSet<FetchHint> fetchHints = getOptionalParameterFetchHints(request, "fetchHints", ClientApiConverter.SEARCH_FETCH_HINTS);
-        final int offset = getOptionalParameterInt(request, "offset", 0);
-        final int size = getOptionalParameterInt(request, "size", defaultSearchResultCount);
+        EnumSet<FetchHint> fetchHints = VisalloBaseParameterProvider.getOptionalParameterFetchHints(request, "fetchHints", ClientApiConverter.SEARCH_FETCH_HINTS);
+        final int offset = VisalloBaseParameterProvider.getOptionalParameterInt(request, "offset", 0);
+        final int size = VisalloBaseParameterProvider.getOptionalParameterInt(request, "size", defaultSearchResultCount);
         queryAndData.getQuery().limit(size);
         queryAndData.getQuery().skip(offset);
 
@@ -106,7 +99,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
             ((CloseableIterable) searchResults).close();
         }
 
-        respondWithClientApiObject(response, results);
+        return results;
     }
 
     private void addSearchResultsDataToResults(ClientApiVertexSearchResponse results, QueryAndData queryAndData, Iterable<Vertex> searchResults) {
@@ -137,7 +130,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     }
 
     private ClientApiSearchResponse.AggregateResult toClientApiHistogramResult(HistogramResult agg) {
-        ClientApiSearchResponse.HistographAggregateResult result = new ClientApiSearchResponse.HistographAggregateResult();
+        ClientApiSearchResponse.HistogramAggregateResult result = new ClientApiSearchResponse.HistogramAggregateResult();
         for (HistogramBucket histogramBucket : agg.getBuckets()) {
             result.getBuckets().put(histogramBucket.getKey().toString(), histogramBucket.getCount());
         }
@@ -168,7 +161,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
 
     private void applyAggregationsToQuery(QueryAndData queryAndData, HttpServletRequest request) {
         Query query = queryAndData.getQuery();
-        String[] aggregates = getOptionalParameterAsStringArray(request, "aggregations[]");
+        String[] aggregates = VisalloBaseParameterProvider.getOptionalParameterAsStringArray(request, "aggregations[]");
         if (aggregates == null) {
             return;
         }
@@ -212,7 +205,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     }
 
     protected void applySortToQuery(QueryAndData queryAndData, HttpServletRequest request) {
-        String[] sorts = getOptionalParameterAsStringArray(request, "sort[]");
+        String[] sorts = VisalloBaseParameterProvider.getOptionalParameterAsStringArray(request, "sort[]");
         if (sorts == null) {
             return;
         }
@@ -250,6 +243,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     }
 
     protected Iterable<Vertex> getSearchResults(QueryAndData queryAndData, EnumSet<FetchHint> fetchHints) {
+        //noinspection unused
         try (TraceSpan trace = Trace.start("getSearchResults")) {
             return queryAndData.getQuery().vertices(fetchHints);
         }
@@ -262,8 +256,8 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     protected abstract QueryAndData getQuery(HttpServletRequest request, Authorizations authorizations);
 
     protected void applyConceptTypeFilterToQuery(QueryAndData queryAndData, HttpServletRequest request) {
-        final String conceptType = getOptionalParameter(request, "conceptType");
-        final String includeChildNodes = getOptionalParameter(request, "includeChildNodes");
+        final String conceptType = VisalloBaseParameterProvider.getOptionalParameter(request, "conceptType");
+        final String includeChildNodes = VisalloBaseParameterProvider.getOptionalParameter(request, "includeChildNodes");
         if (conceptType != null) {
             Concept concept = ontologyRepository.getConceptByIRI(conceptType);
             if (includeChildNodes == null || !includeChildNodes.equals("false")) {
@@ -293,7 +287,7 @@ public abstract class VertexSearchBase extends BaseRequestHandler {
     }
 
     protected JSONArray getFilterJson(HttpServletRequest request) {
-        final String filter = getRequiredParameter(request, "filter");
+        final String filter = VisalloBaseParameterProvider.getRequiredParameter(request, "filter");
         JSONArray filterJson = new JSONArray(filter);
         ontologyRepository.resolvePropertyIds(filterJson);
         return filterJson;

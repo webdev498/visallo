@@ -268,7 +268,7 @@ public class Router extends HttpServlet {
             error.put("invalidValues", values);
         }
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        BaseRequestHandler.configureResponse(ResponseTypes.JSON_OBJECT, response, error);
+        VisalloResponse.configureResponse(ResponseTypes.JSON_OBJECT, response, error);
     }
 
     private boolean isGraphTraceEnabled(ServletRequest req) {
