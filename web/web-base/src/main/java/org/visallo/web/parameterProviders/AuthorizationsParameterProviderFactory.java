@@ -34,7 +34,7 @@ public class AuthorizationsParameterProviderFactory extends ParameterProviderFac
     }
 
     public static Authorizations getAuthorizations(HttpServletRequest request, UserRepository userRepository, WorkspaceRepository workspaceRepository) {
-        String workspaceId = VisalloBaseParameterProvider.getWorkspaceIdOrDefault(request);
+        String workspaceId = VisalloBaseParameterProvider.getActiveWorkspaceIdOrDefault(request);
         User user = VisalloBaseParameterProvider.getUser(request, userRepository);
         if (workspaceId != null) {
             if (!workspaceRepository.hasReadPermissions(workspaceId, user)) {

@@ -36,7 +36,7 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         this.configuration = configuration;
     }
 
-    public static String getWorkspaceIdOrDefault(final HttpServletRequest request) {
+    protected static String getActiveWorkspaceIdOrDefault(final HttpServletRequest request) {
         String workspaceId = (String) request.getAttribute("workspaceId");
         if (workspaceId == null || workspaceId.trim().length() == 0) {
             workspaceId = request.getHeader(VISALLO_WORKSPACE_ID_HEADER_NAME);
@@ -50,8 +50,8 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         return workspaceId;
     }
 
-    public static String getActiveWorkspaceId(final HttpServletRequest request) {
-        String workspaceId = getWorkspaceIdOrDefault(request);
+    protected static String getActiveWorkspaceId(final HttpServletRequest request) {
+        String workspaceId = getActiveWorkspaceIdOrDefault(request);
         if (workspaceId == null || workspaceId.trim().length() == 0) {
             throw new VisalloException(VISALLO_WORKSPACE_ID_HEADER_NAME + " is a required header.");
         }

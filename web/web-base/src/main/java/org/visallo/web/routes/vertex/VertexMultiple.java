@@ -15,6 +15,7 @@ import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.user.User;
 import org.visallo.core.util.ClientApiConverter;
 import org.visallo.web.clientapi.model.ClientApiVertexMultipleResponse;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 import org.visallo.web.parameterProviders.AuthorizationsParameterProviderFactory;
 import org.visallo.web.parameterProviders.VisalloBaseParameterProvider;
 
@@ -45,11 +46,11 @@ public class VertexMultiple implements ParameterizedHandler {
             HttpServletRequest request,
             @Required(name = "vertexIds[]") String[] vertexIdsParam,
             @Optional(name = "fallbackToPublic", defaultValue = "false") boolean fallbackToPublic,
+            @ActiveWorkspaceId(required = false) String workspaceId,
             User user
     ) throws Exception {
         HashSet<String> vertexStringIds = new HashSet<>(Arrays.asList(vertexIdsParam));
         GetAuthorizationsResult getAuthorizationsResult = getAuthorizations(request, fallbackToPublic, user);
-        String workspaceId = getWorkspaceId(request);
 
         Iterable<String> vertexIds = toIterable(vertexStringIds.toArray(new String[vertexStringIds.size()]));
         Iterable<Vertex> graphVertices = graph.getVertices(vertexIds, ClientApiConverter.SEARCH_FETCH_HINTS, getAuthorizationsResult.authorizations);
@@ -75,16 +76,6 @@ public class VertexMultiple implements ParameterizedHandler {
             }
         }
         return result;
-    }
-
-    private String getWorkspaceId(HttpServletRequest request) {
-        String workspaceId;
-        try {
-            workspaceId = VisalloBaseParameterProvider.getActiveWorkspaceId(request);
-        } catch (VisalloException ex) {
-            workspaceId = null;
-        }
-        return workspaceId;
     }
 
     private static class GetAuthorizationsResult {

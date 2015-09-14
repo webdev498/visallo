@@ -14,6 +14,7 @@ import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VertexiumUtil;
 import org.visallo.web.clientapi.model.ClientApiEdgeMultipleResponse;
 import org.visallo.web.clientapi.model.ClientApiEdgeWithVertexData;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 import org.visallo.web.parameterProviders.AuthorizationsParameterProviderFactory;
 import org.visallo.web.parameterProviders.VisalloBaseParameterProvider;
 
@@ -42,13 +43,13 @@ public class EdgeMultiple implements ParameterizedHandler {
     @Handle
     public ClientApiEdgeMultipleResponse handle(
             @Required(name = "edgeIds[]") String[] edgeIdsParameter,
+            @ActiveWorkspaceId(required = false) String workspaceId,
             HttpServletRequest request,
             User user
     ) throws Exception {
         HashSet<String> edgeStringIds = new HashSet<>(Arrays.asList(edgeIdsParameter));
 
         Authorizations authorizations = getAuthorizations(request, false, user);
-        String workspaceId = getWorkspaceId(request);
 
         Iterable<String> edgeIds = toIterable(edgeStringIds.toArray(new String[edgeStringIds.size()]));
         return getEdges(request, workspaceId, edgeIds, authorizations);
@@ -94,16 +95,6 @@ public class EdgeMultiple implements ParameterizedHandler {
                 throw ex;
             }
         }
-    }
-
-    private String getWorkspaceId(HttpServletRequest request) {
-        String workspaceId;
-        try {
-            workspaceId = VisalloBaseParameterProvider.getActiveWorkspaceId(request);
-        } catch (VisalloException ex) {
-            workspaceId = null;
-        }
-        return workspaceId;
     }
 
     private static class GetAuthorizationsResult {

@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class VisalloResponse {
@@ -54,15 +53,6 @@ public class VisalloResponse {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, message);
     }
 
-    public void respondWithBadRequest(final String parameterName, final String errorMessage, final String invalidValue) throws IOException {
-        List<String> values = null;
-        if (invalidValue != null) {
-            values = new ArrayList<>();
-            values.add(invalidValue);
-        }
-        respondWithBadRequest(parameterName, errorMessage, values);
-    }
-
     public void respondWithBadRequest(final String parameterName, final String errorMessage, final List<String> invalidValues) throws IOException {
         JSONObject error = new JSONObject();
         error.put(parameterName, errorMessage);
@@ -77,14 +67,6 @@ public class VisalloResponse {
         respondWithJson(error);
     }
 
-    public void respondWithBadRequest(final String parameterName, final String errorMessage) throws IOException {
-        respondWithBadRequest(parameterName, errorMessage, new ArrayList<String>());
-    }
-
-    public HttpServletResponse getHttpServletResponse() {
-        return response;
-    }
-
     public void respondWithSuccessJson() {
         JSONObject successJson = new JSONObject();
         successJson.put("success", true);
@@ -93,10 +75,6 @@ public class VisalloResponse {
 
     public void respondWithJson(JSONObject jsonObject) {
         configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
-    }
-
-    public void respondWithPlaintext(final String plaintext) {
-        configureResponse(ResponseTypes.PLAINTEXT, response, plaintext);
     }
 
     public void respondWithHtml(final String html) {
