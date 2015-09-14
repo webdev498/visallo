@@ -29,8 +29,8 @@ public class MeGet implements ParameterizedHandler {
 
     @Handle
     public ClientApiUser handle(
-            User user,
-            HttpServletRequest request
+            HttpServletRequest request,
+            User user
     ) throws Exception {
         ClientApiUser userMe = userRepository.toClientApiPrivate(user);
         userMe.setCsrfToken(CSRFHandler.getSavedToken(request, true));
