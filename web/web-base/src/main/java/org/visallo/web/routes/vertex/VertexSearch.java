@@ -40,7 +40,7 @@ public class VertexSearch extends VertexSearchBase implements ParameterizedHandl
 
     @Override
     @Handle
-    protected ClientApiVertexSearchResponse handle(
+    public ClientApiVertexSearchResponse handle(
             HttpServletRequest request,
             @ActiveWorkspaceId String workspaceId,
             Authorizations authorizations
