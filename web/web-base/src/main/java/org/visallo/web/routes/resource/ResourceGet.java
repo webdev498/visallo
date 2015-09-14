@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Required;
+import org.visallo.core.exception.VisalloResourceNotFoundException;
 import org.visallo.core.model.ontology.Concept;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.web.VisalloResponse;
@@ -25,8 +26,7 @@ public class ResourceGet implements ParameterizedHandler {
         byte[] rawImg = concept.getGlyphIcon();
 
         if (rawImg == null || rawImg.length <= 0) {
-            response.respondWithNotFound();
-            return;
+            throw new VisalloResourceNotFoundException("Could not find resource with id: " + id);
         }
 
         // TODO change content type if we use this route for more than getting glyph icons

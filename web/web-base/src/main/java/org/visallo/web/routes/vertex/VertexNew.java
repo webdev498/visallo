@@ -1,15 +1,16 @@
 package org.visallo.web.routes.vertex;
 
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
+import com.v5analytics.webster.ParameterizedHandler;
+import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
+import com.v5analytics.webster.annotations.Required;
 import org.vertexium.*;
-import org.visallo.core.config.Configuration;
 import org.visallo.core.model.graph.GraphRepository;
 import org.visallo.core.model.graph.VisibilityAndElementMutation;
 import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.model.workspace.Workspace;
@@ -20,22 +21,23 @@ import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VertexiumMetadataUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.BaseRequestHandler;
+import org.visallo.web.BadRequestException;
 import org.visallo.web.clientapi.model.ClientApiAddElementProperties;
 import org.visallo.web.clientapi.model.ClientApiElement;
 import org.visallo.web.clientapi.model.ClientApiSourceInfo;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
+import org.visallo.web.parameterProviders.JustificationText;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.ParseException;
+import java.util.ResourceBundle;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class VertexNew extends BaseRequestHandler {
+public class VertexNew implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(VertexNew.class);
 
     private final Graph graph;
     private final VisibilityTranslator visibilityTranslator;
+    private final WorkspaceRepository workspaceRepository;
     private final WorkQueueRepository workQueueRepository;
     private final OntologyRepository ontologyRepository;
     private final GraphRepository graphRepository;
@@ -43,67 +45,39 @@ public class VertexNew extends BaseRequestHandler {
     @Inject
     public VertexNew(
             final Graph graph,
-            final UserRepository userRepository,
-            final WorkspaceRepository workspaceRepository,
             final VisibilityTranslator visibilityTranslator,
+            final WorkspaceRepository workspaceRepository,
             final WorkQueueRepository workQueueRepository,
-            final Configuration configuration,
             final OntologyRepository ontologyRepository,
             final GraphRepository graphRepository
     ) {
-        super(userRepository, workspaceRepository, configuration);
         this.graph = graph;
         this.visibilityTranslator = visibilityTranslator;
+        this.workspaceRepository = workspaceRepository;
         this.workQueueRepository = workQueueRepository;
         this.ontologyRepository = ontologyRepository;
         this.graphRepository = graphRepository;
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-        final String vertexId = getOptionalParameter(request, "vertexId");
-        final String conceptType = getRequiredParameter(request, "conceptType");
-        final String visibilitySource = getRequiredParameter(request, "visibilitySource");
-        final String justificationText = routeHelper.getJustificationText(request);
-        final String sourceInfoString = getOptionalParameter(request, "sourceInfo");
-        final String propertiesJsonString = getOptionalParameter(request, "properties");
-        User user = getUser(request);
-        Authorizations authorizations = getAuthorizations(request, user);
-        String workspaceId = getActiveWorkspaceId(request);
-
+    @Handle
+    public ClientApiElement handle(
+            @Optional(name = "vertexId") String vertexId,
+            @Required(name = "conceptType") String conceptType,
+            @Required(name = "visibilitySource") String visibilitySource,
+            @Optional(name = "properties") String propertiesJsonString,
+            @JustificationText String justificationText,
+            ClientApiSourceInfo sourceInfo,
+            @ActiveWorkspaceId String workspaceId,
+            ResourceBundle resourceBundle,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
         if (!graph.isVisibilityValid(new Visibility(visibilitySource), authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
-            respondWithBadRequest(response, "visibilitySource", getString(request, "visibility.invalid"), visibilitySource);
-            chain.next(request, response);
-            return;
+            throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));
         }
 
-        ClientApiElement element = handle(
-                vertexId,
-                conceptType,
-                visibilitySource,
-                justificationText,
-                ClientApiSourceInfo.fromString(sourceInfoString),
-                propertiesJsonString,
-                user,
-                workspaceId,
-                authorizations
-        );
-        respondWithClientApiObject(response, element);
-    }
-
-    protected ClientApiElement handle(
-            String vertexId,
-            String conceptType,
-            String visibilitySource,
-            String justificationText,
-            ClientApiSourceInfo sourceInfo,
-            String propertiesJsonString,
-            User user,
-            String workspaceId,
-            Authorizations authorizations
-    ) throws ParseException {
-        Workspace workspace = getWorkspaceRepository().findById(workspaceId, user);
+        Workspace workspace = workspaceRepository.findById(workspaceId, user);
 
         Vertex vertex = graphRepository.addVertex(
                 vertexId,
@@ -142,7 +116,7 @@ public class VertexNew extends BaseRequestHandler {
         }
         this.graph.flush();
 
-        getWorkspaceRepository().updateEntityOnWorkspace(workspace, vertex.getId(), true, null, user);
+        workspaceRepository.updateEntityOnWorkspace(workspace, vertex.getId(), true, null, user);
         this.graph.flush();
 
         LOGGER.debug("Created new empty vertex with id: %s", vertex.getId());

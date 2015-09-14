@@ -2,6 +2,10 @@ package org.visallo.web.routes.edge;
 
 import com.google.inject.Inject;
 import com.v5analytics.webster.HandlerChain;
+import com.v5analytics.webster.ParameterizedHandler;
+import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
+import com.v5analytics.webster.annotations.Required;
 import org.vertexium.*;
 import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
@@ -10,7 +14,6 @@ import org.visallo.core.model.graph.VisibilityAndElementMutation;
 import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.model.workspace.WorkspaceRepository;
@@ -19,53 +22,70 @@ import org.visallo.core.user.User;
 import org.visallo.core.util.VertexiumMetadataUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.BaseRequestHandler;
+import org.visallo.web.BadRequestException;
+import org.visallo.web.MinimalRequestHandler;
+import org.visallo.web.RouteHelper;
+import org.visallo.web.VisalloResponse;
 import org.visallo.web.clientapi.model.ClientApiSourceInfo;
+import org.visallo.web.clientapi.model.ClientApiSuccess;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ResourceBundle;
 
-public class SetEdgeProperty extends BaseRequestHandler {
+public class SetEdgeProperty implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(SetEdgeProperty.class);
 
     private final Graph graph;
     private final OntologyRepository ontologyRepository;
+    private final RouteHelper routeHelper;
     private VisibilityTranslator visibilityTranslator;
     private final WorkQueueRepository workQueueRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final GraphRepository graphRepository;
 
     @Inject
     public SetEdgeProperty(
+            final Configuration configuration,
             final OntologyRepository ontologyRepository,
             final Graph graph,
             final VisibilityTranslator visibilityTranslator,
-            final UserRepository userRepository,
-            final Configuration configuration,
-            final WorkspaceRepository workspaceRepository,
             final WorkQueueRepository workQueueRepository,
+            final WorkspaceRepository workspaceRepository,
             final GraphRepository graphRepository
     ) {
-        super(userRepository, workspaceRepository, configuration);
         this.ontologyRepository = ontologyRepository;
         this.graph = graph;
         this.visibilityTranslator = visibilityTranslator;
         this.workQueueRepository = workQueueRepository;
+        this.workspaceRepository = workspaceRepository;
         this.graphRepository = graphRepository;
+        this.routeHelper = new RouteHelper(configuration, new MinimalRequestHandler(configuration) {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+
+            }
+        });
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-        final String edgeId = getRequiredParameter(request, "edgeId");
-        final String propertyName = getRequiredParameter(request, "propertyName");
-        String propertyKey = getOptionalParameter(request, "propertyKey");
-        final String valueStr = getRequiredParameter(request, "value");
-        final String visibilitySource = getRequiredParameter(request, "visibilitySource");
+    @Handle
+    public ClientApiSuccess handle(
+            HttpServletRequest request,
+            @Required(name = "edgeId") String edgeId,
+            @Required(name = "propertyName") String propertyName,
+            @Required(name = "value") String valueStr,
+            @Required(name = "visibilitySource") String visibilitySource,
+            @Optional(name = "sourceInfo") String sourceInfo,
+            @Optional(name = "propertyKey") String propertyKey,
+            @Optional(name = "metadata") String metadataString,
+            @ActiveWorkspaceId String workspaceId,
+            ResourceBundle resourceBundle,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
         boolean isComment = VisalloProperties.COMMENT.getPropertyName().equals(propertyName);
-        final String sourceInfo = getOptionalParameter(request, "sourceInfo");
         final String justificationText = routeHelper.getJustificationText(isComment, sourceInfo, request);
-        final String metadataString = getOptionalParameter(request, "metadata");
-
-        String workspaceId = getActiveWorkspaceId(request);
 
         if (propertyKey == null) {
             propertyKey = this.graph.getIdGenerator().nextId();
@@ -73,14 +93,9 @@ public class SetEdgeProperty extends BaseRequestHandler {
 
         Metadata metadata = VertexiumMetadataUtil.metadataStringToMap(metadataString, visibilityTranslator.getDefaultVisibility());
 
-        User user = getUser(request);
-        Authorizations authorizations = getAuthorizations(request, user);
-
         if (!graph.isVisibilityValid(new Visibility(visibilitySource), authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
-            respondWithBadRequest(response, "visibilitySource", getString(request, "visibility.invalid"));
-            chain.next(request, response);
-            return;
+            throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));
         }
 
         if (isComment && request.getPathInfo().equals("/edge/property")) {
@@ -99,15 +114,14 @@ public class SetEdgeProperty extends BaseRequestHandler {
             value = property.convertString(valueStr);
         } catch (Exception ex) {
             LOGGER.warn(String.format("Validation error propertyName: %s, valueStr: %s", propertyName, valueStr), ex);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.getMessage());
-            return;
+            throw new BadRequestException(ex.getMessage());
         }
 
         Edge edge = graph.getEdge(edgeId, authorizations);
 
         // add the vertex to the workspace so that the changes show up in the diff panel
-        getWorkspaceRepository().updateEntityOnWorkspace(workspaceId, edge.getVertexId(Direction.IN), null, null, user);
-        getWorkspaceRepository().updateEntityOnWorkspace(workspaceId, edge.getVertexId(Direction.OUT), null, null, user);
+        workspaceRepository.updateEntityOnWorkspace(workspaceId, edge.getVertexId(Direction.IN), null, null, user);
+        workspaceRepository.updateEntityOnWorkspace(workspaceId, edge.getVertexId(Direction.OUT), null, null, user);
 
         VisibilityAndElementMutation<Edge> setPropertyResult = graphRepository.setProperty(
                 edge,
@@ -127,6 +141,6 @@ public class SetEdgeProperty extends BaseRequestHandler {
 
         this.workQueueRepository.pushGraphPropertyQueue(edge, null, propertyName, workspaceId, visibilitySource, Priority.HIGH);
 
-        respondWithSuccessJson(response);
+        return VisalloResponse.SUCCESS;
     }
 }

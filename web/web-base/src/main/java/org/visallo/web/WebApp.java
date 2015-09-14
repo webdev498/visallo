@@ -5,6 +5,7 @@ import com.v5analytics.webster.App;
 import com.v5analytics.webster.Handler;
 import com.v5analytics.webster.handlers.AppendableStaticResourceHandler;
 import com.v5analytics.webster.handlers.StaticResourceHandler;
+import com.v5analytics.webster.resultWriters.ResultWriterFactory;
 import org.json.JSONObject;
 import org.lesscss.LessCompiler;
 import org.visallo.core.config.Configuration;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +35,7 @@ import static org.vertexium.util.CloseableUtils.closeQuietly;
 
 public class WebApp extends App {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(WebApp.class);
+    private static final VisalloDefaultResultWriterFactory VISALLO_DEFAULT_RESULT_WRITER_FACTORY = new VisalloDefaultResultWriterFactory();
     private final Injector injector;
     private final boolean devMode;
     private final AppendableStaticResourceHandler pluginsJsResourceHandler = new No404AppendableStaticResourceHandler("application/javascript");
@@ -53,12 +56,14 @@ public class WebApp extends App {
         this.servletContext = servletContext;
 
         App.registeredParameterProviderFactory(injector.getInstance(ActiveWorkspaceIdParameterProviderFactory.class));
+        App.registeredParameterProviderFactory(injector.getInstance(JustificationTextParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(BaseUrlParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(AuthorizationsParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(VisalloResponseParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(UserParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(FormulaEvaluatorUserContextParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(ResourceBundleParameterProviderFactory.class));
+        App.registeredParameterProviderFactory(injector.getInstance(ClientApiSourceInfoParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(WebAppParameterProviderFactory.class));
 
         App.registerParameterValueConverter(SystemNotificationSeverity.class, new SystemNotificationSeverityValueConverter());
@@ -85,6 +90,11 @@ public class WebApp extends App {
         String pluginsBeforeAuthJsRoute = "plugins-before-auth.js";
         this.get("/" + pluginsBeforeAuthJsRoute, pluginsBeforeAuthJsResourceHandler);
         pluginsBeforeAuthJsResources.add(pluginsBeforeAuthJsRoute);
+    }
+
+    @Override
+    protected ResultWriterFactory getResultWriterFactory(Method handleMethod) {
+        return VISALLO_DEFAULT_RESULT_WRITER_FACTORY;
     }
 
     @Override

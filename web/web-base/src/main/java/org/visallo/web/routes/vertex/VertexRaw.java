@@ -5,6 +5,7 @@ import com.v5analytics.webster.HandlerChain;
 import com.v5analytics.webster.utils.UrlUtils;
 import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
+import org.visallo.core.exception.VisalloResourceNotFoundException;
 import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.core.model.properties.MediaVisalloProperties;
 import org.visallo.core.model.user.UserRepository;
@@ -57,8 +58,7 @@ public class VertexRaw extends BaseRequestHandler {
 
         Vertex artifactVertex = graph.getVertex(graphVertexId, authorizations);
         if (artifactVertex == null) {
-            respondWithNotFound(response);
-            return;
+            throw new VisalloResourceNotFoundException("Could not find vertex with id: " + graphVertexId);
         }
 
         String fileName = VisalloProperties.FILE_NAME.getOnlyPropertyValue(artifactVertex);

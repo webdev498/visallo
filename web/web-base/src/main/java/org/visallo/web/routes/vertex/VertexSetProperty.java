@@ -3,6 +3,10 @@ package org.visallo.web.routes.vertex;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.v5analytics.webster.HandlerChain;
+import com.v5analytics.webster.ParameterizedHandler;
+import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
+import com.v5analytics.webster.annotations.Required;
 import org.vertexium.*;
 import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
@@ -11,7 +15,6 @@ import org.visallo.core.model.graph.VisibilityAndElementMutation;
 import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.model.workspace.Workspace;
@@ -22,9 +25,12 @@ import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VertexiumMetadataUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.BaseRequestHandler;
+import org.visallo.web.BadRequestException;
+import org.visallo.web.MinimalRequestHandler;
+import org.visallo.web.RouteHelper;
 import org.visallo.web.clientapi.model.ClientApiElement;
 import org.visallo.web.clientapi.model.ClientApiSourceInfo;
+import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,8 +38,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class VertexSetProperty extends BaseRequestHandler {
+public class VertexSetProperty implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(VertexSetProperty.class);
 
     private final Graph graph;
@@ -42,43 +49,51 @@ public class VertexSetProperty extends BaseRequestHandler {
     private final WorkspaceRepository workspaceRepository;
     private final WorkQueueRepository workQueueRepository;
     private final GraphRepository graphRepository;
+    private final RouteHelper routeHelper;
 
     @Inject
     public VertexSetProperty(
+            final Configuration configuration,
             final OntologyRepository ontologyRepository,
             final Graph graph,
             final VisibilityTranslator visibilityTranslator,
-            final UserRepository userRepository,
-            final Configuration configuration,
             final WorkspaceRepository workspaceRepository,
             final WorkQueueRepository workQueueRepository,
             final GraphRepository graphRepository
     ) {
-        super(userRepository, workspaceRepository, configuration);
         this.ontologyRepository = ontologyRepository;
         this.graph = graph;
         this.visibilityTranslator = visibilityTranslator;
         this.workspaceRepository = workspaceRepository;
         this.workQueueRepository = workQueueRepository;
         this.graphRepository = graphRepository;
+        this.routeHelper = new RouteHelper(configuration, new MinimalRequestHandler(configuration) {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+
+            }
+        });
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-        final String graphVertexId = getAttributeString(request, "graphVertexId");
-        final String propertyName = getRequiredParameter(request, "propertyName");
-        String propertyKey = getOptionalParameter(request, "propertyKey");
-        final String valueStr = getOptionalParameter(request, "value");
-        final String[] valuesStr = getOptionalParameterArray(request, "value[]");
-        final String visibilitySource = getRequiredParameter(request, "visibilitySource");
-        final String oldVisibilitySource = getOptionalParameter(request, "oldVisibilitySource");
+    @Handle
+    public ClientApiElement handle(
+            HttpServletRequest request,
+            @Required(name = "graphVertexId") String graphVertexId,
+            @Required(name = "propertyName") String propertyName,
+            @Optional(name = "propertyKey") String propertyKey,
+            @Optional(name = "value") String valueStr,
+            @Optional(name = "value[]") String[] valuesStr,
+            @Required(name = "visibilitySource") String visibilitySource,
+            @Optional(name = "oldVisibilitySource") String oldVisibilitySource,
+            @Optional(name = "sourceInfo") String sourceInfoString,
+            @Optional(name = "metadata") String metadataString,
+            @ActiveWorkspaceId String workspaceId,
+            ResourceBundle resourceBundle,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
         boolean isComment = VisalloProperties.COMMENT.getPropertyName().equals(propertyName);
-        final String sourceInfo = getOptionalParameter(request, "sourceInfo");
-        final String justificationText = routeHelper.getJustificationText(isComment, sourceInfo, request);
-        final String metadataString = getOptionalParameter(request, "metadata");
-        User user = getUser(request);
-        String workspaceId = getActiveWorkspaceId(request);
-        Authorizations authorizations = getAuthorizations(request, user);
+        final String justificationText = routeHelper.getJustificationText(isComment, sourceInfoString, request);
 
         if (valueStr == null && valuesStr == null) {
             throw new VisalloException("Parameter: 'value' or 'value[]' is required in the request");
@@ -90,9 +105,7 @@ public class VertexSetProperty extends BaseRequestHandler {
 
         if (!graph.isVisibilityValid(new Visibility(visibilitySource), authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
-            respondWithBadRequest(response, "visibilitySource", getString(request, "visibility.invalid"));
-            chain.next(request, response);
-            return;
+            throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));
         }
 
         if (propertyName.equals(VisalloProperties.COMMENT.getPropertyName()) && request.getPathInfo().equals("/vertex/property")) {
@@ -102,44 +115,8 @@ public class VertexSetProperty extends BaseRequestHandler {
         }
 
         // add the vertex to the workspace so that the changes show up in the diff panel
-        getWorkspaceRepository().updateEntityOnWorkspace(workspaceId, graphVertexId, null, null, user);
+        workspaceRepository.updateEntityOnWorkspace(workspaceId, graphVertexId, null, null, user);
 
-        respondWithClientApiObject(response, handle(
-                graphVertexId,
-                propertyName,
-                propertyKey,
-                valueStr,
-                valuesStr,
-                justificationText,
-                sourceInfo,
-                metadataString,
-                oldVisibilitySource,
-                visibilitySource,
-                user,
-                workspaceId,
-                authorizations));
-    }
-
-    private String createCommentPropertyKey() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        return dateFormat.format(new Date());
-    }
-
-    private ClientApiElement handle(
-            String graphVertexId,
-            String propertyName,
-            String propertyKey,
-            String valueStr,
-            String[] valuesStr,
-            String justificationText,
-            String sourceInfoString,
-            String metadataString,
-            String oldVisibilitySource,
-            String visibilitySource,
-            User user,
-            String workspaceId,
-            Authorizations authorizations
-    ) {
         if (propertyKey == null) {
             propertyKey = this.graph.getIdGenerator().nextId();
         }
@@ -278,6 +255,11 @@ public class VertexSetProperty extends BaseRequestHandler {
         );
         Vertex save = setPropertyResult.elementMutation.save(authorizations);
         return Lists.newArrayList(new SavePropertyResults(save, propertyKey, propertyName));
+    }
+
+    private String createCommentPropertyKey() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        return dateFormat.format(new Date());
     }
 
     private static class SavePropertyResults {

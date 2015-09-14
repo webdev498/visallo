@@ -10,6 +10,7 @@ import org.vertexium.Graph;
 import org.vertexium.Vertex;
 import org.vertexium.property.StreamingPropertyValue;
 import org.visallo.core.EntityHighlighter;
+import org.visallo.core.exception.VisalloResourceNotFoundException;
 import org.visallo.core.ingest.video.VideoTranscript;
 import org.visallo.core.model.properties.MediaVisalloProperties;
 import org.visallo.core.model.properties.VisalloProperties;
@@ -51,8 +52,7 @@ public class VertexHighlightedText implements ParameterizedHandler {
 
         Vertex artifactVertex = graph.getVertex(graphVertexId, authorizations);
         if (artifactVertex == null) {
-            response.respondWithNotFound();
-            return;
+            throw new VisalloResourceNotFoundException("Could not find vertex with id: " + graphVertexId);
         }
 
         StreamingPropertyValue textPropertyValue = VisalloProperties.TEXT.getPropertyValue(artifactVertex, propertyKey);

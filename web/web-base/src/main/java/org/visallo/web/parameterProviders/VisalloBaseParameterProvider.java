@@ -32,7 +32,7 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         this.configuration = configuration;
     }
 
-    protected String getWorkspaceIdOrDefault(final HttpServletRequest request) {
+    public static String getWorkspaceIdOrDefault(final HttpServletRequest request) {
         String workspaceId = (String) request.getAttribute("workspaceId");
         if (workspaceId == null || workspaceId.trim().length() == 0) {
             workspaceId = request.getHeader(VISALLO_WORKSPACE_ID_HEADER_NAME);
@@ -46,7 +46,7 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         return workspaceId;
     }
 
-    protected String getActiveWorkspaceId(final HttpServletRequest request) {
+    public static String getActiveWorkspaceId(final HttpServletRequest request) {
         String workspaceId = getWorkspaceIdOrDefault(request);
         if (workspaceId == null || workspaceId.trim().length() == 0) {
             throw new VisalloException(VISALLO_WORKSPACE_ID_HEADER_NAME + " is a required header.");
@@ -54,12 +54,12 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
         return workspaceId;
     }
 
-    private String getOptionalParameter(final HttpServletRequest request, final String parameterName) {
+    public static String getOptionalParameter(final HttpServletRequest request, final String parameterName) {
         Preconditions.checkNotNull(request, "The provided request was invalid");
         return getParameter(request, parameterName, true);
     }
 
-    private String getParameter(final HttpServletRequest request, final String parameterName, final boolean optional) {
+    public static String getParameter(final HttpServletRequest request, final String parameterName, final boolean optional) {
         final String paramValue = request.getParameter(parameterName);
 
         if (paramValue == null) {

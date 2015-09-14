@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.web.clientapi.model.ClientApiObject;
+import org.visallo.web.clientapi.model.ClientApiSuccess;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.ServletOutputStream;
@@ -22,6 +23,7 @@ import java.util.List;
 
 public class VisalloResponse {
     public static final int EXPIRES_1_HOUR = 60 * 60;
+    public static final ClientApiSuccess SUCCESS = new ClientApiSuccess();
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
@@ -83,9 +85,9 @@ public class VisalloResponse {
     }
 
     public void respondWithSuccessJson() {
-        JSONObject result = new JSONObject();
-        result.put("success", true);
-        respondWithJson(result);
+        JSONObject successJson = new JSONObject();
+        successJson.put("success", true);
+        respondWithJson(successJson);
     }
 
     public void respondWithJson(JSONObject jsonObject) {
@@ -168,5 +170,17 @@ public class VisalloResponse {
         } catch (IOException e) {
             throw new VisalloException("Could not get response output stream", e);
         }
+    }
+
+    public void flushBuffer() {
+        try {
+            response.flushBuffer();
+        } catch (IOException e) {
+            throw new VisalloException("Could not flush response buffer");
+        }
+    }
+
+    public void setStatus(int statusCode) {
+        response.setStatus(statusCode);
     }
 }

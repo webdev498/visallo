@@ -11,6 +11,7 @@ import org.visallo.core.model.notification.SystemNotificationSeverity;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.user.User;
 import org.visallo.web.VisalloResponse;
+import org.visallo.web.clientapi.model.ClientApiSuccess;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,7 +32,7 @@ public class SystemNotificationSave implements ParameterizedHandler {
     }
 
     @Handle
-    public void handle(
+    public ClientApiSuccess handle(
             User user,
             @Optional(name = "notificationId") String notificationId,
             @Required(name = "severity") SystemNotificationSeverity severity,
@@ -39,8 +40,7 @@ public class SystemNotificationSave implements ParameterizedHandler {
             @Required(name = "message") String message,
             @Required(name = "startDate") String startDateParameter,
             @Optional(name = "endDate") String endDateParameter,
-            @Optional(name = "externalUrl") String externalUrl,
-            VisalloResponse response
+            @Optional(name = "externalUrl") String externalUrl
     ) throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -70,6 +70,6 @@ public class SystemNotificationSave implements ParameterizedHandler {
             workQueueRepository.pushSystemNotificationUpdate(notification);
         }
 
-        response.respondWithSuccessJson();
+        return VisalloResponse.SUCCESS;
     }
 }

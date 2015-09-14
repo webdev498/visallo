@@ -1,46 +1,50 @@
 package org.visallo.web.routes.vertex;
 
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
+import com.v5analytics.webster.ParameterizedHandler;
+import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
+import com.v5analytics.webster.annotations.Required;
 import org.vertexium.Authorizations;
 import org.vertexium.Graph;
 import org.vertexium.Vertex;
-import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloAccessDeniedException;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.user.UserRepository;
-import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.user.User;
 import org.visallo.core.util.ClientApiConverter;
-import org.visallo.web.BaseRequestHandler;
 import org.visallo.web.clientapi.model.ClientApiVertexMultipleResponse;
+import org.visallo.web.parameterProviders.VisalloBaseParameterProvider;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.HashSet;
 
 import static org.vertexium.util.IterableUtils.toIterable;
 
-public class VertexMultiple extends BaseRequestHandler {
+public class VertexMultiple implements ParameterizedHandler {
     private final Graph graph;
+    private final UserRepository userRepository;
 
     @Inject
     public VertexMultiple(
             final Graph graph,
-            final UserRepository userRepository,
-            final WorkspaceRepository workspaceRepository,
-            final Configuration configuration) {
-        super(userRepository, workspaceRepository, configuration);
+            final UserRepository userRepository
+    ) {
         this.graph = graph;
+        this.userRepository = userRepository;
     }
 
-    @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-        HashSet<String> vertexStringIds = new HashSet<>(Arrays.asList(getRequiredParameterArray(request, "vertexIds[]")));
-        boolean fallbackToPublic = getOptionalParameterBoolean(request, "fallbackToPublic", false);
-        User user = getUser(request);
-        GetAuthorizationsResult getAuthorizationsResult = getAuthorizations(request, fallbackToPublic, user);
+    @Handle
+    public ClientApiVertexMultipleResponse handle(
+            @Required(name = "vertexIds[]") String[] vertexIdsParam,
+            @Optional(name = "fallbackToPublic", defaultValue = "false") boolean fallbackToPublic,
+            HttpServletRequest request,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
+        HashSet<String> vertexStringIds = new HashSet<>(Arrays.asList(vertexIdsParam));
+        GetAuthorizationsResult getAuthorizationsResult = getAuthorizations(fallbackToPublic, user, authorizations);
         String workspaceId = getWorkspaceId(request);
 
         Iterable<String> vertexIds = toIterable(vertexStringIds.toArray(new String[vertexStringIds.size()]));
@@ -50,18 +54,17 @@ public class VertexMultiple extends BaseRequestHandler {
         for (Vertex v : graphVertices) {
             result.getVertices().add(ClientApiConverter.toClientApiVertex(v, workspaceId, getAuthorizationsResult.authorizations));
         }
-
-        respondWithClientApiObject(response, result);
+        return result;
     }
 
-    private GetAuthorizationsResult getAuthorizations(HttpServletRequest request, boolean fallbackToPublic, User user) {
+    private GetAuthorizationsResult getAuthorizations(boolean fallbackToPublic, User user, Authorizations authorizations) {
         GetAuthorizationsResult result = new GetAuthorizationsResult();
         result.requiredFallback = false;
         try {
-            result.authorizations = getAuthorizations(request, user);
+            result.authorizations = authorizations;
         } catch (VisalloAccessDeniedException ex) {
             if (fallbackToPublic) {
-                result.authorizations = getUserRepository().getAuthorizations(user);
+                result.authorizations = userRepository.getAuthorizations(user);
                 result.requiredFallback = true;
             } else {
                 throw ex;
@@ -73,7 +76,7 @@ public class VertexMultiple extends BaseRequestHandler {
     private String getWorkspaceId(HttpServletRequest request) {
         String workspaceId;
         try {
-            workspaceId = getActiveWorkspaceId(request);
+            workspaceId = VisalloBaseParameterProvider.getActiveWorkspaceId(request);
         } catch (VisalloException ex) {
             workspaceId = null;
         }

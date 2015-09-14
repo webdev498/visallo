@@ -1,5 +1,6 @@
 package org.visallo.web;
 
+import com.google.inject.Inject;
 import org.visallo.core.config.Configuration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,7 +32,7 @@ public class RouteHelper {
     }
 
     public boolean isJustificationRequired(boolean isComment, String sourceInfo) {
-        return !isComment && sourceInfo == null &&  isJustificationRequired();
+        return !isComment && sourceInfo == null && isJustificationRequired();
     }
 
     private String justificationParameter(boolean required, HttpServletRequest request) {
