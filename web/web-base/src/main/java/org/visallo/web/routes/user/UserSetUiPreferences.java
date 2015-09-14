@@ -30,7 +30,7 @@ public class UserSetUiPreferences implements ParameterizedHandler {
             user.getUiPreferences().put(propertyName, propertyValue);
             userRepository.setUiPreferences(user, user.getUiPreferences());
         } else {
-            throw new BadRequestException("either ui-preferences or name,value are required parameters.");
+            throw new BadRequestException("ui-preferences", "either ui-preferences or name,value are required parameters.");
         }
 
         return userRepository.toJsonWithAuths(user);
