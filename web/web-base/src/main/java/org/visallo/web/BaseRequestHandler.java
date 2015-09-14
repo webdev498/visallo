@@ -23,8 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents the base behavior that a {@link Handler} must support
@@ -66,10 +64,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
         }
         sb.append(contextPath);
         return sb.toString();
-    }
-
-    public String getBaseUrl(HttpServletRequest request) {
-        return getBaseUrl(request, getConfiguration());
     }
 
     protected String getActiveWorkspaceId(final HttpServletRequest request) {
@@ -119,30 +113,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
     }
 
     /**
-     * Send a Bad Request response with JSON object mapping field error messages
-     */
-    protected void respondWithBadRequest(final HttpServletResponse response, final String parameterName, final String errorMessage, final List<String> invalidValues) throws IOException {
-        JSONObject error = new JSONObject();
-        error.put(parameterName, errorMessage);
-        if (invalidValues != null) {
-            JSONArray values = new JSONArray();
-            for (String v : invalidValues) {
-                values.put(v);
-            }
-            error.put("invalidValues", values);
-        }
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        respondWithJson(response, error);
-    }
-
-    /**
-     * Send a Bad Request response with JSON object mapping field error messages
-     */
-    protected void respondWithBadRequest(final HttpServletResponse response, final String parameterName, final String errorMessage) throws IOException {
-        respondWithBadRequest(response, parameterName, errorMessage, new ArrayList<String>());
-    }
-
-    /**
      * Configures the content type for the provided response to contain {@link JSONObject} data
      *
      * @param response   The response instance to modify
@@ -150,17 +120,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
      */
     protected void respondWithJson(final HttpServletResponse response, final JSONObject jsonObject) {
         configureResponse(ResponseTypes.JSON_OBJECT, response, jsonObject);
-    }
-
-    protected void respondWithSuccessJson(HttpServletResponse response) {
-        respondWithSuccessJson(response, null);
-    }
-
-    protected void respondWithSuccessJson(HttpServletResponse response, String id) {
-        JSONObject result = new JSONObject();
-        result.put("success", true);
-        result.put("id", id);
-        respondWithJson(response, result);
     }
 
     protected void respondWithClientApiObject(HttpServletResponse response, ClientApiObject obj) throws IOException {

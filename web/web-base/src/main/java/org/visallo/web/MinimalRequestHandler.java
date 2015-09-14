@@ -87,19 +87,6 @@ public abstract class MinimalRequestHandler implements RequestResponseHandler {
         return getParameterValues(request, parameterName, false);
     }
 
-    protected Long getOptionalParameterLong(final HttpServletRequest request, final String parameterName, long defaultValue) {
-        Long defaultValueLong = defaultValue;
-        return getOptionalParameterLong(request, parameterName, defaultValueLong);
-    }
-
-    protected Long getOptionalParameterLong(final HttpServletRequest request, final String parameterName, Long defaultValue) {
-        String val = getOptionalParameter(request, parameterName);
-        if (val == null || val.length() == 0) {
-            return defaultValue;
-        }
-        return Long.parseLong(val);
-    }
-
     protected Integer getOptionalParameterInt(final HttpServletRequest request, final String parameterName, Integer defaultValue) {
         String val = getOptionalParameter(request, parameterName);
         if (val == null || val.length() == 0) {
@@ -120,19 +107,6 @@ public abstract class MinimalRequestHandler implements RequestResponseHandler {
                 return FetchHint.valueOf(input);
             }
         }));
-    }
-
-    protected boolean getOptionalParameterBoolean(final HttpServletRequest request, final String parameterName, boolean defaultValue) {
-        Boolean defaultValueBoolean = defaultValue;
-        return getOptionalParameterBoolean(request, parameterName, defaultValueBoolean);
-    }
-
-    protected Boolean getOptionalParameterBoolean(final HttpServletRequest request, final String parameterName, Boolean defaultValue) {
-        String val = getOptionalParameter(request, parameterName);
-        if (val == null || val.length() == 0) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(val);
     }
 
     protected Double getOptionalParameterDouble(final HttpServletRequest request, final String parameterName, Double defaultValue) {
@@ -161,18 +135,6 @@ public abstract class MinimalRequestHandler implements RequestResponseHandler {
      */
     protected long getRequiredParameterAsLong(final HttpServletRequest request, final String parameterName) {
         return Long.parseLong(getRequiredParameter(request, parameterName));
-    }
-
-    /**
-     * Attempts to extract the specified parameter from the provided request and convert it to a int value
-     *
-     * @param request       The request instance containing the parameter
-     * @param parameterName The name of the parameter to extract
-     * @return The int value of the specified parameter
-     * @throws RuntimeException Thrown if the required parameter was not in the request
-     */
-    protected int getRequiredParameterAsInt(final HttpServletRequest request, final String parameterName) {
-        return Integer.parseInt(getRequiredParameter(request, parameterName));
     }
 
     /**
@@ -241,13 +203,5 @@ public abstract class MinimalRequestHandler implements RequestResponseHandler {
             }
         }
         return paramValue;
-    }
-
-    protected String getAttributeString(final HttpServletRequest request, final String name) {
-        String attr = (String) request.getAttribute(name);
-        if (attr != null) {
-            return attr;
-        }
-        return getRequiredParameter(request, name);
     }
 }
