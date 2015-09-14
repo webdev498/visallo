@@ -1,7 +1,6 @@
 package org.visallo.web.routes.edge;
 
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Optional;
@@ -23,15 +22,14 @@ import org.visallo.core.util.VertexiumMetadataUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.BadRequestException;
-import org.visallo.web.MinimalRequestHandler;
-import org.visallo.web.RouteHelper;
 import org.visallo.web.VisalloResponse;
 import org.visallo.web.clientapi.model.ClientApiSourceInfo;
 import org.visallo.web.clientapi.model.ClientApiSuccess;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
+import org.visallo.web.parameterProviders.JustificationText;
+import org.visallo.web.parameterProviders.JustificationTextParameterProviderFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ResourceBundle;
 
 public class SetEdgeProperty implements ParameterizedHandler {
@@ -39,7 +37,6 @@ public class SetEdgeProperty implements ParameterizedHandler {
 
     private final Graph graph;
     private final OntologyRepository ontologyRepository;
-    private final RouteHelper routeHelper;
     private VisibilityTranslator visibilityTranslator;
     private final WorkQueueRepository workQueueRepository;
     private final WorkspaceRepository workspaceRepository;
@@ -47,7 +44,6 @@ public class SetEdgeProperty implements ParameterizedHandler {
 
     @Inject
     public SetEdgeProperty(
-            final Configuration configuration,
             final OntologyRepository ontologyRepository,
             final Graph graph,
             final VisibilityTranslator visibilityTranslator,
@@ -61,12 +57,6 @@ public class SetEdgeProperty implements ParameterizedHandler {
         this.workQueueRepository = workQueueRepository;
         this.workspaceRepository = workspaceRepository;
         this.graphRepository = graphRepository;
-        this.routeHelper = new RouteHelper(configuration, new MinimalRequestHandler(configuration) {
-            @Override
-            public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-
-            }
-        });
     }
 
     @Handle
@@ -79,13 +69,13 @@ public class SetEdgeProperty implements ParameterizedHandler {
             @Optional(name = "sourceInfo") String sourceInfo,
             @Optional(name = "propertyKey") String propertyKey,
             @Optional(name = "metadata") String metadataString,
+            @JustificationText String justificationText,
             @ActiveWorkspaceId String workspaceId,
             ResourceBundle resourceBundle,
             User user,
             Authorizations authorizations
     ) throws Exception {
         boolean isComment = VisalloProperties.COMMENT.getPropertyName().equals(propertyName);
-        final String justificationText = routeHelper.getJustificationText(isComment, sourceInfo, request);
 
         if (propertyKey == null) {
             propertyKey = this.graph.getIdGenerator().nextId();

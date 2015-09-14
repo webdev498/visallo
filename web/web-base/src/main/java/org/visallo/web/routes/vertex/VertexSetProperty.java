@@ -2,13 +2,11 @@ package org.visallo.web.routes.vertex;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.v5analytics.webster.HandlerChain;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Optional;
 import com.v5analytics.webster.annotations.Required;
 import org.vertexium.*;
-import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.graph.GraphRepository;
 import org.visallo.core.model.graph.VisibilityAndElementMutation;
@@ -26,14 +24,12 @@ import org.visallo.core.util.VertexiumMetadataUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.BadRequestException;
-import org.visallo.web.MinimalRequestHandler;
-import org.visallo.web.RouteHelper;
 import org.visallo.web.clientapi.model.ClientApiElement;
 import org.visallo.web.clientapi.model.ClientApiSourceInfo;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
+import org.visallo.web.parameterProviders.JustificationText;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,11 +45,9 @@ public class VertexSetProperty implements ParameterizedHandler {
     private final WorkspaceRepository workspaceRepository;
     private final WorkQueueRepository workQueueRepository;
     private final GraphRepository graphRepository;
-    private final RouteHelper routeHelper;
 
     @Inject
     public VertexSetProperty(
-            final Configuration configuration,
             final OntologyRepository ontologyRepository,
             final Graph graph,
             final VisibilityTranslator visibilityTranslator,
@@ -67,12 +61,6 @@ public class VertexSetProperty implements ParameterizedHandler {
         this.workspaceRepository = workspaceRepository;
         this.workQueueRepository = workQueueRepository;
         this.graphRepository = graphRepository;
-        this.routeHelper = new RouteHelper(configuration, new MinimalRequestHandler(configuration) {
-            @Override
-            public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
-
-            }
-        });
     }
 
     @Handle
@@ -87,13 +75,13 @@ public class VertexSetProperty implements ParameterizedHandler {
             @Optional(name = "oldVisibilitySource") String oldVisibilitySource,
             @Optional(name = "sourceInfo") String sourceInfoString,
             @Optional(name = "metadata") String metadataString,
+            @JustificationText String justificationText,
             @ActiveWorkspaceId String workspaceId,
             ResourceBundle resourceBundle,
             User user,
             Authorizations authorizations
     ) throws Exception {
         boolean isComment = VisalloProperties.COMMENT.getPropertyName().equals(propertyName);
-        final String justificationText = routeHelper.getJustificationText(isComment, sourceInfoString, request);
 
         if (valueStr == null && valuesStr == null) {
             throw new VisalloException("Parameter: 'value' or 'value[]' is required in the request");

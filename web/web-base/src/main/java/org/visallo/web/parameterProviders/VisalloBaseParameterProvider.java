@@ -8,7 +8,6 @@ import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.user.ProxyUser;
 import org.visallo.core.user.User;
-import org.visallo.web.BaseRequestHandler;
 import org.visallo.web.CurrentUser;
 import org.visallo.web.WebApp;
 
@@ -57,6 +56,14 @@ public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<
     public static String getOptionalParameter(final HttpServletRequest request, final String parameterName) {
         Preconditions.checkNotNull(request, "The provided request was invalid");
         return getParameter(request, parameterName, true);
+    }
+
+    public static String getRequiredParameter(final HttpServletRequest request, final String parameterName) {
+        String result = getOptionalParameter(request, parameterName);
+        if (result == null) {
+            throw new VisalloException("parameter " + parameterName + " is required");
+        }
+        return result;
     }
 
     public static String getParameter(final HttpServletRequest request, final String parameterName, final boolean optional) {

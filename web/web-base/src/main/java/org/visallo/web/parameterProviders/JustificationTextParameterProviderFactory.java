@@ -5,9 +5,9 @@ import com.v5analytics.webster.HandlerChain;
 import com.v5analytics.webster.parameterProviders.ParameterProvider;
 import com.v5analytics.webster.parameterProviders.ParameterProviderFactory;
 import org.visallo.core.config.Configuration;
+import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.core.model.user.UserRepository;
-import org.visallo.web.MinimalRequestHandler;
-import org.visallo.web.RouteHelper;
+import org.visallo.web.WebConfiguration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,21 +15,38 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 public class JustificationTextParameterProviderFactory extends ParameterProviderFactory<String> {
+    private static final String JUSTIFICATION_TEXT = "justificationText";
     private final ParameterProvider<String> parameterProvider;
 
     @Inject
-    public JustificationTextParameterProviderFactory(UserRepository userRepository, Configuration configuration) {
-        // this is a temporary fix until all routes are moved over and the RouteHelper methods can be moved into this class
-        final RouteHelper routeHelper = new RouteHelper(configuration, new MinimalRequestHandler(configuration) {
-            @Override
-            public void handle(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+    public JustificationTextParameterProviderFactory(UserRepository userRepository, final Configuration configuration) {
+        final boolean isJustificationRequired = WebConfiguration.justificationRequired(configuration);
 
-            }
-        });
         parameterProvider = new VisalloBaseParameterProvider<String>(userRepository, configuration) {
             @Override
             public String getParameter(HttpServletRequest request, HttpServletResponse response, HandlerChain chain) {
-                return routeHelper.getJustificationText(request);
+                String propertyName = getOptionalParameter(request, "propertyName");
+                if (propertyName != null && propertyName.length() > 0) {
+                    boolean isComment = VisalloProperties.COMMENT.getPropertyName().equals(propertyName);
+                    String sourceInfo = getOptionalParameter(request, "sourceInfo");
+                    return getJustificationText(isComment, sourceInfo, request);
+                } else {
+                    return justificationParameter(isJustificationRequired, request);
+                }
+            }
+
+            public String getJustificationText(boolean isComment, String sourceInfo, HttpServletRequest request) {
+                return justificationParameter(isJustificationRequired(isComment, sourceInfo), request);
+            }
+
+            public boolean isJustificationRequired(boolean isComment, String sourceInfo) {
+                return !isComment && sourceInfo == null && isJustificationRequired;
+            }
+
+            private String justificationParameter(boolean required, HttpServletRequest request) {
+                return required ?
+                        getRequiredParameter(request, JUSTIFICATION_TEXT) :
+                        getOptionalParameter(request, JUSTIFICATION_TEXT);
             }
         };
     }
