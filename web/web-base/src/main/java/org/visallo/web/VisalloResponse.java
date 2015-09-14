@@ -187,4 +187,8 @@ public class VisalloResponse {
     public void setContentLength(int length) {
         response.setContentLength(length);
     }
+
+    public void setCharacterEncoding(String charset) {
+        response.setCharacterEncoding(charset);
+    }
 }

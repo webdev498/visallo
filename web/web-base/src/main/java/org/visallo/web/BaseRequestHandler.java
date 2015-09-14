@@ -17,7 +17,6 @@ import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.user.ProxyUser;
 import org.visallo.core.user.User;
 import org.visallo.web.clientapi.model.ClientApiObject;
-import org.visallo.web.clientapi.model.Privilege;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,19 +25,13 @@ import javax.servlet.http.Part;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TimeZone;
 
 /**
  * Represents the base behavior that a {@link Handler} must support
  * and provides common methods for handler usage
  */
 public abstract class BaseRequestHandler extends MinimalRequestHandler {
-    protected static final int EXPIRES_1_HOUR = 60 * 60;
     public static final String VISALLO_WORKSPACE_ID_HEADER_NAME = "Visallo-Workspace-Id";
-    private static final String VISALLO_TIME_ZONE_HEADER_NAME = "Visallo-TimeZone";
-    private static final String TIME_ZONE_ATTRIBUTE_NAME = "timeZone";
-    private static final String TIME_ZONE_PARAMETER_NAME = "timeZone";
     public static final String WORKSPACE_ID_ATTRIBUTE_NAME = "workspaceId";
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
@@ -101,20 +94,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
         return workspaceId;
     }
 
-    protected String getTimeZone(final HttpServletRequest request) {
-        String timeZone = (String) request.getAttribute(TIME_ZONE_ATTRIBUTE_NAME);
-        if (timeZone == null || timeZone.trim().length() == 0) {
-            timeZone = request.getHeader(VISALLO_TIME_ZONE_HEADER_NAME);
-            if (timeZone == null || timeZone.trim().length() == 0) {
-                timeZone = getOptionalParameter(request, TIME_ZONE_PARAMETER_NAME);
-                if (timeZone == null || timeZone.trim().length() == 0) {
-                    timeZone = getConfiguration().get(Configuration.DEFAULT_TIME_ZONE, TimeZone.getDefault().getDisplayName());
-                }
-            }
-        }
-        return timeZone;
-    }
-
     protected Authorizations getAuthorizations(final HttpServletRequest request, final User user) {
         String workspaceId = getWorkspaceIdOrDefault(request);
         if (workspaceId != null) {
@@ -127,10 +106,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
         return getUserRepository().getAuthorizations(user);
     }
 
-    protected Set<Privilege> getPrivileges(User user) {
-        return getUserRepository().getPrivileges(user);
-    }
-
     public static void setMaxAge(final HttpServletResponse response, int numberOfSeconds) {
         response.setHeader("Cache-Control", "max-age=" + numberOfSeconds);
     }
@@ -141,23 +116,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
 
     protected void respondWithNotFound(final HttpServletResponse response, String message) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, message);
-    }
-
-    protected void respondWithAccessDenied(final HttpServletResponse response, String message) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, message);
-    }
-
-    /**
-     * Send a Bad Request response with JSON object mapping field error messages
-     */
-    protected void respondWithBadRequest(final HttpServletResponse response, final String parameterName, final String errorMessage, final String invalidValue) throws IOException {
-        List<String> values = null;
-
-        if (invalidValue != null) {
-            values = new ArrayList<>();
-            values.add(invalidValue);
-        }
-        respondWithBadRequest(response, parameterName, errorMessage, values);
     }
 
     /**
@@ -232,10 +190,6 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
         configureResponse(ResponseTypes.PLAINTEXT, response, plaintext);
     }
 
-    protected void respondWithHtml(final HttpServletResponse response, final String html) {
-        configureResponse(ResponseTypes.HTML, response, html);
-    }
-
     protected User getUser(HttpServletRequest request) {
         return new ProxyUser(CurrentUser.getUserId(request), this.userRepository);
     }
@@ -296,9 +250,5 @@ public abstract class BaseRequestHandler extends MinimalRequestHandler {
 
     public WorkspaceRepository getWorkspaceRepository() {
         return workspaceRepository;
-    }
-
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
     }
 }

@@ -17,7 +17,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public abstract class VisalloBaseParameterProvider<T> extends ParameterProvider<T> {
-    private static final String VISALLO_WORKSPACE_ID_HEADER_NAME = BaseRequestHandler.VISALLO_WORKSPACE_ID_HEADER_NAME;
+    private static final String VISALLO_WORKSPACE_ID_HEADER_NAME = "Visallo-Workspace-Id";
     private static final String LOCALE_LANGUAGE_PARAMETER = "localeLanguage";
     private static final String LOCALE_COUNTRY_PARAMETER = "localeCountry";
     private static final String LOCALE_VARIANT_PARAMETER = "localeVariant";
