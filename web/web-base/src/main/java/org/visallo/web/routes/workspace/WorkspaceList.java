@@ -27,7 +27,7 @@ public class WorkspaceList implements ParameterizedHandler {
 
     @Handle
     public ClientApiWorkspaces handle(
-            @ActiveWorkspaceId String workspaceId,
+            @ActiveWorkspaceId(required = false) String workspaceId,
             User user
     ) throws Exception {
         Authorizations authorizations;
