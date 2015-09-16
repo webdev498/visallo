@@ -284,4 +284,8 @@ public class Router extends HttpServlet {
     public void setGeocoderRepository(GeocoderRepository geocoderRepository) {
         this.geocoderRepository = geocoderRepository;
     }
+
+    public WebApp getApp() {
+        return app;
+    }
 }

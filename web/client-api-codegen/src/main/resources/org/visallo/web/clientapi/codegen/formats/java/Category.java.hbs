@@ -1,0 +1,31 @@
+package {{package}};
+
+import org.json.JSONObject;
+import org.visallo.web.clientapi.CategoryBase;
+import org.visallo.web.clientapi.VisalloApi;
+import org.visallo.web.clientapi.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class {{className}} extends CategoryBase {
+    public {{className}}(VisalloApi visalloApi) {
+        super(visalloApi);
+    }
+
+{{#each endPoints}}
+    /**
+    {{#each parameters}}
+     * @param {{name}} {{javadoc}}
+    {{/each}}
+     */
+    public {{returnType}} {{name}}({{parameterDeclarations}}) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        {{#each parameters}}
+        parameters.add(new VisalloApiBase.Parameter("{{name}}", {{name}}));
+        {{/each}}
+        {{returnStmt}}getVisalloApi().execute("{{httpVerb}}", "{{path}}", parameters, {{returnTypeClass}});
+    }
+
+{{/each}}
+}
