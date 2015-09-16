@@ -14,6 +14,15 @@ public abstract class WorkspaceBase extends CategoryBase {
     }
 
     /**
+     * @param workspaceId REQUIRED
+     */
+    public void delete(String workspaceId) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
+        getVisalloApi().execute("DELETE", "/workspace", parameters, null);
+    }
+
+    /**
      */
     public ClientApiWorkspaces getAll() {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
@@ -38,9 +47,9 @@ public abstract class WorkspaceBase extends CategoryBase {
 
     /**
      */
-    public void getVertices() {
+    public ClientApiWorkspaceVertices getVertices() {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        getVisalloApi().execute("GET", "/workspace/vertices", parameters, null);
+        return getVisalloApi().execute("GET", "/workspace/vertices", parameters, ClientApiWorkspaceVertices.class);
     }
 
     /**
@@ -106,15 +115,6 @@ public abstract class WorkspaceBase extends CategoryBase {
         parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
         parameters.add(new VisalloApiBase.Parameter("userName", userName));
         getVisalloApi().execute("POST", "/workspace/shareWithMe", parameters, null);
-    }
-
-    /**
-     * @param workspaceId REQUIRED
-     */
-    public void delete(String workspaceId) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
-        getVisalloApi().execute("DELETE", "/workspace", parameters, null);
     }
 
 }

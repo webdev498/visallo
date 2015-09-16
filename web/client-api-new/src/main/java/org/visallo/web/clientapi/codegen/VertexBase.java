@@ -15,6 +15,28 @@ public abstract class VertexBase extends CategoryBase {
 
     /**
      * @param graphVertexId REQUIRED
+     */
+    public void delete(String graphVertexId) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        getVisalloApi().execute("DELETE", "/vertex", parameters, null);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param propertyName REQUIRED
+     * @param propertyKey REQUIRED
+     */
+    public void deleteProperty(String graphVertexId, String propertyName, String propertyKey) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        getVisalloApi().execute("DELETE", "/vertex/property", parameters, null);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
      * @param propertyKey REQUIRED
      */
     public void getHighlightedText(String graphVertexId, String propertyKey) {
@@ -448,28 +470,6 @@ public abstract class VertexBase extends CategoryBase {
         parameters.add(new VisalloApiBase.Parameter("limitEdgeLabel", limitEdgeLabel));
         parameters.add(new VisalloApiBase.Parameter("maxVerticesToReturn", maxVerticesToReturn));
         return getVisalloApi().execute("POST", "/vertex/find-related", parameters, ClientApiVertexFindRelatedResponse.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     */
-    public void delete(String graphVertexId) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        getVisalloApi().execute("DELETE", "/vertex", parameters, null);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param propertyKey REQUIRED
-     */
-    public void deleteProperty(String graphVertexId, String propertyName, String propertyKey) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        getVisalloApi().execute("DELETE", "/vertex/property", parameters, null);
     }
 
 }

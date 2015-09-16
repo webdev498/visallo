@@ -1,5 +1,8 @@
 package org.visallo.web.clientapi;
 
+import org.visallo.web.clientapi.model.ClientApiUser;
+import org.visallo.web.clientapi.model.ClientApiWorkspace;
+
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -8,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class UsernameOnlyAuthentication {
-    public static void logIn(VisalloApi visalloApi, String username) {
+    public static ClientApiUser logIn(VisalloApi api, String username) {
         try {
-            URL url = new URL(visalloApi.getBasePath() + "/login");
+            URL url = new URL(api.getBasePath() + "/login");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setUseCaches(false);
@@ -39,12 +42,27 @@ public class UsernameOnlyAuthentication {
                 if (sep > 0) {
                     cookieValue = cookieValue.substring(0, sep);
                 }
-                visalloApi.setSessionCookie(cookieValue);
-                return;
+                api.setSessionCookie(cookieValue);
+
+                ClientApiUser user = api.getUser().getMe();
+                api.setCsrfToken(user.getCsrfToken());
+                if (user.getCurrentWorkspaceId() != null) {
+                    api.setWorkspaceId(user.getCurrentWorkspaceId());
+                } else {
+                    List<ClientApiWorkspace> workspaces = api.getWorkspace().getAll().getWorkspaces();
+                    if (workspaces.size() > 0) {
+                        api.setWorkspaceId(workspaces.get(0).getWorkspaceId());
+                    } else {
+                        ClientApiWorkspace newWorkspace = api.getWorkspace().postCreate("Default - " + username);
+                        api.setWorkspaceId(newWorkspace.getWorkspaceId());
+                    }
+                }
+
+                return user;
             }
             throw new VisalloClientApiException("Could not find JSESSIONID cookie");
         } catch (Exception e) {
-            throw new VisalloClientApiException("Could not login: " + visalloApi.getBasePath() + " (username: " + username + ")", e);
+            throw new VisalloClientApiException("Could not login: " + api.getBasePath() + " (username: " + username + ")", e);
         }
     }
 }

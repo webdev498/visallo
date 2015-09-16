@@ -87,6 +87,9 @@ public abstract class VisalloApiBase {
             if (getWorkspaceId() != null) {
                 connection.setRequestProperty("Visallo-Workspace-Id", getWorkspaceId());
             }
+            if (httpVerb.equals("POST") && getCsrfToken() != null) {
+                connection.setRequestProperty("Visallo-CSRF-Token", getCsrfToken());
+            }
             if (getSessionCookieValue() != null) {
                 connection.setRequestProperty("Cookie", "JSESSIONID=" + getSessionCookieValue());
             }
@@ -163,6 +166,8 @@ public abstract class VisalloApiBase {
     protected abstract String getSessionCookieValue();
 
     protected abstract String getWorkspaceId();
+
+    protected abstract String getCsrfToken();
 
     private String getTargetUrl(String path) {
         return getBasePath() + path;

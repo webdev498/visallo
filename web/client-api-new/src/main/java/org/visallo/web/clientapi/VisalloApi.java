@@ -5,6 +5,7 @@ import org.visallo.web.clientapi.codegen.VisalloApiBase;
 public class VisalloApi extends VisalloApiBase {
     private String sessionCookieValue;
     private String workspaceId;
+    private String csrfToken;
 
     public VisalloApi(String basePath) {
         this(basePath, false);
@@ -30,5 +31,14 @@ public class VisalloApi extends VisalloApiBase {
 
     public void setWorkspaceId(String workspaceId) {
         this.workspaceId = workspaceId;
+    }
+
+    public void setCsrfToken(String csrfToken) {
+        this.csrfToken = csrfToken;
+    }
+
+    @Override
+    public String getCsrfToken() {
+        return csrfToken;
     }
 }

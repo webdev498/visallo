@@ -14,6 +14,28 @@ public abstract class EdgeBase extends CategoryBase {
     }
 
     /**
+     * @param edgeId REQUIRED
+     */
+    public void delete(String edgeId) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
+        getVisalloApi().execute("DELETE", "/edge", parameters, null);
+    }
+
+    /**
+     * @param propertyName REQUIRED
+     * @param propertyKey REQUIRED
+     * @param edgeId REQUIRED
+     */
+    public void deleteProperty(String propertyName, String propertyKey, String edgeId) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
+        getVisalloApi().execute("DELETE", "/edge/property", parameters, null);
+    }
+
+    /**
      * @param graphEdgeId REQUIRED
      * @param propertyName REQUIRED
      * @param propertyKey REQUIRED
@@ -165,28 +187,6 @@ public abstract class EdgeBase extends CategoryBase {
         parameters.add(new VisalloApiBase.Parameter("graphEdgeId", graphEdgeId));
         parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
         return getVisalloApi().execute("POST", "/edge/visibility", parameters, ClientApiElement.class);
-    }
-
-    /**
-     * @param edgeId REQUIRED
-     */
-    public void delete(String edgeId) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
-        getVisalloApi().execute("DELETE", "/edge", parameters, null);
-    }
-
-    /**
-     * @param propertyName REQUIRED
-     * @param propertyKey REQUIRED
-     * @param edgeId REQUIRED
-     */
-    public void deleteProperty(String propertyName, String propertyKey, String edgeId) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
-        getVisalloApi().execute("DELETE", "/edge/property", parameters, null);
     }
 
 }

@@ -20,8 +20,8 @@ public abstract class VisalloApiBase {
     private final Workspace workspace;
     private final Vertex vertex;
     private final Admin admin;
-    private final User user;
     private final LongRunningProcess longRunningProcess;
+    private final User user;
     private final Ontology ontology;
 
     public VisalloApiBase(String basePath, boolean ignoreSslErrors) {
@@ -30,8 +30,8 @@ public abstract class VisalloApiBase {
         workspace = new Workspace((VisalloApi) this);
         vertex = new Vertex((VisalloApi) this);
         admin = new Admin((VisalloApi) this);
-        user = new User((VisalloApi) this);
         longRunningProcess = new LongRunningProcess((VisalloApi) this);
+        user = new User((VisalloApi) this);
         ontology = new Ontology((VisalloApi) this);
 
         if (ignoreSslErrors) {
@@ -83,12 +83,12 @@ public abstract class VisalloApiBase {
       return admin;
     }
 
-    public User getUser() {
-      return user;
-    }
-
     public LongRunningProcess getLongRunningProcess() {
       return longRunningProcess;
+    }
+
+    public User getUser() {
+      return user;
     }
 
     public Ontology getOntology() {
@@ -116,6 +116,9 @@ public abstract class VisalloApiBase {
             connection.setDoOutput(true);
             if (getWorkspaceId() != null) {
                 connection.setRequestProperty("Visallo-Workspace-Id", getWorkspaceId());
+            }
+            if (httpVerb.equals("POST") && getCsrfToken() != null) {
+                connection.setRequestProperty("Visallo-CSRF-Token", getCsrfToken());
             }
             if (getSessionCookieValue() != null) {
                 connection.setRequestProperty("Cookie", "JSESSIONID=" + getSessionCookieValue());
@@ -193,6 +196,8 @@ public abstract class VisalloApiBase {
     protected abstract String getSessionCookieValue();
 
     protected abstract String getWorkspaceId();
+
+    protected abstract String getCsrfToken();
 
     private String getTargetUrl(String path) {
         return getBasePath() + path;
