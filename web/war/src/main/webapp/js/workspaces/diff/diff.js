@@ -211,6 +211,7 @@ define([
                                 var concept = self.ontologyConcepts.byId[diffs[0].conceptType];
                                 if (concept) {
                                     outputItem.conceptImage = concept.glyphIconHref;
+                                    outputItem.selectedConceptImage = concept.glyphIconSelectedHref || concept.glyphIconHref;
                                 }
                             }
                         } else {
@@ -496,6 +497,10 @@ define([
                             .prependTo(self.$node.find('.diff-content'))
                             .alert();
                         self.updateHeader();
+                    }
+
+                    if (type === 'undo') {
+                        self.trigger('loadCurrentWorkspace');
                     }
                 })
                 .catch(function(errorText) {
