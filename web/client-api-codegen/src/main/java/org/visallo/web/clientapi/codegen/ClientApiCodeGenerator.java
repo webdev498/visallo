@@ -20,9 +20,6 @@ public class ClientApiCodeGenerator extends CommandLineTool {
     @Parameter(names = {"--outdir"}, description = "Output direction", converter = FileConverter.class)
     private File outDir;
 
-    @Parameter(names = {"--format", "-f"}, description = "Output format")
-    private String formatClassName = JavaClientApiFormat.class.getName();
-
     public static void main(String[] args) throws Exception {
         int ret = new ClientApiCodeGenerator().run(args);
         System.exit(ret);
@@ -30,10 +27,9 @@ public class ClientApiCodeGenerator extends CommandLineTool {
 
     @Override
     protected int run() throws Exception {
-        ClientApiFormat clientApiFormat = createClientApiFormat();
         Router router = createRouter();
         Map<Route.Method, List<Route>> routes = router.getApp().getRouter().getRoutes();
-        clientApiFormat.write(routes, outDir);
+        new JavaClientApiFormat().write(routes, outDir);
         return 0;
     }
 
@@ -41,10 +37,5 @@ public class ClientApiCodeGenerator extends CommandLineTool {
         ServletContext servletContext = new ContextHandler.NoContext();
         servletContext.setAttribute(Injector.class.getName(), InjectHelper.getInjector());
         return new Router(servletContext);
-    }
-
-    private ClientApiFormat createClientApiFormat() throws ClassNotFoundException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
-        Class<? extends ClientApiFormat> clientApiFormatClass = Class.forName(formatClassName).asSubclass(ClientApiFormat.class);
-        return clientApiFormatClass.getConstructor().newInstance();
     }
 }

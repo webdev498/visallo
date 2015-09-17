@@ -19,7 +19,6 @@
         <module>war</module>
         <module>plugins</module>
         <module>client-api</module>
-        <module>client-api-new</module>
         <module>client-api-codegen</module>
         <module>web-plugin-base</module>
     </modules>
