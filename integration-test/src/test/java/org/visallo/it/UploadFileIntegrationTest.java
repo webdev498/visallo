@@ -1,17 +1,17 @@
 package org.visallo.it;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.visallo.core.ingest.FileImport;
-import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.core.model.graph.GraphRepository;
-import org.visallo.tikaTextExtractor.TikaTextExtractorGraphPropertyWorker;
-import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.codegen.ApiException;
-import org.visallo.web.clientapi.model.*;
-import org.visallo.web.clientapi.util.ObjectMapperFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.vertexium.type.GeoPoint;
+import org.visallo.core.ingest.FileImport;
+import org.visallo.core.model.graph.GraphRepository;
+import org.visallo.core.model.properties.VisalloProperties;
+import org.visallo.tikaTextExtractor.TikaTextExtractorGraphPropertyWorker;
+import org.visallo.web.clientapi.VisalloApi;
+import org.visallo.web.clientapi.VisalloClientApiException;
+import org.visallo.web.clientapi.model.*;
+import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class UploadFileIntegrationTest extends TestBase {
     private String artifactVertexId;
 
     @Test
-    public void testUploadFile() throws IOException, ApiException {
+    public void testUploadFile() throws IOException, VisalloClientApiException {
         testOntology();
         importArtifactAsUser1();
         assertUser1CanSeeInSearch();
@@ -43,10 +43,10 @@ public class UploadFileIntegrationTest extends TestBase {
         testSetTitleAndCheckConfidence();
     }
 
-    private void testOntology() throws ApiException {
+    private void testOntology() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
-        ClientApiOntology ontology = visalloApi.getOntologyApi().get();
+        ClientApiOntology ontology = visalloApi.getOntology().get();
 
         boolean foundPersonConcept = false;
         for (ClientApiOntology.Concept concept : ontology.getConcepts()) {
@@ -62,13 +62,13 @@ public class UploadFileIntegrationTest extends TestBase {
         visalloApi.logout();
     }
 
-    public void importArtifactAsUser1() throws ApiException, IOException {
+    public void importArtifactAsUser1() throws VisalloClientApiException, IOException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
         addUserAuths(visalloApi, USERNAME_TEST_USER_1, "auth1");
         addUserAuths(visalloApi, USERNAME_TEST_USER_1, "auth2");
-        workspaceId = visalloApi.getCurrentWorkspaceId();
+        workspaceId = visalloApi.getWorkspaceId();
 
-        ClientApiArtifactImportResponse artifact = visalloApi.getVertexApi().importFile("auth1", "test.txt", new ByteArrayInputStream(FILE_CONTENTS.getBytes()));
+        ClientApiArtifactImportResponse artifact = visalloApi.getVertex().postImport("auth1", "test.txt", new ByteArrayInputStream(FILE_CONTENTS.getBytes()));
         assertEquals(1, artifact.getVertexIds().size());
         artifactVertexId = artifact.getVertexIds().get(0);
         assertNotNull(artifactVertexId);
@@ -80,10 +80,10 @@ public class UploadFileIntegrationTest extends TestBase {
         visalloApi.logout();
     }
 
-    private void assertUser1CanSeeInSearch() throws ApiException {
+    private void assertUser1CanSeeInSearch() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
-        ClientApiVertexSearchResponse searchResults = visalloApi.getVertexApi().vertexSearch("*");
+        ClientApiVertexSearchResponse searchResults = visalloApi.getVertex().getSearch("*");
         LOGGER.debug("searchResults: %s", searchResults.toString());
         assertEquals(1, searchResults.getVertices().size());
         ClientApiVertex searchResult = searchResults.getVertices().get(0);
@@ -92,73 +92,73 @@ public class UploadFileIntegrationTest extends TestBase {
         visalloApi.logout();
     }
 
-    public void assertUser2DoesNotHaveAccessToUser1sWorkspace() throws ApiException {
+    public void assertUser2DoesNotHaveAccessToUser1sWorkspace() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_2);
         addUserAuths(visalloApi, USERNAME_TEST_USER_2, "auth1");
-        user2Id = visalloApi.getCurrentUserId();
+        user2Id = visalloApi.getUserId();
 
         visalloApi.setWorkspaceId(workspaceId);
         try {
-            visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+            visalloApi.getVertex().getProperties(artifactVertexId);
             assertTrue("should have failed", false);
-        } catch (ApiException ex) {
+        } catch (VisalloClientApiException ex) {
             // expected
         }
 
         visalloApi.logout();
     }
 
-    public void grantUser2AccessToWorkspace() throws ApiException {
+    public void grantUser2AccessToWorkspace() throws VisalloClientApiException {
         VisalloApi visalloApi;
         visalloApi = login(USERNAME_TEST_USER_1);
         visalloApi.setWorkspaceId(workspaceId);
-        visalloApi.getWorkspaceApi().setUserAccess(user2Id, WorkspaceAccess.READ);
+        visalloApi.getWorkspace().setUserAccess(user2Id, WorkspaceAccess.READ);
         visalloApi.logout();
     }
 
-    public void assertUser2HasAccessToWorkspace() throws ApiException {
+    public void assertUser2HasAccessToWorkspace() throws VisalloClientApiException {
         VisalloApi visalloApi;
         visalloApi = login(USERNAME_TEST_USER_2);
         visalloApi.setWorkspaceId(workspaceId);
-        ClientApiElement artifactVertex = visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+        ClientApiElement artifactVertex = visalloApi.getVertex().getProperties(artifactVertexId);
         assertNotNull(artifactVertex);
         visalloApi.logout();
     }
 
-    public void assertUser3DoesNotHaveAccessToWorkspace() throws ApiException {
+    public void assertUser3DoesNotHaveAccessToWorkspace() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_3);
         visalloApi.setWorkspaceId(workspaceId);
         try {
-            visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+            visalloApi.getVertex().getProperties(artifactVertexId);
             assertTrue("should have failed", false);
-        } catch (ApiException ex) {
+        } catch (VisalloClientApiException ex) {
             // expected
         }
         visalloApi.logout();
     }
 
-    private void publishArtifact() throws ApiException {
+    private void publishArtifact() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
         assertPublishAll(visalloApi, 11);
         visalloApi.logout();
     }
 
-    private void assertUser3StillHasNoAccessToArtifactBecauseAuth1Visibility() throws ApiException {
+    private void assertUser3StillHasNoAccessToArtifactBecauseAuth1Visibility() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_3);
-        ClientApiElement vertex = visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+        ClientApiElement vertex = visalloApi.getVertex().getProperties(artifactVertexId);
         assertNull("should have failed", vertex);
         visalloApi.logout();
     }
 
-    private void assertUser3HasAccessWithAuth1Visibility() throws ApiException {
+    private void assertUser3HasAccessWithAuth1Visibility() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_3);
         addUserAuths(visalloApi, USERNAME_TEST_USER_3, "auth1");
         assertArtifactCorrect(visalloApi, false, "auth1");
         visalloApi.logout();
     }
 
-    public void assertArtifactCorrect(VisalloApi visalloApi, boolean hasWorkspaceIdInVisibilityJson, String expectedVisibilitySource) throws ApiException {
-        ClientApiElement artifactVertex = visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+    public void assertArtifactCorrect(VisalloApi visalloApi, boolean hasWorkspaceIdInVisibilityJson, String expectedVisibilitySource) throws VisalloClientApiException {
+        ClientApiElement artifactVertex = visalloApi.getVertex().getProperties(artifactVertexId);
         assertNotNull("could not get vertex: " + artifactVertexId, artifactVertex);
         assertEquals(expectedVisibilitySource, artifactVertex.getVisibilitySource());
         assertEquals(artifactVertexId, artifactVertex.getId());
@@ -182,62 +182,62 @@ public class UploadFileIntegrationTest extends TestBase {
         assertHasProperty(artifactVertex.getProperties(), FileImport.MULTI_VALUE_KEY, VisalloProperties.TITLE.getPropertyName(), "test.txt");
         assertHasProperty(artifactVertex.getProperties(), "", VisalloProperties.CONCEPT_TYPE.getPropertyName(), "http://visallo.org/test#document");
 
-        String highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+        String highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         assertNotNull(highlightedText);
         LOGGER.info("highlightedText: %s", highlightedText);
         assertTrue("highlightedText did not contain string: " + highlightedText, highlightedText.contains("class=\"entity\""));
         assertTrue("highlightedText did not contain string: " + highlightedText, highlightedText.contains(TestOntology.CONCEPT_PERSON));
     }
 
-    private void assertRawRoute() throws ApiException, IOException {
+    private void assertRawRoute() throws VisalloClientApiException, IOException {
         byte[] expected = FILE_CONTENTS.getBytes();
 
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
-        byte[] found = IOUtils.toByteArray(visalloApi.getVertexApi().getRaw(artifactVertexId));
+        byte[] found = IOUtils.toByteArray(visalloApi.getVertex().getRaw(artifactVertexId));
         assertArrayEquals(expected, found);
 
         visalloApi.logout();
     }
 
-    private void alterVisibilityOfArtifactToAuth2() throws ApiException {
+    private void alterVisibilityOfArtifactToAuth2() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
-        visalloApi.getVertexApi().setVisibility(artifactVertexId, "auth2");
+        visalloApi.getVertex().postVisibility(artifactVertexId, "auth2");
         assertArtifactCorrect(visalloApi, false, "auth2");
 
         visalloApi.logout();
     }
 
-    private void assertUser2DoesNotHaveAccessToAuth2() throws ApiException {
+    private void assertUser2DoesNotHaveAccessToAuth2() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_2);
 
-        visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+        visalloApi.getVertex().getProperties(artifactVertexId);
 
         visalloApi.logout();
     }
 
-    private void testGeoSearch() throws ApiException, JsonProcessingException {
+    private void testGeoSearch() throws VisalloClientApiException, JsonProcessingException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
         String geoPoint = ObjectMapperFactory.getInstance().writeValueAsString(new GeoPoint(38.8951, -77.0367));
-        visalloApi.getVertexApi().setProperty(artifactVertexId, "", TestOntology.PROPERTY_GEO_LOCATION.getPropertyName(), geoPoint, "", "justification", null, null);
+        visalloApi.getVertex().postProperty(artifactVertexId, TestOntology.PROPERTY_GEO_LOCATION.getPropertyName(), "", geoPoint, null, "", null, null, null, "justification");
 
-        ClientApiVertexSearchResponse geoSearchResults = visalloApi.getVertexApi().vertexGeoSearch(38.8951, -77.0367, 1000.0);
+        ClientApiVertexSearchResponse geoSearchResults = visalloApi.getVertex().getGeoSearch(38.8951, -77.0367, 1000.0);
         assertEquals(1, geoSearchResults.getVertices().size());
 
         visalloApi.logout();
     }
 
-    private void testSetTitleAndCheckConfidence() throws ApiException {
+    private void testSetTitleAndCheckConfidence() throws VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
 
-        ClientApiWorkspace newWorkspace = visalloApi.getWorkspaceApi().create();
+        ClientApiWorkspace newWorkspace = visalloApi.getWorkspace().postCreate("workspace1");
         visalloApi.setWorkspaceId(newWorkspace.getWorkspaceId());
 
-        visalloApi.getVertexApi().setProperty(artifactVertexId, "", VisalloProperties.TITLE.getPropertyName(), "New Title", "", "new title");
+        visalloApi.getVertex().postProperty(artifactVertexId, VisalloProperties.TITLE.getPropertyName(), "", "New Title", null, "", null, null, null, "new title");
 
-        ClientApiElement artifactVertex = visalloApi.getVertexApi().getByVertexId(artifactVertexId);
+        ClientApiElement artifactVertex = visalloApi.getVertex().getProperties(artifactVertexId);
         boolean foundNewTitle = false;
         for (ClientApiProperty prop : artifactVertex.getProperties()) {
             if (prop.getKey().equals("") && prop.getName().equals(VisalloProperties.TITLE.getPropertyName())) {

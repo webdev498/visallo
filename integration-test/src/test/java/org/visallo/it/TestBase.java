@@ -1,21 +1,21 @@
 package org.visallo.it;
 
 import com.google.common.base.Throwables;
+import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.visallo.core.config.VisalloTestClusterConfigurationLoader;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.test.VisalloTestCluster;
+import org.visallo.web.clientapi.UsernameOnlyAuthentication;
 import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.UserNameOnlyVisalloApi;
-import org.visallo.web.clientapi.codegen.ApiException;
+import org.visallo.web.clientapi.VisalloClientApiException;
 import org.visallo.web.clientapi.model.ClientApiProperty;
 import org.visallo.web.clientapi.model.ClientApiWorkspaceDiff;
 import org.visallo.web.clientapi.model.ClientApiWorkspacePublishResponse;
 import org.visallo.web.clientapi.model.ClientApiWorkspaceUndoResponse;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -30,7 +30,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +46,7 @@ public class TestBase {
     public static final String TEST_MULTI_VALUE_KEY = TestBase.class.getName();
 
     @Before
-    public void before() throws ApiException, IOException, NoSuchAlgorithmException, KeyManagementException, InterruptedException {
+    public void before() throws VisalloClientApiException, IOException, NoSuchAlgorithmException, KeyManagementException, InterruptedException {
         VisalloTestClusterConfigurationLoader.set("repository.ontology.owl.1.iri", "http://visallo.org/test");
         VisalloTestClusterConfigurationLoader.set("repository.ontology.owl.1.dir", new File(VisalloTestCluster.getVisalloRootDir(), "integration-test/src/test/resources/org/visallo/it/").getAbsolutePath());
 
@@ -105,18 +104,15 @@ public class TestBase {
         visalloTestCluster.shutdown();
     }
 
-    public void addUserAuths(VisalloApi visalloApi, String username, String... authorizations) throws ApiException {
+    public void addUserAuths(VisalloApi visalloApi, String username, String... authorizations) throws VisalloClientApiException {
         for (String auth : authorizations) {
-            Map<String, String> queryParameters = new HashMap<>();
-            queryParameters.put("user-name", username);
-            queryParameters.put("auth", auth);
-            visalloApi.invokeAPI("/user/auth/add", "POST", queryParameters, null, null, null, null);
+            visalloApi.getUser().postAuthAdd(username, auth);
         }
     }
 
-    VisalloApi login(String username) throws ApiException {
-        UserNameOnlyVisalloApi visalloApi = new UserNameOnlyVisalloApi("https://localhost:" + httpsPort, username);
-        visalloApi.loginAndGetCurrentWorkspace();
+    VisalloApi login(String username) throws VisalloClientApiException {
+        VisalloApi visalloApi = new VisalloApi("https://localhost:" + httpsPort, true);
+        UsernameOnlyAuthentication.logIn(visalloApi, username);
         return visalloApi;
     }
 
@@ -159,30 +155,30 @@ public class TestBase {
         assertEquals("property value does not match for property " + propertyKey + ":" + propertyName, expectedValue, value);
     }
 
-    protected void assertPublishAll(VisalloApi visalloApi, int expectedDiffsBeforePublish) throws ApiException {
-        ClientApiWorkspaceDiff diff = visalloApi.getWorkspaceApi().getDiff();
+    protected void assertPublishAll(VisalloApi visalloApi, int expectedDiffsBeforePublish) throws VisalloClientApiException {
+        ClientApiWorkspaceDiff diff = visalloApi.getWorkspace().getDiff();
         LOGGER.info("diff before publish: %s", diff.toString());
         assertEquals(expectedDiffsBeforePublish, diff.getDiffs().size());
-        ClientApiWorkspacePublishResponse publishAllResult = visalloApi.getWorkspaceApi().publishAll(diff.getDiffs());
+        ClientApiWorkspacePublishResponse publishAllResult = visalloApi.getWorkspace().postPublishAll(diff.getDiffs());
         LOGGER.info("publish all results: %s", publishAllResult.toString());
         assertTrue("publish all failed: " + publishAllResult, publishAllResult.isSuccess());
         assertEquals("publish all expected 0 failures: " + publishAllResult, 0, publishAllResult.getFailures().size());
 
-        diff = visalloApi.getWorkspaceApi().getDiff();
+        diff = visalloApi.getWorkspace().getDiff();
         LOGGER.info("diff after publish: %s", diff.toString());
         assertEquals(0, diff.getDiffs().size());
     }
 
-    protected void assertUndoAll(VisalloApi visalloApi, int expectedDiffsBeforeUndo) throws ApiException {
-        ClientApiWorkspaceDiff diff = visalloApi.getWorkspaceApi().getDiff();
+    protected void assertUndoAll(VisalloApi visalloApi, int expectedDiffsBeforeUndo) throws VisalloClientApiException {
+        ClientApiWorkspaceDiff diff = visalloApi.getWorkspace().getDiff();
         LOGGER.info("diff before undo: %s", diff.toString());
         assertEquals(expectedDiffsBeforeUndo, diff.getDiffs().size());
-        ClientApiWorkspaceUndoResponse undoAllResult = visalloApi.getWorkspaceApi().undoAll(diff.getDiffs());
+        ClientApiWorkspaceUndoResponse undoAllResult = visalloApi.getWorkspace().postUndoAll(diff.getDiffs());
         LOGGER.info("undo all results: %s", undoAllResult.toString());
         assertTrue("undo all failed: " + undoAllResult, undoAllResult.isSuccess());
         assertEquals("undo all expected 0 failures: " + undoAllResult, 0, undoAllResult.getFailures().size());
 
-        diff = visalloApi.getWorkspaceApi().getDiff();
+        diff = visalloApi.getWorkspace().getDiff();
         LOGGER.info("diff after undo: %s", diff.toString());
         assertEquals(0, diff.getDiffs().size());
     }

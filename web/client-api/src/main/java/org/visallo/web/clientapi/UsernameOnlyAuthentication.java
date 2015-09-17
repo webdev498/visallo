@@ -45,7 +45,7 @@ public class UsernameOnlyAuthentication {
                 api.setSessionCookie(cookieValue);
 
                 ClientApiUser user = api.getUser().getMe();
-                api.setCsrfToken(user.getCsrfToken());
+                api.setUser(user);
                 if (user.getCurrentWorkspaceId() != null) {
                     api.setWorkspaceId(user.getCurrentWorkspaceId());
                 } else {

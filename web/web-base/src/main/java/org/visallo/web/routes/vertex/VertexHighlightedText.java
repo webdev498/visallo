@@ -40,7 +40,7 @@ public class VertexHighlightedText implements ParameterizedHandler {
     }
 
     @Handle
-    public void handle(
+    public String handle(
             @Required(name = "graphVertexId") String graphVertexId,
             @Required(name = "propertyKey") String propertyKey,
             @ActiveWorkspaceId String workspaceId,
@@ -67,8 +67,8 @@ public class VertexHighlightedText implements ParameterizedHandler {
                 highlightedText = entityHighlighter.getHighlightedText(text, termMentions, workspaceId, authorizationsWithTermMention);
             }
 
-            response.respondWithHtml(highlightedText);
-            return;
+            response.setContentType("text/html");
+            return highlightedText;
         }
 
         VideoTranscript videoTranscript = MediaVisalloProperties.VIDEO_TRANSCRIPT.getPropertyValue(artifactVertex, propertyKey);
@@ -76,8 +76,8 @@ public class VertexHighlightedText implements ParameterizedHandler {
             LOGGER.debug("returning video transcript for vertexId:%s property:%s", artifactVertex.getId(), propertyKey);
             Iterable<Vertex> termMentions = termMentionRepository.findBySourceGraphVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
             VideoTranscript highlightedVideoTranscript = entityHighlighter.getHighlightedVideoTranscript(videoTranscript, termMentions, workspaceId, authorizations);
-            response.respondWithJson(highlightedVideoTranscript.toJson());
-            return;
+            response.setContentType("application/json");
+            return highlightedVideoTranscript.toJson().toString();
         }
 
         videoTranscript = JsonSerializer.getSynthesisedVideoTranscription(artifactVertex, propertyKey);
@@ -85,10 +85,10 @@ public class VertexHighlightedText implements ParameterizedHandler {
             LOGGER.debug("returning synthesised video transcript for vertexId:%s property:%s", artifactVertex.getId(), propertyKey);
             Iterable<Vertex> termMentions = termMentionRepository.findBySourceGraphVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
             VideoTranscript highlightedVideoTranscript = entityHighlighter.getHighlightedVideoTranscript(videoTranscript, termMentions, workspaceId, authorizationsWithTermMention);
-            response.respondWithJson(highlightedVideoTranscript.toJson());
-            return;
+            response.setContentType("application/json");
+            return highlightedVideoTranscript.toJson().toString();
         }
 
-        response.respondWithNotFound();
+        return null;
     }
 }

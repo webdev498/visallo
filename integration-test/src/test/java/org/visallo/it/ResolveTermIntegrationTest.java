@@ -1,10 +1,10 @@
 package org.visallo.it;
 
+import org.junit.Test;
 import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.tikaTextExtractor.TikaTextExtractorGraphPropertyWorker;
 import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.codegen.ApiException;
-import org.junit.Test;
+import org.visallo.web.clientapi.VisalloClientApiException;
 import org.visallo.web.clientapi.model.*;
 
 import java.io.ByteArrayInputStream;
@@ -17,7 +17,7 @@ public class ResolveTermIntegrationTest extends TestBase {
     private ClientApiElement joeFernerVertex;
 
     @Test
-    public void testResolveTerm() throws IOException, ApiException {
+    public void testResolveTerm() throws IOException, VisalloClientApiException {
         setupData();
 
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
@@ -45,19 +45,19 @@ public class ResolveTermIntegrationTest extends TestBase {
         visalloApi.logout();
     }
 
-    public void setupData() throws ApiException, IOException {
+    public void setupData() throws VisalloClientApiException, IOException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
         addUserAuths(visalloApi, USERNAME_TEST_USER_1, "auth1");
 
-        ClientApiArtifactImportResponse artifact = visalloApi.getVertexApi().importFile("auth1", "test.txt", new ByteArrayInputStream("Joe Ferner knows David Singley.".getBytes()));
+        ClientApiArtifactImportResponse artifact = visalloApi.getVertex().postImport("auth1", "test.txt", new ByteArrayInputStream("Joe Ferner knows David Singley.".getBytes()));
         assertEquals(1, artifact.getVertexIds().size());
         artifactVertexId = artifact.getVertexIds().get(0);
         assertNotNull(artifactVertexId);
 
         visalloTestCluster.processGraphPropertyQueue();
 
-        joeFernerVertex = visalloApi.getVertexApi().create(TestOntology.CONCEPT_PERSON, "auth1", "justification");
-        visalloApi.getVertexApi().setProperty(joeFernerVertex.getId(), TEST_MULTI_VALUE_KEY, VisalloProperties.TITLE.getPropertyName(), "Joe Ferner", "auth1", "test", null, null);
+        joeFernerVertex = visalloApi.getVertex().postNew(null, TestOntology.CONCEPT_PERSON, "auth1", null, "justification");
+        visalloApi.getVertex().postProperty(joeFernerVertex.getId(), VisalloProperties.TITLE.getPropertyName(), TEST_MULTI_VALUE_KEY, "Joe Ferner", null, "auth1", "test", null, null, null);
 
         visalloTestCluster.processGraphPropertyQueue();
 
@@ -66,10 +66,10 @@ public class ResolveTermIntegrationTest extends TestBase {
         visalloApi.logout();
     }
 
-    public void resolveTerm(VisalloApi visalloApi) throws ApiException {
+    public void resolveTerm(VisalloApi visalloApi) throws VisalloClientApiException {
         int entityStartOffset = "".length();
         int entityEndOffset = entityStartOffset + "Joe Ferner".length();
-        visalloApi.getVertexApi().resolveTerm(
+        visalloApi.getVertex().postResolveTerm(
                 artifactVertexId,
                 TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY,
                 entityStartOffset, entityEndOffset,
@@ -78,18 +78,19 @@ public class ResolveTermIntegrationTest extends TestBase {
                 "auth1",
                 joeFernerVertex.getId(),
                 "test",
-                null);
+                null
+        );
     }
 
-    public void assertHighlightedTextUpdatedWithResolvedEntity(VisalloApi visalloApi) throws ApiException {
-        String highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+    public void assertHighlightedTextUpdatedWithResolvedEntity(VisalloApi visalloApi) throws VisalloClientApiException {
+        String highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         LOGGER.info("%s", highlightedText);
         assertTrue("highlightedText did not contain string: " + highlightedText, highlightedText.contains("resolvedToVertexId&quot;:&quot;" + joeFernerVertex.getId() + "&quot;"));
     }
 
-    public void assertDiff(VisalloApi visalloApi) throws ApiException {
+    public void assertDiff(VisalloApi visalloApi) throws VisalloClientApiException {
         ClientApiWorkspaceDiff diff;
-        diff = visalloApi.getWorkspaceApi().getDiff();
+        diff = visalloApi.getWorkspace().getDiff();
         LOGGER.info("assertDiff: %s", diff.toString());
         assertEquals(2, diff.getDiffs().size());
         String edgeId = null;
@@ -112,23 +113,23 @@ public class ResolveTermIntegrationTest extends TestBase {
         assertTrue("foundEdgeVisibilityJsonDiffItem", foundEdgeVisibilityJsonDiffItem);
     }
 
-    private void assertHighlightedTextDoesNotContainResolvedEntityForOtherUser(VisalloApi visalloApi) throws ApiException {
-        String highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+    private void assertHighlightedTextDoesNotContainResolvedEntityForOtherUser(VisalloApi visalloApi) throws VisalloClientApiException {
+        String highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         LOGGER.info("%s", highlightedText);
         assertFalse("highlightedText contained string: " + highlightedText, highlightedText.contains("resolvedToVertexId&quot;:&quot;" + joeFernerVertex.getId() + "&quot;"));
     }
 
-    private void assertHighlightedTextContainResolvedEntityForOtherUser(VisalloApi visalloApi) throws ApiException {
-        String highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+    private void assertHighlightedTextContainResolvedEntityForOtherUser(VisalloApi visalloApi) throws VisalloClientApiException {
+        String highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         LOGGER.info("%s", highlightedText);
         assertTrue("highlightedText does not contain string: " + highlightedText, highlightedText.contains("resolvedToVertexId&quot;:&quot;" + joeFernerVertex.getId() + "&quot;"));
     }
 
-    private void resolveAndUnresolveTerm(VisalloApi visalloApi) throws ApiException {
+    private void resolveAndUnresolveTerm(VisalloApi visalloApi) throws VisalloClientApiException {
         int entityStartOffset = "Joe Ferner knows ".length();
         int entityEndOffset = entityStartOffset + "David Singley".length();
         String sign = "David Singley";
-        visalloApi.getVertexApi().resolveTerm(
+        visalloApi.getVertex().postResolveTerm(
                 artifactVertexId,
                 TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY,
                 entityStartOffset, entityEndOffset,
@@ -137,27 +138,28 @@ public class ResolveTermIntegrationTest extends TestBase {
                 "auth1",
                 joeFernerVertex.getId(),
                 "test",
-                null);
+                null
+        );
 
-        ClientApiTermMentionsResponse termMentions = visalloApi.getVertexApi().getTermMentions(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY, VisalloProperties.TEXT.getPropertyName());
+        ClientApiTermMentionsResponse termMentions = visalloApi.getVertex().getTermMentions(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY, VisalloProperties.TEXT.getPropertyName());
         LOGGER.info("termMentions: %s", termMentions.toString());
         assertEquals(4, termMentions.getTermMentions().size());
         ClientApiElement davidSingleyTermMention = findDavidSingleyTermMention(termMentions);
         LOGGER.info("termMention: %s", davidSingleyTermMention.toString());
 
-        String highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+        String highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         LOGGER.info("highlightedText: %s", highlightedText);
         ClientApiProperty davidSingleyEdgeId = getProperty(davidSingleyTermMention.getProperties(), "", "http://visallo.org/termMention#resolvedEdgeId");
         String davidSingleyEdgeIdValue = (String) davidSingleyEdgeId.getValue();
         assertTrue("highlightedText invalid: " + highlightedText, highlightedText.contains(">David Singley<") && highlightedText.contains(davidSingleyEdgeIdValue));
 
-        visalloApi.getVertexApi().unresolveTerm(davidSingleyTermMention.getId());
+        visalloApi.getVertex().postUnresolveTerm(davidSingleyTermMention.getId());
 
-        termMentions = visalloApi.getVertexApi().getTermMentions(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY, VisalloProperties.TEXT.getPropertyName());
+        termMentions = visalloApi.getVertex().getTermMentions(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY, VisalloProperties.TEXT.getPropertyName());
         LOGGER.info("termMentions: %s", termMentions.toString());
         assertEquals(3, termMentions.getTermMentions().size());
 
-        highlightedText = visalloApi.getVertexApi().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
+        highlightedText = visalloApi.getVertex().getHighlightedText(artifactVertexId, TikaTextExtractorGraphPropertyWorker.MULTI_VALUE_KEY);
         LOGGER.info("highlightedText: %s", highlightedText);
         assertTrue("highlightedText invalid: " + highlightedText, highlightedText.contains(">David Singley<") && !highlightedText.contains(davidSingleyEdgeIdValue));
     }

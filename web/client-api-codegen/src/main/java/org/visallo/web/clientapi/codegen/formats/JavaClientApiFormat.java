@@ -12,6 +12,8 @@ import com.v5analytics.webster.annotations.Optional;
 import com.v5analytics.webster.annotations.Required;
 import org.visallo.web.clientapi.codegen.util.NameUtil;
 import org.visallo.web.clientapi.model.ClientApiSuccess;
+import org.visallo.web.parameterProviders.JustificationText;
+import org.visallo.web.parameterProviders.JustificationTextParameterProviderFactory;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -192,16 +194,33 @@ public class JavaClientApiFormat extends ClientApiFormat {
                 Class<?> parameterType = parameterTypes[i];
                 Annotation[] parameterAnnotations = parametersAnnotations[i];
                 String parameterName = getParameterName(parameterAnnotations);
-                if (parameterName == null) {
+                String simplifiedParameterName = parameterName;
+                if (simplifiedParameterName == null) {
                     continue;
                 }
-                parameterName = NameUtil.toFieldName(parameterName);
-                if (parameterType.isArray() && !parameterName.endsWith("s")) {
-                    parameterName += "s";
+                simplifiedParameterName = NameUtil.toFieldName(simplifiedParameterName);
+                if (parameterType.isArray() && !simplifiedParameterName.endsWith("s")) {
+                    simplifiedParameterName += "s";
                 }
-                parameterDeclarations.add(parameterType.getSimpleName() + " " + parameterName);
+                boolean required = isRequired(parameterAnnotations);
+                Optional optionalAnnotation = getOptionalAnnotation(parameterAnnotations);
+                String annotation = (required ? "@Required" : "@Optional") + "(name = \"" + parameterName + "\"";
+                if (optionalAnnotation != null && !optionalAnnotation.defaultValue().equals(Optional.NOT_SET)) {
+                    annotation += ", defaultValue = \"" + optionalAnnotation.defaultValue() + "\"";
+                }
+                annotation += ")";
+                parameterDeclarations.add(annotation + " " + parameterType.getSimpleName() + " " + simplifiedParameterName);
             }
-            return Joiner.on(", ").join(parameterDeclarations);
+            return Joiner.on(",\n        ").join(parameterDeclarations);
+        }
+
+        private Optional getOptionalAnnotation(Annotation[] parameterAnnotations) {
+            for (Annotation parameterAnnotation : parameterAnnotations) {
+                if (parameterAnnotation instanceof Optional) {
+                    return (Optional) parameterAnnotation;
+                }
+            }
+            return null;
         }
 
         private boolean isRequired(Annotation[] parameterAnnotations) {
@@ -223,6 +242,9 @@ public class JavaClientApiFormat extends ClientApiFormat {
                 }
                 if (parameterAnnotation instanceof Optional) {
                     return ((Optional) parameterAnnotation).name();
+                }
+                if (parameterAnnotation instanceof JustificationText) {
+                    return JustificationTextParameterProviderFactory.JUSTIFICATION_TEXT;
                 }
             }
             return null;

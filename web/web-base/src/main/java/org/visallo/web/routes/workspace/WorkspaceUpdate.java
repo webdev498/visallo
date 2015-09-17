@@ -49,7 +49,7 @@ public class WorkspaceUpdate implements ParameterizedHandler {
     @Handle
     public ClientApiSuccess handle(
             HttpServletRequest request,
-            @Required(name = "data") String data,
+            @Required(name = "data") ClientApiWorkspaceUpdateData updateData,
             @ActiveWorkspaceId String workspaceId,
             ResourceBundle resourceBundle,
             User user,
@@ -59,8 +59,6 @@ public class WorkspaceUpdate implements ParameterizedHandler {
         if (workspace == null) {
             throw new VisalloResourceNotFoundException("Could not find workspace: " + workspaceId);
         }
-
-        ClientApiWorkspaceUpdateData updateData = ObjectMapperFactory.getInstance().readValue(data, ClientApiWorkspaceUpdateData.class);
 
         if (updateData.getTitle() != null) {
             setTitle(workspace, updateData.getTitle(), user);

@@ -20,8 +20,26 @@
     <owl:Ontology rdf:about="http://visallo.org/test">
         <owl:imports rdf:resource="http://visallo.org"/>
     </owl:Ontology>
-    
 
+
+    <!-- http://visallo.org/media#yAxisFlipped -->
+
+    <owl:DatatypeProperty rdf:about="http://visallo.org/media#yAxisFlipped">
+        <rdfs:label xml:lang="en">Y Axis Flipped</rdfs:label>
+        <visallo:intent>media.yAxisFlipped</visallo:intent>
+        <visallo:userVisible>false</visallo:userVisible>
+        <rdfs:domain rdf:resource="http://visallo.org/dev#image"/>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+    </owl:DatatypeProperty>
+
+    <!-- http://visallo.org/test#zipCode -->
+
+    <owl:Class rdf:about="http://visallo.org/test#zipCode">
+        <rdfs:label xml:lang="en">Zip Code</rdfs:label>
+        <visallo:intent>zipCode</visallo:intent>
+        <visallo:glyphIconFileName xml:lang="en">glyphicons_020_home@2x.png</visallo:glyphIconFileName>
+        <visallo:color xml:lang="en">rgb(219, 63, 219)</visallo:color>
+    </owl:Class>
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////

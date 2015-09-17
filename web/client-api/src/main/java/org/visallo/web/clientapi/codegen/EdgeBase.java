@@ -4,9 +4,11 @@ import org.json.JSONObject;
 import org.visallo.web.clientapi.CategoryBase;
 import org.visallo.web.clientapi.VisalloApi;
 import org.visallo.web.clientapi.model.*;
+import org.visallo.web.clientapi.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.InputStream;
 
 public abstract class EdgeBase extends CategoryBase {
     public EdgeBase(VisalloApi visalloApi) {
@@ -15,8 +17,136 @@ public abstract class EdgeBase extends CategoryBase {
 
     /**
      * @param edgeId REQUIRED
+     * @param propertyName REQUIRED
+     * @param value REQUIRED
+     * @param visibilitySource REQUIRED
+     * @param sourceInfo OPTIONAL
+     * @param propertyKey OPTIONAL
+     * @param metadata OPTIONAL
+     * @param justificationText OPTIONAL
      */
-    public void delete(String edgeId) {
+    public void postProperty(
+        @Required(name = "edgeId") String edgeId,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "value") String value,
+        @Required(name = "visibilitySource") String visibilitySource,
+        @Optional(name = "sourceInfo") String sourceInfo,
+        @Optional(name = "propertyKey") String propertyKey,
+        @Optional(name = "metadata") String metadata,
+        @Optional(name = "justificationText") String justificationText
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("value", value));
+        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
+        parameters.add(new VisalloApiBase.Parameter("sourceInfo", sourceInfo));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("metadata", metadata));
+        parameters.add(new VisalloApiBase.Parameter("justificationText", justificationText));
+        getVisalloApi().execute("POST", "/edge/property", parameters, null);
+    }
+
+    /**
+     * @param edgeId REQUIRED
+     * @param propertyName REQUIRED
+     * @param value REQUIRED
+     * @param visibilitySource REQUIRED
+     * @param sourceInfo OPTIONAL
+     * @param propertyKey OPTIONAL
+     * @param metadata OPTIONAL
+     * @param justificationText OPTIONAL
+     */
+    public void postComment(
+        @Required(name = "edgeId") String edgeId,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "value") String value,
+        @Required(name = "visibilitySource") String visibilitySource,
+        @Optional(name = "sourceInfo") String sourceInfo,
+        @Optional(name = "propertyKey") String propertyKey,
+        @Optional(name = "metadata") String metadata,
+        @Optional(name = "justificationText") String justificationText
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("value", value));
+        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
+        parameters.add(new VisalloApiBase.Parameter("sourceInfo", sourceInfo));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("metadata", metadata));
+        parameters.add(new VisalloApiBase.Parameter("justificationText", justificationText));
+        getVisalloApi().execute("POST", "/edge/comment", parameters, null);
+    }
+
+    /**
+     * @param edgeIds REQUIRED
+     */
+    public ClientApiEdgesExistsResponse postExists(
+        @Required(name = "edgeIds[]") String[] edgeIds
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("edgeIds", edgeIds));
+        return getVisalloApi().execute("POST", "/edge/exists", parameters, ClientApiEdgesExistsResponse.class);
+    }
+
+    /**
+     * @param edgeIds REQUIRED
+     */
+    public ClientApiEdgeMultipleResponse postMultiple(
+        @Required(name = "edgeIds[]") String[] edgeIds
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("edgeIds", edgeIds));
+        return getVisalloApi().execute("POST", "/edge/multiple", parameters, ClientApiEdgeMultipleResponse.class);
+    }
+
+    /**
+     * @param sourceGraphVertexId REQUIRED
+     * @param destGraphVertexId REQUIRED
+     * @param predicateLabel REQUIRED
+     * @param visibilitySource REQUIRED
+     * @param justificationText OPTIONAL
+     * @param edgeId OPTIONAL
+     */
+    public ClientApiElement postCreate(
+        @Required(name = "sourceGraphVertexId") String sourceGraphVertexId,
+        @Required(name = "destGraphVertexId") String destGraphVertexId,
+        @Required(name = "predicateLabel") String predicateLabel,
+        @Required(name = "visibilitySource") String visibilitySource,
+        @Optional(name = "justificationText") String justificationText,
+        @Optional(name = "edgeId") String edgeId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("sourceGraphVertexId", sourceGraphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("destGraphVertexId", destGraphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("predicateLabel", predicateLabel));
+        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
+        parameters.add(new VisalloApiBase.Parameter("justificationText", justificationText));
+        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
+        return getVisalloApi().execute("POST", "/edge/create", parameters, ClientApiElement.class);
+    }
+
+    /**
+     * @param graphEdgeId REQUIRED
+     * @param visibilitySource REQUIRED
+     */
+    public ClientApiElement postVisibility(
+        @Required(name = "graphEdgeId") String graphEdgeId,
+        @Required(name = "visibilitySource") String visibilitySource
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphEdgeId", graphEdgeId));
+        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
+        return getVisalloApi().execute("POST", "/edge/visibility", parameters, ClientApiElement.class);
+    }
+
+    /**
+     * @param edgeId REQUIRED
+     */
+    public void delete(
+        @Required(name = "edgeId") String edgeId
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
         getVisalloApi().execute("DELETE", "/edge", parameters, null);
@@ -27,7 +157,11 @@ public abstract class EdgeBase extends CategoryBase {
      * @param propertyKey REQUIRED
      * @param edgeId REQUIRED
      */
-    public void deleteProperty(String propertyName, String propertyKey, String edgeId) {
+    public void deleteProperty(
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "propertyKey") String propertyKey,
+        @Required(name = "edgeId") String edgeId
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
@@ -42,7 +176,13 @@ public abstract class EdgeBase extends CategoryBase {
      * @param startTime OPTIONAL
      * @param endTime OPTIONAL
      */
-    public ClientApiHistoricalPropertyValues getPropertyHistory(String graphEdgeId, String propertyName, String propertyKey, Long startTime, Long endTime) {
+    public ClientApiHistoricalPropertyValues getPropertyHistory(
+        @Required(name = "graphEdgeId") String graphEdgeId,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "propertyKey") String propertyKey,
+        @Optional(name = "startTime") Long startTime,
+        @Optional(name = "endTime") Long endTime
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("graphEdgeId", graphEdgeId));
         parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
@@ -55,7 +195,9 @@ public abstract class EdgeBase extends CategoryBase {
     /**
      * @param edgeIds REQUIRED
      */
-    public ClientApiEdgesExistsResponse getExists(String[] edgeIds) {
+    public ClientApiEdgesExistsResponse getExists(
+        @Required(name = "edgeIds[]") String[] edgeIds
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("edgeIds", edgeIds));
         return getVisalloApi().execute("GET", "/edge/exists", parameters, ClientApiEdgesExistsResponse.class);
@@ -64,7 +206,9 @@ public abstract class EdgeBase extends CategoryBase {
     /**
      * @param graphEdgeId REQUIRED
      */
-    public ClientApiEdge getProperties(String graphEdgeId) {
+    public ClientApiEdge getProperties(
+        @Required(name = "graphEdgeId") String graphEdgeId
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("graphEdgeId", graphEdgeId));
         return getVisalloApi().execute("GET", "/edge/properties", parameters, ClientApiEdge.class);
@@ -76,7 +220,12 @@ public abstract class EdgeBase extends CategoryBase {
      * @param visibilitySource REQUIRED
      * @param propertyKey OPTIONAL
      */
-    public ClientApiEdgePropertyDetails getPropertyDetails(String edgeId, String propertyName, String visibilitySource, String propertyKey) {
+    public ClientApiEdgePropertyDetails getPropertyDetails(
+        @Required(name = "edgeId") String edgeId,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "visibilitySource") String visibilitySource,
+        @Optional(name = "propertyKey") String propertyKey
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
         parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
@@ -88,7 +237,9 @@ public abstract class EdgeBase extends CategoryBase {
     /**
      * @param edgeId REQUIRED
      */
-    public ClientApiEdgeDetails getDetails(String edgeId) {
+    public ClientApiEdgeDetails getDetails(
+        @Required(name = "edgeId") String edgeId
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
         return getVisalloApi().execute("GET", "/edge/details", parameters, ClientApiEdgeDetails.class);
@@ -96,97 +247,11 @@ public abstract class EdgeBase extends CategoryBase {
 
     /**
      */
-    public ClientApiVertexCount getCount() {
+    public ClientApiVertexCount getCount(
+        
+    ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         return getVisalloApi().execute("GET", "/edge/count", parameters, ClientApiVertexCount.class);
-    }
-
-    /**
-     * @param edgeId REQUIRED
-     * @param propertyName REQUIRED
-     * @param value REQUIRED
-     * @param visibilitySource REQUIRED
-     * @param sourceInfo OPTIONAL
-     * @param propertyKey OPTIONAL
-     * @param metadata OPTIONAL
-     */
-    public void postProperty(String edgeId, String propertyName, String value, String visibilitySource, String sourceInfo, String propertyKey, String metadata) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("value", value));
-        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
-        parameters.add(new VisalloApiBase.Parameter("sourceInfo", sourceInfo));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        parameters.add(new VisalloApiBase.Parameter("metadata", metadata));
-        getVisalloApi().execute("POST", "/edge/property", parameters, null);
-    }
-
-    /**
-     * @param edgeId REQUIRED
-     * @param propertyName REQUIRED
-     * @param value REQUIRED
-     * @param visibilitySource REQUIRED
-     * @param sourceInfo OPTIONAL
-     * @param propertyKey OPTIONAL
-     * @param metadata OPTIONAL
-     */
-    public void postComment(String edgeId, String propertyName, String value, String visibilitySource, String sourceInfo, String propertyKey, String metadata) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("value", value));
-        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
-        parameters.add(new VisalloApiBase.Parameter("sourceInfo", sourceInfo));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        parameters.add(new VisalloApiBase.Parameter("metadata", metadata));
-        getVisalloApi().execute("POST", "/edge/comment", parameters, null);
-    }
-
-    /**
-     * @param edgeIds REQUIRED
-     */
-    public ClientApiEdgesExistsResponse postExists(String[] edgeIds) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("edgeIds", edgeIds));
-        return getVisalloApi().execute("POST", "/edge/exists", parameters, ClientApiEdgesExistsResponse.class);
-    }
-
-    /**
-     * @param edgeIds REQUIRED
-     */
-    public ClientApiEdgeMultipleResponse postMultiple(String[] edgeIds) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("edgeIds", edgeIds));
-        return getVisalloApi().execute("POST", "/edge/multiple", parameters, ClientApiEdgeMultipleResponse.class);
-    }
-
-    /**
-     * @param sourceGraphVertexId REQUIRED
-     * @param destGraphVertexId REQUIRED
-     * @param predicateLabel REQUIRED
-     * @param visibilitySource REQUIRED
-     * @param edgeId OPTIONAL
-     */
-    public ClientApiElement postCreate(String sourceGraphVertexId, String destGraphVertexId, String predicateLabel, String visibilitySource, String edgeId) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("sourceGraphVertexId", sourceGraphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("destGraphVertexId", destGraphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("predicateLabel", predicateLabel));
-        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
-        parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
-        return getVisalloApi().execute("POST", "/edge/create", parameters, ClientApiElement.class);
-    }
-
-    /**
-     * @param graphEdgeId REQUIRED
-     * @param visibilitySource REQUIRED
-     */
-    public ClientApiElement postVisibility(String graphEdgeId, String visibilitySource) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphEdgeId", graphEdgeId));
-        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
-        return getVisalloApi().execute("POST", "/edge/visibility", parameters, ClientApiElement.class);
     }
 
 }

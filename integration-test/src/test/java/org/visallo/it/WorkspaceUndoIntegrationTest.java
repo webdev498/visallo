@@ -1,12 +1,12 @@
 package org.visallo.it;
 
+import org.junit.Test;
 import org.visallo.clavin.ClavinTermMentionFilter;
 import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.codegen.ApiException;
-import org.visallo.zipCodeResolver.ZipCodeResolverTermMentionFilter;
-import org.junit.Test;
+import org.visallo.web.clientapi.VisalloClientApiException;
 import org.visallo.web.clientapi.model.*;
+import org.visallo.zipCodeResolver.ZipCodeResolverTermMentionFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,30 +18,30 @@ public class WorkspaceUndoIntegrationTest extends TestBase {
     public static final String FILE_CONTENTS = "Susan Feng knows Jeff Kunkle. They both worked in Reston, VA, 20191";
 
     @Test
-    public void testWorkspaceUndo() throws IOException, ApiException {
+    public void testWorkspaceUndo() throws IOException, VisalloClientApiException {
         importArtifact();
         undoAll();
     }
 
-    private void importArtifact() throws IOException, ApiException {
+    private void importArtifact() throws IOException, VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
         addUserAuths(visalloApi, USERNAME_TEST_USER_1, "auth1");
-        ClientApiArtifactImportResponse artifact = visalloApi.getVertexApi().importFile("auth1", "test.txt", new ByteArrayInputStream(FILE_CONTENTS.getBytes()));
+        ClientApiArtifactImportResponse artifact = visalloApi.getVertex().postImport("auth1", "test.txt", new ByteArrayInputStream(FILE_CONTENTS.getBytes()));
         assertEquals(1, artifact.getVertexIds().size());
         String artifactVertexId = artifact.getVertexIds().get(0);
         assertNotNull(artifactVertexId);
 
         visalloTestCluster.processGraphPropertyQueue();
 
-        ClientApiElement susanFengVertex = visalloApi.getVertexApi().create(TestOntology.CONCEPT_PERSON, "", "justification");
-        visalloApi.getVertexApi().setProperty(susanFengVertex.getId(), TEST_MULTI_VALUE_KEY, VisalloProperties.TITLE.getPropertyName(), "Susan Feng", "", "test", null, null);
+        ClientApiElement susanFengVertex = visalloApi.getVertex().postNew(null, TestOntology.CONCEPT_PERSON, "", null, "justification");
+        visalloApi.getVertex().postProperty(susanFengVertex.getId(), VisalloProperties.TITLE.getPropertyName(), TEST_MULTI_VALUE_KEY, "Susan Feng", null, "", null, null, null, "test");
 
-        ClientApiElement jeffKunkleVertex = visalloApi.getVertexApi().create(TestOntology.CONCEPT_PERSON, "", "justification");
-        visalloApi.getVertexApi().setProperty(jeffKunkleVertex.getId(), TEST_MULTI_VALUE_KEY, VisalloProperties.TITLE.getPropertyName(), "Jeff Kunkle", "", "test", null, null);
+        ClientApiElement jeffKunkleVertex = visalloApi.getVertex().postNew(null, TestOntology.CONCEPT_PERSON, "", null, "justification");
+        visalloApi.getVertex().postProperty(jeffKunkleVertex.getId(), VisalloProperties.TITLE.getPropertyName(), TEST_MULTI_VALUE_KEY, "Jeff Kunkle", null, "", null, null, null, "test");
 
-        visalloApi.getEdgeApi().create(susanFengVertex.getId(), jeffKunkleVertex.getId(), TestOntology.EDGE_LABEL_WORKS_FOR, "", null);
-        visalloApi.getEdgeApi().setProperty(susanFengVertex.getId(), "key1", "http://visallo.org/test#firstName", "edge property value", "", "");
-        ClientApiVertexEdges edges = visalloApi.getVertexApi().getEdges(susanFengVertex.getId(), null, null, null);
+        visalloApi.getEdge().postCreate(susanFengVertex.getId(), jeffKunkleVertex.getId(), TestOntology.EDGE_LABEL_WORKS_FOR, "", "test", null);
+        visalloApi.getEdge().postProperty(susanFengVertex.getId(), "http://visallo.org/test#firstName", "edge property value", "", null, "key1", null, "test");
+        ClientApiVertexEdges edges = visalloApi.getVertex().getEdges(susanFengVertex.getId(), 0, 25, null, null);
         assertEquals(1, edges.getRelationships().size());
         List<ClientApiProperty> edgeProperties = edges.getRelationships().get(0).getRelationship().getProperties();
         assertEquals(7, edgeProperties.size());
@@ -54,7 +54,7 @@ public class WorkspaceUndoIntegrationTest extends TestBase {
         }
         assertTrue(foundFirstNameEdgeProperty);
 
-        edges = visalloApi.getVertexApi().getEdges(artifactVertexId, null, null, null);
+        edges = visalloApi.getVertex().getEdges(artifactVertexId, 0, 25, null, null);
         assertEquals(2, edges.getRelationships().size());
         ClientApiElement restonVertex = edges.getRelationships().get(0).getVertex();
         assertHasProperty(restonVertex.getProperties(), ClavinTermMentionFilter.MULTI_VALUE_PROPERTY_KEY, VisalloProperties.CONCEPT_TYPE.getPropertyName(), TestOntology.CONCEPT_CITY);
@@ -62,7 +62,7 @@ public class WorkspaceUndoIntegrationTest extends TestBase {
         assertHasProperty(restonVertex.getProperties(), ClavinTermMentionFilter.MULTI_VALUE_PROPERTY_KEY, VisalloProperties.TITLE.getPropertyName(), "Reston (US, VA)");
         VisibilityJson visibilityJson = new VisibilityJson();
         visibilityJson.setSource("auth1");
-        visibilityJson.addWorkspace(visalloApi.getCurrentWorkspaceId());
+        visibilityJson.addWorkspace(visalloApi.getWorkspaceId());
         assertHasProperty(restonVertex.getProperties(), ClavinTermMentionFilter.MULTI_VALUE_PROPERTY_KEY, VisalloProperties.VISIBILITY_JSON.getPropertyName(), visibilityJson);
 
         ClientApiElement zipCodeVertex = edges.getRelationships().get(1).getVertex();
@@ -71,13 +71,13 @@ public class WorkspaceUndoIntegrationTest extends TestBase {
         assertHasProperty(zipCodeVertex.getProperties(), ZipCodeResolverTermMentionFilter.MULTI_VALUE_PROPERTY_KEY, VisalloProperties.TITLE.getPropertyName(), "20191 - Reston, VA");
         visibilityJson = new VisibilityJson();
         visibilityJson.setSource("auth1");
-        visibilityJson.addWorkspace(visalloApi.getCurrentWorkspaceId());
+        visibilityJson.addWorkspace(visalloApi.getWorkspaceId());
         assertHasProperty(zipCodeVertex.getProperties(), ZipCodeResolverTermMentionFilter.MULTI_VALUE_PROPERTY_KEY, VisalloProperties.VISIBILITY_JSON.getPropertyName(), visibilityJson);
 
         visalloApi.logout();
     }
 
-    private void undoAll() throws IOException, ApiException {
+    private void undoAll() throws IOException, VisalloClientApiException {
         VisalloApi visalloApi = login(USERNAME_TEST_USER_1);
         assertUndoAll(visalloApi, 35);
         visalloApi.logout();

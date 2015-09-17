@@ -12,6 +12,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class VisalloApiBase {
@@ -20,8 +21,8 @@ public abstract class VisalloApiBase {
     private final Workspace workspace;
     private final Vertex vertex;
     private final Admin admin;
-    private final LongRunningProcess longRunningProcess;
     private final User user;
+    private final LongRunningProcess longRunningProcess;
     private final Ontology ontology;
 
     public VisalloApiBase(String basePath, boolean ignoreSslErrors) {
@@ -30,8 +31,8 @@ public abstract class VisalloApiBase {
         workspace = new Workspace((VisalloApi) this);
         vertex = new Vertex((VisalloApi) this);
         admin = new Admin((VisalloApi) this);
-        longRunningProcess = new LongRunningProcess((VisalloApi) this);
         user = new User((VisalloApi) this);
+        longRunningProcess = new LongRunningProcess((VisalloApi) this);
         ontology = new Ontology((VisalloApi) this);
 
         if (ignoreSslErrors) {
@@ -83,12 +84,12 @@ public abstract class VisalloApiBase {
       return admin;
     }
 
-    public LongRunningProcess getLongRunningProcess() {
-      return longRunningProcess;
-    }
-
     public User getUser() {
       return user;
+    }
+
+    public LongRunningProcess getLongRunningProcess() {
+      return longRunningProcess;
     }
 
     public Ontology getOntology() {
@@ -100,47 +101,7 @@ public abstract class VisalloApiBase {
         return basePath;
     }
 
-    public <T> T execute(String httpVerb, String path, List<Parameter> parameters, Class<T> returnType) {
-        String targetUrl = getTargetUrl(path);
-        HttpURLConnection connection = null;
-        try {
-            //Send request
-            String urlParameters = getParametersAsUrlEncodedString(parameters);
-            if (parameters.size() > 0 && !httpVerb.equals("POST")) {
-                targetUrl += "?" + urlParameters;
-            }
-            URL url = new URL(targetUrl);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(httpVerb);
-            connection.setUseCaches(false);
-            connection.setDoOutput(true);
-            if (getWorkspaceId() != null) {
-                connection.setRequestProperty("Visallo-Workspace-Id", getWorkspaceId());
-            }
-            if (httpVerb.equals("POST") && getCsrfToken() != null) {
-                connection.setRequestProperty("Visallo-CSRF-Token", getCsrfToken());
-            }
-            if (getSessionCookieValue() != null) {
-                connection.setRequestProperty("Cookie", "JSESSIONID=" + getSessionCookieValue());
-            }
-            if (parameters.size() > 0 && httpVerb.equals("POST")) {
-                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                connection.setRequestProperty("Content-Length", Integer.toString(urlParameters.getBytes().length));
-                OutputStream out = connection.getOutputStream();
-                out.write(urlParameters.getBytes());
-            }
-
-            //Get Response
-            byte[] result = readAllFromHttpURLConnection(connection);
-            return byteArrayToReturnType(result, returnType);
-        } catch (Exception ex) {
-            throw new VisalloClientApiException("Could not execute request " + httpVerb + " " + targetUrl, ex);
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
+    public abstract <T> T execute(String httpVerb, String path, List<Parameter> parameters, Class<T> returnType);
 
     protected String getParametersAsUrlEncodedString(List<Parameter> parameters) {
         StringBuilder result = new StringBuilder();
@@ -195,14 +156,18 @@ public abstract class VisalloApiBase {
 
     protected abstract String getSessionCookieValue();
 
-    protected abstract String getWorkspaceId();
+    public abstract String getWorkspaceId();
 
     protected abstract String getCsrfToken();
 
-    private String getTargetUrl(String path) {
+    protected String getTargetUrl(String path) {
         return getBasePath() + path;
     }
-    
+
+    public void logout() {
+        execute("POST", "/logout", null, null);
+    }
+
     public static class Parameter {
         private String name;
         private Object value;
@@ -218,6 +183,30 @@ public abstract class VisalloApiBase {
 
         public Object getValue() {
             return value;
+        }
+    }
+
+    public static class MultiPartParameter extends Parameter {
+        public MultiPartParameter(String name, String fileName, InputStream in) {
+            super(name, new Value(fileName, in));
+        }
+
+        public static class Value {
+            private String fileName;
+            private InputStream in;
+
+            public Value(String fileName, InputStream in) {
+                this.fileName = fileName;
+                this.in = in;
+            }
+
+            public String getFileName() {
+                return this.fileName;
+            }
+
+            public InputStream getInputStream() {
+                return this.in;
+            }
         }
     }
 }
