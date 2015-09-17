@@ -3,6 +3,7 @@ package org.visallo.web.routes.resource;
 import com.google.inject.Inject;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
 import com.v5analytics.webster.annotations.Required;
 import org.visallo.core.exception.VisalloResourceNotFoundException;
 import org.visallo.core.model.ontology.Concept;
@@ -20,10 +21,17 @@ public class ResourceGet implements ParameterizedHandler {
     @Handle
     public void handle(
             @Required(name = "id") String id,
+            @Optional(name = "state") String state,
             VisalloResponse response
     ) throws Exception {
         Concept concept = ontologyRepository.getConceptByIRI(id);
-        byte[] rawImg = concept.getGlyphIcon();
+
+        byte[] rawImg;
+        if ("selected".equals(state) && concept.hasGlyphIconSelectedResource()) {
+            rawImg = concept.getGlyphIconSelected();
+        } else {
+            rawImg = concept.getGlyphIcon();
+        }
 
         if (rawImg == null || rawImg.length <= 0) {
             throw new VisalloResourceNotFoundException("Could not find resource with id: " + id);

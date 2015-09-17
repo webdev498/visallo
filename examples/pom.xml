@@ -14,7 +14,7 @@
     <name>Visallo: Examples</name>
 
     <modules>
-        <module>food-truck</module>
         <module>example-cli</module>
+        <module>insider-threat</module>
     </modules>
 </project>

@@ -27,13 +27,14 @@ public class UserGet implements ParameterizedHandler {
 
     @Handle
     public ClientApiUser handle(
-            Authorizations authorizations,
             @Required(name = "user-name") String userName
     ) throws Exception {
         User user = userRepository.findByUsername(userName);
         if (user == null) {
             throw new VisalloResourceNotFoundException("user not found");
         }
+
+        Authorizations authorizations = userRepository.getAuthorizations(user);
 
         ClientApiUser clientApiUser = userRepository.toClientApiPrivate(user);
 
