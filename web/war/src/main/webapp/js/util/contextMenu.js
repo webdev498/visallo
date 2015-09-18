@@ -15,83 +15,100 @@ define([
     }
 
     function ContextMenu() {
-        var hideMenu;
+        var contextMenuBlocked = false;
 
         this.after('initialize', function() {
             var self = this,
                 altKey = false,
                 ctrlKey = false,
                 downPosition,
-                queueContextMenuEvent,
-                mousedown = false;
+                state = 0,
+                blurPromise,
+                reset = function() {
+                    altKey = false;
+                    ctrlKey = false;
+                    state = 0;
+                    blurPromise = null;
+                },
+                progressContextMenu = function(event) {
+                    state++;
+                    if (!state) return;
+
+                    switch (state) {
+                        case 1:
+                            var originalTabindex = event.target.getAttribute('tabindex'),
+                                handler;
+                            event.target.setAttribute('tabindex', -1);
+                            blurPromise = new Promise(function(v) {
+                                _.delay(function() {
+                                    self.off(event.target, 'blur', handler);
+                                    v(false);
+                                }, 100);
+                                self.on(event.target, 'blur', handler = function blurHandler(blurEvent) {
+                                    self.trigger(event.target, 'hideMenu');
+                                    self.off(event.target, 'blur', blurHandler);
+                                    if (originalTabindex) {
+                                        event.target.setAttribute('tabindex', originalTabindex);
+                                    } else {
+                                        event.target.removeAttribute('tabindex');
+                                    }
+                                    v(true);
+                                });
+                            })
+                            break;
+
+                        case 2:
+                            if (blurPromise) {
+                                blurPromise.done(function(menuBlocked) {
+                                    if (menuBlocked) {
+                                        contextMenuBlocked = true;
+                                        self.trigger(event.target, 'warnAboutContextMenuDisabled');
+                                    }
+                                    if (!contextMenuBlocked && distance([event.pageX, event.pageY], downPosition) < 20) {
+                                        self.triggerContextMenu(event);
+                                    }
+                                    _.delay(reset, 250);
+                                })
+                            }
+                            break;
+                    }
+                };
 
             document.addEventListener('mousedown', function(event) {
+                reset();
                 downPosition = [event.pageX, event.pageY];
                 altKey = event.altKey;
                 ctrlKey = event.ctrlKey;
-                mousedown = true;
+                state = 0;
             }, true);
 
             document.addEventListener('mouseup', function(event) {
-                mousedown = false;
-                if (altKey || ctrlKey || queueContextMenuEvent) {
-                    if (queueContextMenuEvent && distance([event.pageX, event.pageY], downPosition) < 20) {
-                        self.triggerContextMenu(event);
-                    }
-                }
-                _.delay(function() {
-                    altKey = false;
-                    ctrlKey = false;
-                    queueContextMenuEvent = false;
-                }, 250);
+                progressContextMenu(event);
             }, true);
 
             document.addEventListener('click', function(event) {
-                if ((altKey || ctrlKey) && !queueContextMenuEvent) {
+                if (event.which === 3) return;
+
+                if (altKey || (ctrlKey && !contextMenuBlocked)) {
                     event.stopPropagation();
                     self.triggerContextMenu(event);
                 }
-                altKey = false;
+                reset();
             }, true);
 
             var delay;
 
             document.addEventListener('contextmenu', function(event) {
-                var originalTabindex = event.target.getAttribute('tabindex'),
-                    handler;
-
-                event.target.setAttribute('tabindex', -1);
-                queueContextMenuEvent = true;
-
-                _.delay(function() {
-                    self.off(event.target, 'blur', handler);
-                }, 500);
-                self.on(event.target, 'blur', handler = function blurHandler(blurEvent) {
-                    queueContextMenuEvent = false;
-                    hideMenu = true;
-                    self.trigger(event.target, 'hideMenu');
-
-                    // TODO: warn
-                    self.off(event.target, 'blur', blurHandler);
-                    if (originalTabindex) {
-                        event.target.setAttribute('tabindex', originalTabindex);
-                    } else {
-                        event.target.removeAttribute('tabindex');
-                    }
-                });
-
+                progressContextMenu(event);
             }, true);
         });
 
         this.triggerContextMenu = function(event) {
-            if (!hideMenu) {
-                this.trigger(
-                    event.target,
-                    'showMenu',
-                    _.pick(event, 'type', 'originalEvent', 'pageX', 'pageY')
-                );
-            }
-            hideMenu = false;
+            this.trigger(
+                event.target,
+                'showMenu',
+                _.pick(event, 'type', 'originalEvent', 'pageX', 'pageY')
+            );
         }
 
     }
