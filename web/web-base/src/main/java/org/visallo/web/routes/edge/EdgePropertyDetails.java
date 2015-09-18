@@ -37,9 +37,9 @@ public class EdgePropertyDetails implements ParameterizedHandler {
     @Handle
     public ClientApiEdgePropertyDetails handle(
             @Required(name = "edgeId") String edgeId,
+            @Optional(name = "propertyKey") String propertyKey,
             @Required(name = "propertyName") String propertyName,
             @Required(name = "visibilitySource") String visibilitySource,
-            @Optional(name = "propertyKey") String propertyKey,
             ResourceBundle resourceBundle,
             User user,
             Authorizations authorizations

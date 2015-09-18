@@ -319,7 +319,7 @@ define([
                     vertexIds = _.pluck(vertices, 'id'),
                     existingNodes = currentNodes.filter(function(i, n) {
                         var nId = n.id();
-                        if (/^NEW/.test(nId)) {
+                        if (/^(NEW|controlDragNodeId)/.test(nId)) {
                             return -1;
                         }
                         return vertexIds.indexOf(fromCyId(nId)) >= 0;
@@ -593,12 +593,17 @@ define([
                     .forEach(function(updatedVertex) {
                         var cyNode = cy.nodes().filter('#' + toCyId(updatedVertex));
                         if (cyNode.length) {
+                            cyNode = cyNode[0];
                             var newData = self.updateCyNodeData(cyNode.data(), updatedVertex);
                             cyNode.data(newData);
-                            if (cyNode._private.classes) {
-                                cyNode._private.classes.length = 0;
+
+                            _.each(cyNode._private.classes, function(enabled, name) {
+                                cyNode.removeClass(name);
+                            });
+                            var classes = self.classesForVertex(updatedVertex);
+                            if (classes.length) {
+                                cyNode.addClass(classes);
                             }
-                            cyNode.addClass(self.classesForVertex(updatedVertex));
                         }
                     });
             });
@@ -1152,15 +1157,17 @@ define([
                 this.select('contextMenuSelector').blur().parent().removeClass('open');
 
                 var originalEvent = event.originalEvent;
-                this.trigger(this.select('cytoscapeContainerSelector')[0], 'showVertexContextMenu', {
-                    vertexId: cyTargetIsElement ?
-                        fromCyId(event.cyTarget.id()) :
-                        selectedObjects.vertices[0].id,
-                    position: {
-                        x: originalEvent.pageX,
-                        y: originalEvent.pageY
-                    }
-                });
+                if (!cyTargetIsElement || !(/^(NEW|controlDragNodeId)/).test(event.cyTarget.id())) {
+                    this.trigger(this.select('cytoscapeContainerSelector')[0], 'showVertexContextMenu', {
+                        vertexId: cyTargetIsElement ?
+                            fromCyId(event.cyTarget.id()) :
+                            selectedObjects.vertices[0].id,
+                        position: {
+                            x: originalEvent.pageX,
+                            y: originalEvent.pageY
+                        }
+                    });
+                }
 
                 return;
             }
@@ -1303,8 +1310,8 @@ define([
             var self = this;
             this.trigger('defocusPaths');
             this.cytoscapeReady(function(cy) {
-                var vertices = event.cyTarget.selected() ? cy.nodes().filter(':selected').not('.temp') : event.cyTarget;
-                this.grabbedVertices = vertices.each(function() {
+                var vertices = event.cyTarget.selected() ? cy.nodes().filter(':selected') : event.cyTarget;
+                this.grabbedVertices = vertices.not('.temp,#controlDragNodeId').each(function() {
                     var p = retina.pixelsToPoints(this.position());
                     this.data('originalPosition', { x: p.x, y: p.y });
                     this.data('freed', false);
@@ -1322,7 +1329,17 @@ define([
 
             var cy = vertices[0].cy(),
                 updateData = {},
-                verticesMoved = [];
+                verticesMoved = [],
+                snapCoordinate = function(value, snap) {
+                    var diff = (value % snap),
+                        which = snap / 2;
+
+                    if (value < 0 && Math.abs(diff) < which) return value - diff;
+                    if (value < 0) return value - (snap + diff);
+                    if (diff < which) return value - diff;
+
+                    return value + (snap - diff)
+                };
 
             vertices.each(function(i, vertex) {
                 var p = retina.pixelsToPoints(vertex.position()),
@@ -1331,6 +1348,12 @@ define([
                         x: Math.round(p.x),
                         y: Math.round(p.y)
                     };
+
+                if (window.DEBUG_GRAPH_SNAP_TO_GRID) {
+                    pCopy.x = snapCoordinate(pCopy.x, window.DEBUG_GRAPH_SNAP_TO_GRID);
+                    pCopy.y = snapCoordinate(pCopy.y, window.DEBUG_GRAPH_SNAP_TO_GRID_Y || window.DEBUG_GRAPH_SNAP_TO_GRID) +
+                        ((100 - retina.pixelsToPoints({w: 0, h: vertex.height()}).h) / 2);
+                }
 
                 if (!vertex.data('freed')) {
                     dup = false;
@@ -1386,7 +1409,7 @@ define([
             if (cyNode !== event.cy && cyNode.group() === 'nodes') {
                 this.mouseoverTimeout = _.delay(function() {
                     var nId = cyNode.id();
-                    if (/^NEW/.test(nId)) {
+                    if (/^(NEW|controlDragNodeId)/.test(nId)) {
                         return;
                     }
 
@@ -2044,6 +2067,9 @@ define([
                         }
                     }
                     self.cytoscapeMarkReady(this);
+                    self.trigger('cytoscapeReady', {
+                        cy: this
+                    });
 
                     if (self.$node.is('.visible')) {
                         setTimeout(function() {

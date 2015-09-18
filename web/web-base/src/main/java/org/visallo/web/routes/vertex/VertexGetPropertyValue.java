@@ -37,8 +37,8 @@ public class VertexGetPropertyValue implements ParameterizedHandler {
     @Handle
     public void handle(
             @Required(name = "graphVertexId") String graphVertexId,
-            @Required(name = "propertyName") String propertyName,
             @Required(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @Optional(name = "Range") String range,
             @Optional(name = "download", defaultValue = "false") boolean download,
             @Optional(name = "playback", defaultValue = "false") boolean playback,

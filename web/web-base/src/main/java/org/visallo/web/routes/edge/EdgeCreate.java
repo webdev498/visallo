@@ -42,13 +42,13 @@ public class EdgeCreate implements ParameterizedHandler {
 
     @Handle
     public ClientApiElement handle(
+            @Optional(name = "edgeId") String edgeId,
             @Required(name = "sourceGraphVertexId") String sourceGraphVertexId,
             @Required(name = "destGraphVertexId") String destGraphVertexId,
             @Required(name = "predicateLabel") String predicateLabel,
             @Required(name = "visibilitySource") String visibilitySource,
             @JustificationText String justificationText,
             ClientApiSourceInfo sourceInfo,
-            @Optional(name = "edgeId") String edgeId,
             @ActiveWorkspaceId String workspaceId,
             ResourceBundle resourceBundle,
             User user,

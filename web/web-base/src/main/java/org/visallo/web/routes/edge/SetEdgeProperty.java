@@ -63,11 +63,11 @@ public class SetEdgeProperty implements ParameterizedHandler {
     public ClientApiSuccess handle(
             HttpServletRequest request,
             @Required(name = "edgeId") String edgeId,
+            @Optional(name = "propertyKey") String propertyKey,
             @Required(name = "propertyName") String propertyName,
             @Required(name = "value") String valueStr,
             @Required(name = "visibilitySource") String visibilitySource,
             @Optional(name = "sourceInfo") String sourceInfo,
-            @Optional(name = "propertyKey") String propertyKey,
             @Optional(name = "metadata") String metadataString,
             @JustificationText String justificationText,
             @ActiveWorkspaceId String workspaceId,

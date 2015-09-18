@@ -42,9 +42,9 @@ public class VertexPropertyDetails implements ParameterizedHandler {
     @Handle
     public ClientApiVertexPropertyDetails handle(
             @Required(name = "vertexId") String vertexId,
+            @Optional(name = "propertyKey") String propertyKey,
             @Required(name = "propertyName") String propertyName,
             @Required(name = "visibilitySource") String visibilitySource,
-            @Optional(name = "propertyKey") String propertyKey,
             @ActiveWorkspaceId String workspaceId,
             ResourceBundle resourceBundle,
             User user,
