@@ -208,4 +208,8 @@ public class VisalloResponse {
             throw new VisalloException("Error occurred while writing response", e);
         }
     }
+
+    public HttpServletResponse getHttpServletResponse() {
+        return response;
+    }
 }
