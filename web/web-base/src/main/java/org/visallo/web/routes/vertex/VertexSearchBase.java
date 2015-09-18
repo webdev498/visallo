@@ -127,6 +127,23 @@ public abstract class VertexSearchBase {
                 results.getAggregates().put(histogramAggregateName, toClientApiHistogramResult(agg));
             }
         }
+        if (searchResults instanceof IterableWithStatisticsResults) {
+            for (String statisticsAggregateName : queryAndData.getStatisticsAggregationNames()) {
+                StatisticsResult agg = ((IterableWithStatisticsResults) searchResults).getStatisticsResults(statisticsAggregateName);
+                results.getAggregates().put(statisticsAggregateName, toClientApiStatisticsResult(agg));
+            }
+        }
+    }
+
+    private ClientApiSearchResponse.AggregateResult toClientApiStatisticsResult(StatisticsResult agg) {
+        ClientApiSearchResponse.StatisticsAggregateResult result = new ClientApiSearchResponse.StatisticsAggregateResult();
+        result.setCount(agg.getCount());
+        result.setAverage(agg.getAverage());
+        result.setMin(agg.getMin());
+        result.setMax(agg.getMax());
+        result.setStandardDeviation(agg.getStandardDeviation());
+        result.setSum(agg.getSum());
+        return result;
     }
 
     private ClientApiSearchResponse.AggregateResult toClientApiHistogramResult(HistogramResult agg) {
@@ -197,6 +214,14 @@ public abstract class VertexSearchBase {
                     Long minDocumentCount = JSONUtil.getOptionalLong(aggregateJson, "minDocumentCount");
                     ((GraphQueryWithHistogramAggregation) query).addHistogramAggregation(aggregationName, field, interval, minDocumentCount);
                     queryAndData.addHistogramAggregationName(aggregationName);
+                    break;
+                case "statistics":
+                    if (!(query instanceof GraphQueryWithStatisticsAggregation)) {
+                        throw new VisalloException("Query does not support: " + GraphQueryWithStatisticsAggregation.class.getName());
+                    }
+                    field = aggregateJson.getString("field");
+                    ((GraphQueryWithStatisticsAggregation) query).addStatisticsAggregation(aggregationName, field);
+                    queryAndData.addStatisticsAggregationName(aggregationName);
                     break;
                 default:
                     throw new VisalloException("Invalid aggregation type: " + type);
@@ -418,6 +443,7 @@ public abstract class VertexSearchBase {
         private List<String> termAggregationNames = new ArrayList<>();
         private List<String> geohashAggregationNames = new ArrayList<>();
         private List<String> histogramAggregationNames = new ArrayList<>();
+        private List<String> statisticsAggregationNames = new ArrayList<>();
 
         public QueryAndData(Query query) {
             this.query = query;
@@ -443,12 +469,20 @@ public abstract class VertexSearchBase {
             return histogramAggregationNames;
         }
 
+        public List<String> getStatisticsAggregationNames() {
+            return statisticsAggregationNames;
+        }
+
         public void addGeohashAggregationName(String aggregationName) {
             this.geohashAggregationNames.add(aggregationName);
         }
 
         public void addHistogramAggregationName(String aggregationName) {
             this.histogramAggregationNames.add(aggregationName);
+        }
+
+        public void addStatisticsAggregationName(String aggregationName) {
+            this.statisticsAggregationNames.add(aggregationName);
         }
     }
 }
