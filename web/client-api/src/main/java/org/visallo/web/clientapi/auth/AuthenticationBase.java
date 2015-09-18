@@ -8,7 +8,7 @@ import org.visallo.web.clientapi.model.ClientApiWorkspace;
 import java.util.List;
 
 public abstract class AuthenticationBase {
-    protected static ClientApiUser updateVisalloApiWithUserAndWorkspace(VisalloApi api, String defaultWorkspaceTitle) {
+    protected static ClientApiUser updateVisalloApiWithUserAndWorkspace(VisalloApi api) {
         ClientApiUser user = api.getUser().getMe();
         api.setUser(user);
         if (user.getCurrentWorkspaceId() != null) {
@@ -18,7 +18,7 @@ public abstract class AuthenticationBase {
             if (workspaces.size() > 0) {
                 api.setWorkspaceId(workspaces.get(0).getWorkspaceId());
             } else {
-                ClientApiWorkspace newWorkspace = api.getWorkspace().postCreate(defaultWorkspaceTitle);
+                ClientApiWorkspace newWorkspace = api.getWorkspace().postCreate(null);
                 api.setWorkspaceId(newWorkspace.getWorkspaceId());
             }
         }

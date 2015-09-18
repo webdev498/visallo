@@ -3,16 +3,21 @@ package org.visallo.it;
 import org.apache.commons.collections.iterators.LoopingIterator;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.visallo.web.clientapi.VisalloApi;
 import org.visallo.web.clientapi.VisalloClientApiException;
 import org.visallo.web.clientapi.auth.UsernameOnlyAuthentication;
 import org.visallo.web.clientapi.codegen.VisalloApiBase;
 import org.visallo.web.clientapi.model.ClientApiElement;
+import org.visallo.web.clientapi.model.ClientApiUser;
+import org.visallo.web.clientapi.model.ClientApiWorkspace;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public abstract class IntegrationTestBase {
+    private static final Date START_DATE = new Date();
     protected static final int NUM_DEFAULT_PROPERTIES = 2;
     protected static final String PROPERTY_NAME = "http://visallo.org/test#firstName";
     protected static final String PROPERTY_KEY_PREFIX = "key-firstName-";
@@ -20,12 +25,25 @@ public abstract class IntegrationTestBase {
     protected static final String USERNAME_TEST_USER_1 = "user1";
     protected VisalloApi api;
 
+    @Rule
+    public TestName name = new TestName();
+
     @Before
     public void before() {
         VisalloApiBase.ignoreSslErrors();
         api = new VisalloApi("https://visallo-dev:8889");
+        api.setDebug(true);
         UsernameOnlyAuthentication.logIn(api, USERNAME_TEST_USER_1);
+
+        ClientApiWorkspace newWorkspace = api.getWorkspace().postCreate("Test: " + getDateTimeAndTestMethodName());
+        System.out.println(newWorkspace.getTitle());
+        api.setWorkspaceId(newWorkspace.getWorkspaceId());
+
         addUserAuths(USERNAME_TEST_USER_1, "a", "b", "c", "d", "e", "f", "x", "y", "z");
+    }
+
+    protected String getDateTimeAndTestMethodName() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(START_DATE) + " - " + this.getClass().getSimpleName() + "#" + name.getMethodName();
     }
 
     @After
@@ -33,9 +51,28 @@ public abstract class IntegrationTestBase {
         api.logout();
     }
 
-    private void addUserAuths(String userName, String... auths) {
+    protected void addUserAuths(String userName, String... auths) {
         for (String auth : auths) {
             api.getUser().postAuthAdd(userName, auth);
+        }
+    }
+
+    protected void setAuths(String userName, String... newAuths) {
+        Set<String> newAuthsSet = new HashSet<>();
+        Collections.addAll(newAuthsSet, newAuths);
+        ClientApiUser user = api.getUser().get(userName);
+        List<String> oldAuths = user.getAuthorizations();
+        for (String oldAuth : oldAuths) {
+            if (newAuthsSet.contains(oldAuth)) {
+                continue;
+            }
+            api.getUser().postAuthRemove(userName, oldAuth);
+        }
+        for (String newAuth : newAuthsSet) {
+            if (oldAuths.contains(newAuth)) {
+                continue;
+            }
+            api.getUser().postAuthAdd(userName, newAuth);
         }
     }
 

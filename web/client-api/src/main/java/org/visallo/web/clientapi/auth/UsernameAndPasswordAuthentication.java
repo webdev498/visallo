@@ -13,7 +13,6 @@ import java.util.Map;
 
 public class UsernameAndPasswordAuthentication extends AuthenticationBase {
     public static ClientApiUser logIn(VisalloApi api, String username, String password) {
-        String defaultWorkspaceTitle = "Default - " + username;
         try {
             URL url = new URL(api.getBasePath() + "/login");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -33,7 +32,7 @@ public class UsernameAndPasswordAuthentication extends AuthenticationBase {
             Map<String, List<String>> responseHeaders = conn.getHeaderFields();
             List<String> cookies = responseHeaders.get("Set-Cookie");
             updateVisalloApiWithSessionCookie(api, cookies);
-            return updateVisalloApiWithUserAndWorkspace(api, defaultWorkspaceTitle);
+            return updateVisalloApiWithUserAndWorkspace(api);
         } catch (Exception e) {
             throw new VisalloClientApiException("Could not login: " + api.getBasePath() + " (username: " + username + ")", e);
         }

@@ -20,11 +20,13 @@ public class VertexTest extends IntegrationTestBase {
                 3, ImmutableList.of("x", "y", "z")
         );
 
+        setAuths(USERNAME_TEST_USER_1, "a", "b", "x", "y");
+
         List<ClientApiVertex> vertices = api.getVertex().postMultiple(toArray(allVertexIds, String.class), false).getVertices();
 
         assertEquals(2, vertices.size());
         for (ClientApiVertex vertex : vertices) {
-            assertEquals(2 + NUM_DEFAULT_PROPERTIES, vertex.getProperties().size());
+            assertEquals(3 + NUM_DEFAULT_PROPERTIES, vertex.getProperties().size());
         }
 
         final List<String> allVertexIdsIncludingBadOne = new ArrayList<>();

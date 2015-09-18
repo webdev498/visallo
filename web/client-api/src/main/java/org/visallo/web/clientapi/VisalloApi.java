@@ -14,6 +14,7 @@ public class VisalloApi extends VisalloApiBase {
     private String sessionCookieValue;
     private String workspaceId;
     private ClientApiUser user;
+    private boolean debug;
 
     public VisalloApi(String basePath) {
         super(basePath);
@@ -48,6 +49,14 @@ public class VisalloApi extends VisalloApiBase {
 
     public String getUserId() {
         return user.getId();
+    }
+
+    @Override
+    public void logout() {
+        super.logout();
+        this.sessionCookieValue = null;
+        this.workspaceId = null;
+        this.user = null;
     }
 
     public <T> T execute(String httpVerb, String path, List<Parameter> parameters, Class<T> returnType) {
@@ -164,7 +173,18 @@ public class VisalloApi extends VisalloApiBase {
     }
 
     protected byte[] readAllFromHttpURLConnection(HttpURLConnection connection) throws IOException {
-        InputStream in = connection.getInputStream();
+        try {
+            InputStream in = connection.getInputStream();
+            return inputStreamToByteArray(in);
+        } catch (IOException ex) {
+            if (isDebug()) {
+                System.out.println(new String(inputStreamToByteArray(connection.getErrorStream())));
+            }
+            throw ex;
+        }
+    }
+
+    private byte[] inputStreamToByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int read;
         byte[] buffer = new byte[10 * 1024];
@@ -172,5 +192,13 @@ public class VisalloApi extends VisalloApiBase {
             out.write(buffer, 0, read);
         }
         return out.toByteArray();
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }
