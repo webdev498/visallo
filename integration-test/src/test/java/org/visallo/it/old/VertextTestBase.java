@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 public abstract class VertextTestBase extends TestBase {
 //    protected static final int NUM_DEFAULT_PROPERTIES = 2;

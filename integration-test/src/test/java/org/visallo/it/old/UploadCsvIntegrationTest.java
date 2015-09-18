@@ -1,15 +1,4 @@
-package org.visallo.it;
-
-import org.junit.Test;
-import org.visallo.csv.CsvOntology;
-import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.VisalloClientApiException;
-import org.visallo.web.clientapi.model.ClientApiArtifactImportResponse;
-import org.visallo.web.clientapi.model.ClientApiVertex;
-import org.visallo.web.clientapi.model.ClientApiVertexSearchResponse;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+package org.visallo.it.old;
 
 import static junit.framework.TestCase.assertEquals;
 

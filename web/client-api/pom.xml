@@ -24,8 +24,6 @@
         <json.version>20131018</json.version>
         <jersey.version>1.19</jersey.version>
         <jackson.version>2.4.3</jackson.version>
-
-        <junit.version>4.11</junit.version>
     </properties>
 
     <dependencies>
@@ -53,13 +51,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 public class UserIntegrationTest extends TestBase {
 //    private String user1Id;

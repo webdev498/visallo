@@ -21,18 +21,14 @@ public abstract class VisalloApiBase {
     private final {{className}} {{fieldName}};
 {{/each}}
 
-    public VisalloApiBase(String basePath, boolean ignoreSslErrors) {
+    public VisalloApiBase(String basePath) {
         this.basePath = basePath;
     {{#each categoryClasses}}
         {{fieldName}} = new {{className}}((VisalloApi) this);
     {{/each}}
-
-        if (ignoreSslErrors) {
-          ignoreSslErrors();
-        }    
     }
 
-    protected void ignoreSslErrors() {
+    public static void ignoreSslErrors() {
         try {
             javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(new javax.net.ssl.HostnameVerifier() {
                 public boolean verify(String hostname, javax.net.ssl.SSLSession sslSession) {

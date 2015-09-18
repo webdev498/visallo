@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 import com.google.common.base.Throwables;
 import org.apache.commons.io.IOUtils;
@@ -11,6 +11,7 @@ import org.visallo.test.VisalloTestCluster;
 import org.visallo.web.clientapi.auth.UsernameOnlyAuthentication;
 import org.visallo.web.clientapi.VisalloApi;
 import org.visallo.web.clientapi.VisalloClientApiException;
+import org.visallo.web.clientapi.codegen.VisalloApiBase;
 import org.visallo.web.clientapi.model.ClientApiProperty;
 import org.visallo.web.clientapi.model.ClientApiWorkspaceDiff;
 import org.visallo.web.clientapi.model.ClientApiWorkspacePublishResponse;
@@ -111,7 +112,8 @@ public class TestBase {
     }
 
     VisalloApi login(String username) throws VisalloClientApiException {
-        VisalloApi visalloApi = new VisalloApi("https://localhost:" + httpsPort, true);
+        VisalloApiBase.ignoreSslErrors();
+        VisalloApi visalloApi = new VisalloApi("https://localhost:" + httpsPort);
         UsernameOnlyAuthentication.logIn(visalloApi, username);
         return visalloApi;
     }

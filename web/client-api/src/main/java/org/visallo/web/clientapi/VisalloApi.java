@@ -15,11 +15,7 @@ public class VisalloApi extends VisalloApiBase {
     private ClientApiUser user;
 
     public VisalloApi(String basePath) {
-        this(basePath, false);
-    }
-
-    public VisalloApi(String basePath, boolean ignoreSslErrors) {
-        super(basePath, ignoreSslErrors);
+        super(basePath);
     }
 
     public void setSessionCookie(String sessionCookieValue) {

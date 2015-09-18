@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 import org.junit.Test;
 import org.visallo.core.model.properties.VisalloProperties;

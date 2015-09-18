@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 public class UploadRdfIntegrationTest extends TestBase {
 //    private static final String FILE_CONTENTS = getResourceString("sample.rdf");

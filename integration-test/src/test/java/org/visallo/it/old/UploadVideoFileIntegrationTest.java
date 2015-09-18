@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 public class UploadVideoFileIntegrationTest extends TestBase {
 //    private String artifactVertexId;

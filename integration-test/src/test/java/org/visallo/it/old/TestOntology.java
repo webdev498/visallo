@@ -1,4 +1,4 @@
-package org.visallo.it;
+package org.visallo.it.old;
 
 import org.visallo.core.model.properties.types.GeoPointVisalloProperty;
 

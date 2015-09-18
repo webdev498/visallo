@@ -1,17 +1,4 @@
-package org.visallo.it;
-
-import org.junit.Test;
-import org.visallo.core.model.properties.VisalloProperties;
-import org.visallo.web.clientapi.VisalloApi;
-import org.visallo.web.clientapi.VisalloClientApiException;
-import org.visallo.web.clientapi.model.*;
-import org.visallo.web.clientapi.util.ObjectMapperFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.*;
+package org.visallo.it.old;
 
 public class WorkspaceSandboxingIntegrationTest extends TestBase {
 //    private String susanFengVertexId;
