@@ -46,7 +46,7 @@ public class WorkspaceUndo implements ParameterizedHandler {
 
     @Handle
     public ClientApiWorkspaceUndoResponse handle(
-            @Required(name = "undoData") String undoDataString,
+            @Required(name = "undoData") ClientApiUndoItem[] undoData,
             @ActiveWorkspaceId String workspaceId,
             User user,
             Authorizations authorizations
@@ -57,8 +57,6 @@ public class WorkspaceUndo implements ParameterizedHandler {
         if (this.artifactContainsImageOfEntityIri == null) {
             this.artifactContainsImageOfEntityIri = ontologyRepository.getRequiredRelationshipIRIByIntent("artifactContainsImageOfEntity");
         }
-
-        ClientApiUndoItem[] undoData = ObjectMapperFactory.getInstance().readValue(undoDataString, ClientApiUndoItem[].class);
 
         LOGGER.debug("undoing:\n%s", Joiner.on("\n").join(undoData));
         ClientApiWorkspaceUndoResponse workspaceUndoResponse = new ClientApiWorkspaceUndoResponse();

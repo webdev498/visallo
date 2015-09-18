@@ -25,12 +25,10 @@ public class WorkspacePublish implements ParameterizedHandler {
 
     @Handle
     public ClientApiWorkspacePublishResponse handle(
-            @Required(name = "publishData") String publishDataString,
+            @Required(name = "publishData") ClientApiPublishItem[] publishData,
             @ActiveWorkspaceId String workspaceId,
             Authorizations authorizations
     ) throws Exception {
-        ClientApiPublishItem[] publishData = ObjectMapperFactory.getInstance().readValue(publishDataString, ClientApiPublishItem[].class);
-
         LOGGER.debug("publishing:\n%s", Joiner.on("\n").join(publishData));
         ClientApiWorkspacePublishResponse workspacePublishResponse = workspaceRepository.publish(publishData, workspaceId, authorizations);
 

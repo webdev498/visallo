@@ -5,7 +5,7 @@ import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Optional;
 import com.v5analytics.webster.annotations.Required;
-import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.util.LimitInputStream;
 import org.vertexium.Authorizations;
 import org.vertexium.Graph;
 import org.vertexium.Vertex;
@@ -38,7 +38,7 @@ public class VertexRaw implements ParameterizedHandler {
     }
 
     @Handle
-    public void handle(
+    public InputStream handle(
             HttpServletRequest request,
             @Required(name = "graphVertexId") String graphVertexId,
             @Optional(name = "download", defaultValue = "false") boolean download,
@@ -55,7 +55,7 @@ public class VertexRaw implements ParameterizedHandler {
         String fileName = VisalloProperties.FILE_NAME.getOnlyPropertyValue(artifactVertex);
 
         if (playback) {
-            handlePartialPlayback(request, response, artifactVertex, fileName, type);
+            return handlePartialPlayback(request, response, artifactVertex, fileName, type);
         } else {
             String mimeType = getMimeType(artifactVertex);
             response.setContentType(mimeType);
@@ -71,13 +71,11 @@ public class VertexRaw implements ParameterizedHandler {
             if (rawValue == null) {
                 throw new VisalloResourceNotFoundException("Could not find raw on artifact: " + artifactVertex.getId());
             }
-            try (InputStream in = rawValue.getInputStream()) {
-                IOUtils.copy(in, response.getOutputStream());
-            }
+            return rawValue.getInputStream();
         }
     }
 
-    private void handlePartialPlayback(HttpServletRequest request, VisalloResponse response, Vertex artifactVertex, String fileName, String type) throws IOException {
+    private InputStream handlePartialPlayback(HttpServletRequest request, VisalloResponse response, Vertex artifactVertex, String fileName, String type) throws IOException {
         if (type == null) {
             throw new BadRequestException("type is required for partial playback");
         }
@@ -127,10 +125,7 @@ public class VertexRaw implements ParameterizedHandler {
 
         response.addHeader("Content-Length", "" + partialLength);
 
-        OutputStream out = response.getOutputStream();
-        copy(in, out, partialLength);
-
-        response.flushBuffer();
+        return new LimitInputStream(in, partialLength);
     }
 
     private StreamingPropertyValue getStreamingPropertyValue(Vertex artifactVertex, String type) {

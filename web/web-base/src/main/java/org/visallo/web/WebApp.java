@@ -14,6 +14,7 @@ import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.notification.SystemNotificationSeverity;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
+import org.visallo.web.clientapi.model.ClientApiObject;
 import org.visallo.web.parameterProviders.*;
 import org.visallo.web.parameterValueConverters.JSONObjectParameterValueConverter;
 import org.visallo.web.routes.notification.SystemNotificationSeverityValueConverter;
@@ -68,6 +69,7 @@ public class WebApp extends App {
         App.registeredParameterProviderFactory(injector.getInstance(ClientApiSourceInfoParameterProviderFactory.class));
         App.registeredParameterProviderFactory(injector.getInstance(WebAppParameterProviderFactory.class));
 
+        App.registerParameterValueConverter(ClientApiObject.class, new ClientApiObjectParameterValueConverter());
         App.registerParameterValueConverter(SystemNotificationSeverity.class, new SystemNotificationSeverityValueConverter());
 
         App.registerParameterValueConverter(JSONObject.class, new JSONObjectParameterValueConverter());

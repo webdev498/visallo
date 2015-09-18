@@ -5,6 +5,7 @@ import com.v5analytics.webster.HandlerChain;
 import com.v5analytics.webster.resultWriters.ResultWriter;
 import com.v5analytics.webster.resultWriters.ResultWriterBase;
 import com.v5analytics.webster.resultWriters.ResultWriterFactory;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.web.clientapi.model.ClientApiObject;
@@ -12,6 +13,7 @@ import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 
 public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
@@ -19,6 +21,7 @@ public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
     public ResultWriter createResultWriter(Method handleMethod) {
         return new ResultWriterBase(handleMethod) {
             private boolean resultIsClientApiObject;
+            private boolean resultIsInputStream;
 
             @Override
             protected String getContentType(Method handleMethod) {
@@ -28,6 +31,9 @@ public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
                 if (ClientApiObject.class.isAssignableFrom(handleMethod.getReturnType())) {
                     resultIsClientApiObject = true;
                     return "application/json";
+                }
+                if (InputStream.class.isAssignableFrom(handleMethod.getReturnType())) {
+                    resultIsInputStream = true;
                 }
                 return super.getContentType(handleMethod);
             }
@@ -43,6 +49,12 @@ public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
                             return;
                         } catch (JsonProcessingException e) {
                             throw new VisalloException("Could not write json", e);
+                        }
+                    } else if (resultIsInputStream) {
+                        try (InputStream in = (InputStream) result) {
+                            IOUtils.copy(in, response.getOutputStream());
+                        } finally {
+                            response.flushBuffer();
                         }
                     }
                 }

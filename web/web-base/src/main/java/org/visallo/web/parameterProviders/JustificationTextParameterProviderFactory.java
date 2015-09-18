@@ -15,7 +15,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 public class JustificationTextParameterProviderFactory extends ParameterProviderFactory<String> {
-    private static final String JUSTIFICATION_TEXT = "justificationText";
+    public static final String JUSTIFICATION_TEXT = "justificationText";
     private final ParameterProvider<String> parameterProvider;
 
     @Inject
