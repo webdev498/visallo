@@ -30,8 +30,8 @@ public class VertexGetTermMentions implements ParameterizedHandler {
     @Handle
     public ClientApiTermMentionsResponse handle(
             @Required(name = "graphVertexId") String graphVertexId,
-            @Required(name = "propertyName") String propertyName,
             @Required(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @ActiveWorkspaceId String workspaceId,
             Authorizations authorizations
     ) throws Exception {

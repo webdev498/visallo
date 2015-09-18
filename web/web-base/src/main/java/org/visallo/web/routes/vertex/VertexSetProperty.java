@@ -67,8 +67,8 @@ public class VertexSetProperty implements ParameterizedHandler {
     public ClientApiElement handle(
             HttpServletRequest request,
             @Required(name = "graphVertexId") String graphVertexId,
-            @Required(name = "propertyName") String propertyName,
             @Optional(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @Optional(name = "value") String valueStr,
             @Optional(name = "value[]") String[] valuesStr,
             @Required(name = "visibilitySource") String visibilitySource,

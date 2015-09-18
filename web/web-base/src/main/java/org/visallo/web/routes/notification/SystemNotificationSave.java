@@ -33,14 +33,14 @@ public class SystemNotificationSave implements ParameterizedHandler {
 
     @Handle
     public ClientApiSuccess handle(
-            User user,
             @Optional(name = "notificationId") String notificationId,
             @Required(name = "severity") SystemNotificationSeverity severity,
             @Required(name = "title") String title,
             @Required(name = "message") String message,
             @Required(name = "startDate") String startDateParameter,
             @Optional(name = "endDate") String endDateParameter,
-            @Optional(name = "externalUrl") String externalUrl
+            @Optional(name = "externalUrl") String externalUrl,
+            User user
     ) throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));

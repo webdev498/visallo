@@ -30,8 +30,8 @@ public class Notifications implements ParameterizedHandler {
 
     @Handle
     public JSONObject handle(
-            User user,
-            @Optional(name = "futureDays", defaultValue = "10") int futureDays
+            @Optional(name = "futureDays", defaultValue = "10") int futureDays,
+            User user
     ) throws Exception {
         JSONObject notifications = new JSONObject();
 

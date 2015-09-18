@@ -21,8 +21,8 @@ public class EdgeGetPropertyHistory implements ParameterizedHandler {
     @Handle
     public ClientApiHistoricalPropertyValues handle(
             @Required(name = "graphEdgeId") String graphEdgeId,
-            @Required(name = "propertyName") String propertyName,
             @Required(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @Optional(name = "startTime") Long startTime,
             @Optional(name = "endTime") Long endTime,
             Authorizations authorizations

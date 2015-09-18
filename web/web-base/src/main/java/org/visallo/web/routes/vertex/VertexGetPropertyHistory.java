@@ -23,8 +23,8 @@ public class VertexGetPropertyHistory implements ParameterizedHandler {
     @Handle
     public ClientApiHistoricalPropertyValues handle(
             @Required(name = "graphVertexId") String graphVertexId,
-            @Required(name = "propertyName") String propertyName,
             @Required(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @Optional(name = "startTime") Long startTime,
             @Optional(name = "endTime") Long endTime,
             Authorizations authorizations

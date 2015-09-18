@@ -19,8 +19,8 @@ public class UserNotificationMarkRead implements ParameterizedHandler {
 
     @Handle
     public ClientApiSuccess handle(
-            User user,
-            @Required(name = "notificationIds[]") String[] notificationIds
+            @Required(name = "notificationIds[]") String[] notificationIds,
+            User user
     ) throws Exception {
         userNotificationRepository.markRead(notificationIds, user);
         return VisalloResponse.SUCCESS;

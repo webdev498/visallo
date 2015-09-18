@@ -48,8 +48,8 @@ public class VertexDeleteProperty implements ParameterizedHandler {
     @Handle
     public ClientApiSuccess handle(
             @Required(name = "graphVertexId") String graphVertexId,
-            @Required(name = "propertyName") String propertyName,
             @Required(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
             @ActiveWorkspaceId String workspaceId,
             User user,
             Authorizations authorizations

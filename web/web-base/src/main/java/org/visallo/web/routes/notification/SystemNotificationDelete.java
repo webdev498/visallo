@@ -27,8 +27,8 @@ public class SystemNotificationDelete implements ParameterizedHandler {
 
     @Handle
     public ClientApiSuccess handle(
-            User user,
-            @Required(name = "notificationId") String notificationId
+            @Required(name = "notificationId") String notificationId,
+            User user
     ) throws Exception {
         SystemNotification notification = systemNotificationRepository.getNotification(notificationId, user);
         if (notification == null) {
