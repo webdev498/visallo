@@ -1,6 +1,7 @@
 package org.visallo.web.clientapi;
 
 import org.junit.Test;
+import org.visallo.web.clientapi.auth.UsernameOnlyAuthentication;
 import org.visallo.web.clientapi.model.ClientApiUser;
 import org.visallo.web.clientapi.model.ClientApiVertex;
 import org.visallo.web.clientapi.model.ClientApiWorkspaceVertices;

@@ -8,7 +8,7 @@ import org.visallo.core.config.VisalloTestClusterConfigurationLoader;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.test.VisalloTestCluster;
-import org.visallo.web.clientapi.UsernameOnlyAuthentication;
+import org.visallo.web.clientapi.auth.UsernameOnlyAuthentication;
 import org.visallo.web.clientapi.VisalloApi;
 import org.visallo.web.clientapi.VisalloClientApiException;
 import org.visallo.web.clientapi.model.ClientApiProperty;
