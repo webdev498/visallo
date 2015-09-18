@@ -16,6 +16,305 @@ public abstract class VertexBase extends CategoryBase {
     }
 
     /**
+     * @param graphVertexId REQUIRED
+     * @param propertyKey REQUIRED
+     */
+    public String getHighlightedText(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Required(name = "propertyKey") String propertyKey
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        return getVisalloApi().execute("GET", "/vertex/highlighted-text", parameters, String.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param download OPTIONAL
+     * @param playback OPTIONAL
+     * @param type OPTIONAL
+     */
+    public InputStream getRaw(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Optional(name = "download", defaultValue = "false") boolean download,
+        @Optional(name = "playback", defaultValue = "false") boolean playback,
+        @Optional(name = "type") String type
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("download", download));
+        parameters.add(new VisalloApiBase.Parameter("playback", playback));
+        parameters.add(new VisalloApiBase.Parameter("type", type));
+        return getVisalloApi().execute("GET", "/vertex/raw", parameters, InputStream.class);
+    }
+
+    /**
+     * @param vertexIds REQUIRED
+     */
+    public ClientApiVerticesExistsResponse getExists(
+        @Required(name = "vertexIds[]") String[] vertexIds
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("vertexIds", vertexIds));
+        return getVisalloApi().execute("GET", "/vertex/exists", parameters, ClientApiVerticesExistsResponse.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param width OPTIONAL
+     */
+    public void getThumbnail(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Optional(name = "width") Integer width
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("width", width));
+        getVisalloApi().execute("GET", "/vertex/thumbnail", parameters, null);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param width OPTIONAL
+     */
+    public void getPosterFrame(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Optional(name = "width") Integer width
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("width", width));
+        getVisalloApi().execute("GET", "/vertex/poster-frame", parameters, null);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param width OPTIONAL
+     */
+    public void getVideoPreview(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Optional(name = "width") Integer width
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("width", width));
+        getVisalloApi().execute("GET", "/vertex/video-preview", parameters, null);
+    }
+
+    /**
+     * @param vertexId REQUIRED
+     */
+    public ClientApiVertexDetails getDetails(
+        @Required(name = "vertexId") String vertexId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("vertexId", vertexId));
+        return getVisalloApi().execute("GET", "/vertex/details", parameters, ClientApiVertexDetails.class);
+    }
+
+    /**
+     * @param vertexId REQUIRED
+     * @param propertyKey OPTIONAL
+     * @param propertyName REQUIRED
+     * @param visibilitySource REQUIRED
+     */
+    public ClientApiVertexPropertyDetails getPropertyDetails(
+        @Required(name = "vertexId") String vertexId,
+        @Optional(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "visibilitySource") String visibilitySource
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("vertexId", vertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
+        return getVisalloApi().execute("GET", "/vertex/property/details", parameters, ClientApiVertexPropertyDetails.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param propertyName REQUIRED
+     * @param workspaceId REQUIRED
+     */
+    public ClientApiDetectedObjects getDetectedObjects(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Required(name = "propertyName") String propertyName,
+        @Required(name = "workspaceId") String workspaceId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
+        return getVisalloApi().execute("GET", "/vertex/detected-objects", parameters, ClientApiDetectedObjects.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param propertyKey REQUIRED
+     * @param propertyName REQUIRED
+     * @param Range OPTIONAL
+     * @param download OPTIONAL
+     * @param playback OPTIONAL
+     */
+    public void getProperty(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Required(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName,
+        @Optional(name = "Range") String Range,
+        @Optional(name = "download", defaultValue = "false") boolean download,
+        @Optional(name = "playback", defaultValue = "false") boolean playback
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("Range", Range));
+        parameters.add(new VisalloApiBase.Parameter("download", download));
+        parameters.add(new VisalloApiBase.Parameter("playback", playback));
+        getVisalloApi().execute("GET", "/vertex/property", parameters, null);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param propertyKey REQUIRED
+     * @param propertyName REQUIRED
+     * @param startTime OPTIONAL
+     * @param endTime OPTIONAL
+     */
+    public ClientApiHistoricalPropertyValues getPropertyHistory(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Required(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName,
+        @Optional(name = "startTime") Long startTime,
+        @Optional(name = "endTime") Long endTime
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        parameters.add(new VisalloApiBase.Parameter("startTime", startTime));
+        parameters.add(new VisalloApiBase.Parameter("endTime", endTime));
+        return getVisalloApi().execute("GET", "/vertex/property/history", parameters, ClientApiHistoricalPropertyValues.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param propertyKey REQUIRED
+     * @param propertyName REQUIRED
+     */
+    public ClientApiTermMentionsResponse getTermMentions(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Required(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
+        return getVisalloApi().execute("GET", "/vertex/term-mentions", parameters, ClientApiTermMentionsResponse.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     */
+    public ClientApiElement getProperties(
+        @Required(name = "graphVertexId") String graphVertexId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        return getVisalloApi().execute("GET", "/vertex/properties", parameters, ClientApiElement.class);
+    }
+
+    /**
+     * @param graphVertexId REQUIRED
+     * @param offset OPTIONAL
+     * @param size OPTIONAL
+     * @param edgeLabel OPTIONAL
+     * @param relatedVertexId OPTIONAL
+     */
+    public ClientApiVertexEdges getEdges(
+        @Required(name = "graphVertexId") String graphVertexId,
+        @Optional(name = "offset", defaultValue = "0") int offset,
+        @Optional(name = "size", defaultValue = "25") int size,
+        @Optional(name = "edgeLabel") String edgeLabel,
+        @Optional(name = "relatedVertexId") String relatedVertexId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("offset", offset));
+        parameters.add(new VisalloApiBase.Parameter("size", size));
+        parameters.add(new VisalloApiBase.Parameter("edgeLabel", edgeLabel));
+        parameters.add(new VisalloApiBase.Parameter("relatedVertexId", relatedVertexId));
+        return getVisalloApi().execute("GET", "/vertex/edges", parameters, ClientApiVertexEdges.class);
+    }
+
+    /**
+     */
+    public ClientApiVertexSearchResponse getSearch(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        return getVisalloApi().execute("GET", "/vertex/search", parameters, ClientApiVertexSearchResponse.class);
+    }
+
+    /**
+     * @param lat REQUIRED
+     * @param lon REQUIRED
+     * @param radius REQUIRED
+     */
+    public ClientApiVertexSearchResponse getGeoSearch(
+        @Required(name = "lat") double lat,
+        @Required(name = "lon") double lon,
+        @Required(name = "radius") double radius
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("lat", lat));
+        parameters.add(new VisalloApiBase.Parameter("lon", lon));
+        parameters.add(new VisalloApiBase.Parameter("radius", radius));
+        return getVisalloApi().execute("GET", "/vertex/geo-search", parameters, ClientApiVertexSearchResponse.class);
+    }
+
+    /**
+     * @param sourceGraphVertexId REQUIRED
+     * @param destGraphVertexId REQUIRED
+     * @param hops REQUIRED
+     * @param labels OPTIONAL
+     */
+    public void getFindPath(
+        @Required(name = "sourceGraphVertexId") String sourceGraphVertexId,
+        @Required(name = "destGraphVertexId") String destGraphVertexId,
+        @Required(name = "hops") int hops,
+        @Optional(name = "labels[]") String[] labels
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        parameters.add(new VisalloApiBase.Parameter("sourceGraphVertexId", sourceGraphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("destGraphVertexId", destGraphVertexId));
+        parameters.add(new VisalloApiBase.Parameter("hops", hops));
+        parameters.add(new VisalloApiBase.Parameter("labels", labels));
+        getVisalloApi().execute("GET", "/vertex/find-path", parameters, null);
+    }
+
+    /**
+     */
+    public ClientApiVertexCountsByConceptType getCountsByConceptType(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        return getVisalloApi().execute("GET", "/vertex/counts-by-concept-type", parameters, ClientApiVertexCountsByConceptType.class);
+    }
+
+    /**
+     */
+    public ClientApiVertexCount getCount(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        return getVisalloApi().execute("GET", "/vertex/count", parameters, ClientApiVertexCount.class);
+    }
+
+    /**
      * @param vertexIds REQUIRED
      */
     public ClientApiVerticesExistsResponse postExists(
@@ -144,8 +443,8 @@ public abstract class VertexBase extends CategoryBase {
 
     /**
      * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
      * @param propertyKey OPTIONAL
+     * @param propertyName REQUIRED
      * @param value OPTIONAL
      * @param values OPTIONAL
      * @param visibilitySource REQUIRED
@@ -156,8 +455,8 @@ public abstract class VertexBase extends CategoryBase {
      */
     public ClientApiElement postProperty(
         @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
         @Optional(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName,
         @Optional(name = "value") String value,
         @Optional(name = "value[]") String[] values,
         @Required(name = "visibilitySource") String visibilitySource,
@@ -168,8 +467,8 @@ public abstract class VertexBase extends CategoryBase {
     ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("value", value));
         parameters.add(new VisalloApiBase.Parameter("values", values));
         parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
@@ -182,8 +481,8 @@ public abstract class VertexBase extends CategoryBase {
 
     /**
      * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
      * @param propertyKey OPTIONAL
+     * @param propertyName REQUIRED
      * @param value OPTIONAL
      * @param values OPTIONAL
      * @param visibilitySource REQUIRED
@@ -194,8 +493,8 @@ public abstract class VertexBase extends CategoryBase {
      */
     public ClientApiElement postComment(
         @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
         @Optional(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName,
         @Optional(name = "value") String value,
         @Optional(name = "value[]") String[] values,
         @Required(name = "visibilitySource") String visibilitySource,
@@ -206,8 +505,8 @@ public abstract class VertexBase extends CategoryBase {
     ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("value", value));
         parameters.add(new VisalloApiBase.Parameter("values", values));
         parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
@@ -322,318 +621,19 @@ public abstract class VertexBase extends CategoryBase {
 
     /**
      * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
      * @param propertyKey REQUIRED
+     * @param propertyName REQUIRED
      */
     public void deleteProperty(
         @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "propertyKey") String propertyKey
+        @Required(name = "propertyKey") String propertyKey,
+        @Required(name = "propertyName") String propertyName
     ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
+        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         getVisalloApi().execute("DELETE", "/vertex/property", parameters, null);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyKey REQUIRED
-     */
-    public String getHighlightedText(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyKey") String propertyKey
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        return getVisalloApi().execute("GET", "/vertex/highlighted-text", parameters, String.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param download OPTIONAL
-     * @param playback OPTIONAL
-     * @param type OPTIONAL
-     */
-    public InputStream getRaw(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Optional(name = "download", defaultValue = "false") boolean download,
-        @Optional(name = "playback", defaultValue = "false") boolean playback,
-        @Optional(name = "type") String type
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("download", download));
-        parameters.add(new VisalloApiBase.Parameter("playback", playback));
-        parameters.add(new VisalloApiBase.Parameter("type", type));
-        return getVisalloApi().execute("GET", "/vertex/raw", parameters, InputStream.class);
-    }
-
-    /**
-     * @param vertexIds REQUIRED
-     */
-    public ClientApiVerticesExistsResponse getExists(
-        @Required(name = "vertexIds[]") String[] vertexIds
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("vertexIds", vertexIds));
-        return getVisalloApi().execute("GET", "/vertex/exists", parameters, ClientApiVerticesExistsResponse.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param width OPTIONAL
-     */
-    public void getThumbnail(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Optional(name = "width") Integer width
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("width", width));
-        getVisalloApi().execute("GET", "/vertex/thumbnail", parameters, null);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param width OPTIONAL
-     */
-    public void getPosterFrame(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Optional(name = "width") Integer width
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("width", width));
-        getVisalloApi().execute("GET", "/vertex/poster-frame", parameters, null);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param width OPTIONAL
-     */
-    public void getVideoPreview(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Optional(name = "width") Integer width
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("width", width));
-        getVisalloApi().execute("GET", "/vertex/video-preview", parameters, null);
-    }
-
-    /**
-     * @param vertexId REQUIRED
-     */
-    public ClientApiVertexDetails getDetails(
-        @Required(name = "vertexId") String vertexId
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("vertexId", vertexId));
-        return getVisalloApi().execute("GET", "/vertex/details", parameters, ClientApiVertexDetails.class);
-    }
-
-    /**
-     * @param vertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param visibilitySource REQUIRED
-     * @param propertyKey OPTIONAL
-     */
-    public ClientApiVertexPropertyDetails getPropertyDetails(
-        @Required(name = "vertexId") String vertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "visibilitySource") String visibilitySource,
-        @Optional(name = "propertyKey") String propertyKey
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("vertexId", vertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        return getVisalloApi().execute("GET", "/vertex/property/details", parameters, ClientApiVertexPropertyDetails.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param workspaceId REQUIRED
-     */
-    public ClientApiDetectedObjects getDetectedObjects(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "workspaceId") String workspaceId
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
-        return getVisalloApi().execute("GET", "/vertex/detected-objects", parameters, ClientApiDetectedObjects.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param propertyKey REQUIRED
-     * @param Range OPTIONAL
-     * @param download OPTIONAL
-     * @param playback OPTIONAL
-     */
-    public void getProperty(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "propertyKey") String propertyKey,
-        @Optional(name = "Range") String Range,
-        @Optional(name = "download", defaultValue = "false") boolean download,
-        @Optional(name = "playback", defaultValue = "false") boolean playback
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        parameters.add(new VisalloApiBase.Parameter("Range", Range));
-        parameters.add(new VisalloApiBase.Parameter("download", download));
-        parameters.add(new VisalloApiBase.Parameter("playback", playback));
-        getVisalloApi().execute("GET", "/vertex/property", parameters, null);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param propertyKey REQUIRED
-     * @param startTime OPTIONAL
-     * @param endTime OPTIONAL
-     */
-    public ClientApiHistoricalPropertyValues getPropertyHistory(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "propertyKey") String propertyKey,
-        @Optional(name = "startTime") Long startTime,
-        @Optional(name = "endTime") Long endTime
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        parameters.add(new VisalloApiBase.Parameter("startTime", startTime));
-        parameters.add(new VisalloApiBase.Parameter("endTime", endTime));
-        return getVisalloApi().execute("GET", "/vertex/property/history", parameters, ClientApiHistoricalPropertyValues.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param propertyName REQUIRED
-     * @param propertyKey REQUIRED
-     */
-    public ClientApiTermMentionsResponse getTermMentions(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Required(name = "propertyName") String propertyName,
-        @Required(name = "propertyKey") String propertyKey
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
-        parameters.add(new VisalloApiBase.Parameter("propertyKey", propertyKey));
-        return getVisalloApi().execute("GET", "/vertex/term-mentions", parameters, ClientApiTermMentionsResponse.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     */
-    public ClientApiElement getProperties(
-        @Required(name = "graphVertexId") String graphVertexId
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        return getVisalloApi().execute("GET", "/vertex/properties", parameters, ClientApiElement.class);
-    }
-
-    /**
-     * @param graphVertexId REQUIRED
-     * @param offset OPTIONAL
-     * @param size OPTIONAL
-     * @param edgeLabel OPTIONAL
-     * @param relatedVertexId OPTIONAL
-     */
-    public ClientApiVertexEdges getEdges(
-        @Required(name = "graphVertexId") String graphVertexId,
-        @Optional(name = "offset", defaultValue = "0") int offset,
-        @Optional(name = "size", defaultValue = "25") int size,
-        @Optional(name = "edgeLabel") String edgeLabel,
-        @Optional(name = "relatedVertexId") String relatedVertexId
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("offset", offset));
-        parameters.add(new VisalloApiBase.Parameter("size", size));
-        parameters.add(new VisalloApiBase.Parameter("edgeLabel", edgeLabel));
-        parameters.add(new VisalloApiBase.Parameter("relatedVertexId", relatedVertexId));
-        return getVisalloApi().execute("GET", "/vertex/edges", parameters, ClientApiVertexEdges.class);
-    }
-
-    /**
-     */
-    public ClientApiVertexSearchResponse getSearch(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        return getVisalloApi().execute("GET", "/vertex/search", parameters, ClientApiVertexSearchResponse.class);
-    }
-
-    /**
-     * @param lat REQUIRED
-     * @param lon REQUIRED
-     * @param radius REQUIRED
-     */
-    public ClientApiVertexSearchResponse getGeoSearch(
-        @Required(name = "lat") double lat,
-        @Required(name = "lon") double lon,
-        @Required(name = "radius") double radius
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("lat", lat));
-        parameters.add(new VisalloApiBase.Parameter("lon", lon));
-        parameters.add(new VisalloApiBase.Parameter("radius", radius));
-        return getVisalloApi().execute("GET", "/vertex/geo-search", parameters, ClientApiVertexSearchResponse.class);
-    }
-
-    /**
-     * @param sourceGraphVertexId REQUIRED
-     * @param destGraphVertexId REQUIRED
-     * @param hops REQUIRED
-     * @param labels OPTIONAL
-     */
-    public void getFindPath(
-        @Required(name = "sourceGraphVertexId") String sourceGraphVertexId,
-        @Required(name = "destGraphVertexId") String destGraphVertexId,
-        @Required(name = "hops") int hops,
-        @Optional(name = "labels[]") String[] labels
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        parameters.add(new VisalloApiBase.Parameter("sourceGraphVertexId", sourceGraphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("destGraphVertexId", destGraphVertexId));
-        parameters.add(new VisalloApiBase.Parameter("hops", hops));
-        parameters.add(new VisalloApiBase.Parameter("labels", labels));
-        getVisalloApi().execute("GET", "/vertex/find-path", parameters, null);
-    }
-
-    /**
-     */
-    public ClientApiVertexCountsByConceptType getCountsByConceptType(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        return getVisalloApi().execute("GET", "/vertex/counts-by-concept-type", parameters, ClientApiVertexCountsByConceptType.class);
-    }
-
-    /**
-     */
-    public ClientApiVertexCount getCount(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        return getVisalloApi().execute("GET", "/vertex/count", parameters, ClientApiVertexCount.class);
     }
 
 }

@@ -12,6 +12,7 @@ import org.visallo.web.clientapi.model.ClientApiSuccess;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -207,5 +208,9 @@ public class VisalloResponse {
         } catch (IOException e) {
             throw new VisalloException("Error occurred while writing response", e);
         }
+    }
+
+    public ServletResponse getHttpServletResponse() {
+        return response;
     }
 }
