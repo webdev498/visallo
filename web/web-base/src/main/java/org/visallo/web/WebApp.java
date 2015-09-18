@@ -70,6 +70,7 @@ public class WebApp extends App {
         App.registeredParameterProviderFactory(injector.getInstance(WebAppParameterProviderFactory.class));
 
         App.registerParameterValueConverter(ClientApiObject.class, new ClientApiObjectParameterValueConverter());
+        App.registerParameterValueConverter(ClientApiObject[].class, new ClientApiObjectArrayParameterValueConverter());
         App.registerParameterValueConverter(SystemNotificationSeverity.class, new SystemNotificationSeverityValueConverter());
 
         App.registerParameterValueConverter(JSONObject.class, new JSONObjectParameterValueConverter());
