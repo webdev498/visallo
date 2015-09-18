@@ -12,7 +12,6 @@ import org.visallo.web.clientapi.model.ClientApiSuccess;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -210,7 +209,7 @@ public class VisalloResponse {
         }
     }
 
-    public ServletResponse getHttpServletResponse() {
+    public HttpServletResponse getHttpServletResponse() {
         return response;
     }
 }
