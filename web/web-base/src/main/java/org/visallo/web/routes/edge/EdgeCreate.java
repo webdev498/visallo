@@ -43,8 +43,8 @@ public class EdgeCreate implements ParameterizedHandler {
     @Handle
     public ClientApiElement handle(
             @Optional(name = "edgeId") String edgeId,
-            @Required(name = "sourceGraphVertexId") String sourceGraphVertexId,
-            @Required(name = "destGraphVertexId") String destGraphVertexId,
+            @Required(name = "outVertexId") String outVertexId,
+            @Required(name = "inVertexId") String inVertexId,
             @Required(name = "predicateLabel") String predicateLabel,
             @Required(name = "visibilitySource") String visibilitySource,
             @JustificationText String justificationText,
@@ -54,8 +54,8 @@ public class EdgeCreate implements ParameterizedHandler {
             User user,
             Authorizations authorizations
     ) throws Exception {
-        Vertex destVertex = graph.getVertex(destGraphVertexId, authorizations);
-        Vertex sourceVertex = graph.getVertex(sourceGraphVertexId, authorizations);
+        Vertex inVertex = graph.getVertex(inVertexId, authorizations);
+        Vertex outVertex = graph.getVertex(outVertexId, authorizations);
 
         if (!graph.isVisibilityValid(new Visibility(visibilitySource), authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
@@ -64,8 +64,8 @@ public class EdgeCreate implements ParameterizedHandler {
 
         Edge edge = graphRepository.addEdge(
                 edgeId,
-                sourceVertex,
-                destVertex,
+                outVertex,
+                inVertex,
                 predicateLabel,
                 justificationText,
                 sourceInfo,

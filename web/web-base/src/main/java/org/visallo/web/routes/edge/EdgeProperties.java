@@ -29,16 +29,16 @@ public class EdgeProperties implements ParameterizedHandler {
             throw new VisalloResourceNotFoundException("Could not find edge: " + graphEdgeId);
         }
 
-        Vertex sourceVertex = edge.getVertex(Direction.OUT, authorizations);
-        if (sourceVertex == null) {
-            throw new VisalloResourceNotFoundException("Could not find sourceVertex: " + edge.getVertexId(Direction.OUT));
+        Vertex outVertex = edge.getVertex(Direction.OUT, authorizations);
+        if (outVertex == null) {
+            throw new VisalloResourceNotFoundException("Could not find outVertex: " + edge.getVertexId(Direction.OUT));
         }
 
-        Vertex targetVertex = edge.getVertex(Direction.IN, authorizations);
-        if (targetVertex == null) {
-            throw new VisalloResourceNotFoundException("Could not find targetVertex: " + edge.getVertexId(Direction.IN));
+        Vertex inVertex = edge.getVertex(Direction.IN, authorizations);
+        if (inVertex == null) {
+            throw new VisalloResourceNotFoundException("Could not find inVertex: " + edge.getVertexId(Direction.IN));
         }
 
-        return ClientApiConverter.toClientApiEdgeWithVertexData(edge, sourceVertex, targetVertex, workspaceId, authorizations);
+        return ClientApiConverter.toClientApiEdgeWithVertexData(edge, outVertex, inVertex, workspaceId, authorizations);
     }
 }

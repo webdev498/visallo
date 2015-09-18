@@ -126,7 +126,7 @@ public class ResolveTermEntity implements ParameterizedHandler {
 
         ClientApiSourceInfo sourceInfo = ClientApiSourceInfo.fromString(sourceInfoString);
         new TermMentionBuilder()
-                .sourceVertex(artifactVertex)
+                .outVertex(artifactVertex)
                 .propertyKey(propertyKey)
                 .start(mentionStart)
                 .end(mentionEnd)

@@ -63,7 +63,7 @@ public class VertexHighlightedText implements ParameterizedHandler {
             if (text == null) {
                 highlightedText = "";
             } else {
-                Iterable<Vertex> termMentions = termMentionRepository.findBySourceGraphVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizationsWithTermMention);
+                Iterable<Vertex> termMentions = termMentionRepository.findByOutVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizationsWithTermMention);
                 highlightedText = entityHighlighter.getHighlightedText(text, termMentions, workspaceId, authorizationsWithTermMention);
             }
 
@@ -74,7 +74,7 @@ public class VertexHighlightedText implements ParameterizedHandler {
         VideoTranscript videoTranscript = MediaVisalloProperties.VIDEO_TRANSCRIPT.getPropertyValue(artifactVertex, propertyKey);
         if (videoTranscript != null) {
             LOGGER.debug("returning video transcript for vertexId:%s property:%s", artifactVertex.getId(), propertyKey);
-            Iterable<Vertex> termMentions = termMentionRepository.findBySourceGraphVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
+            Iterable<Vertex> termMentions = termMentionRepository.findByOutVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
             VideoTranscript highlightedVideoTranscript = entityHighlighter.getHighlightedVideoTranscript(videoTranscript, termMentions, workspaceId, authorizations);
             response.setContentType("application/json");
             return highlightedVideoTranscript.toJson().toString();
@@ -83,7 +83,7 @@ public class VertexHighlightedText implements ParameterizedHandler {
         videoTranscript = JsonSerializer.getSynthesisedVideoTranscription(artifactVertex, propertyKey);
         if (videoTranscript != null) {
             LOGGER.debug("returning synthesised video transcript for vertexId:%s property:%s", artifactVertex.getId(), propertyKey);
-            Iterable<Vertex> termMentions = termMentionRepository.findBySourceGraphVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
+            Iterable<Vertex> termMentions = termMentionRepository.findByOutVertexAndPropertyKey(artifactVertex.getId(), propertyKey, authorizations);
             VideoTranscript highlightedVideoTranscript = entityHighlighter.getHighlightedVideoTranscript(videoTranscript, termMentions, workspaceId, authorizationsWithTermMention);
             response.setContentType("application/json");
             return highlightedVideoTranscript.toJson().toString();
