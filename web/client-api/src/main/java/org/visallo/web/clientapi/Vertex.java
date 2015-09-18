@@ -3,8 +3,11 @@ package org.visallo.web.clientapi;
 import org.visallo.web.clientapi.codegen.VertexBase;
 import org.visallo.web.clientapi.codegen.VisalloApiBase;
 import org.visallo.web.clientapi.model.ClientApiArtifactImportResponse;
+import org.visallo.web.clientapi.model.ClientApiElement;
 import org.visallo.web.clientapi.model.ClientApiVertexEdges;
 import org.visallo.web.clientapi.model.ClientApiVertexSearchResponse;
+import org.visallo.web.clientapi.util.Optional;
+import org.visallo.web.clientapi.util.Required;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,5 +37,16 @@ public class Vertex extends VertexBase {
 
     public ClientApiVertexEdges getEdges(String graphVertexId) {
         return getEdges(graphVertexId, 0, 25, null, null);
+    }
+
+    public ClientApiElement postProperty(
+            @Required(name = "graphVertexId") String graphVertexId,
+            @Optional(name = "propertyKey") String propertyKey,
+            @Required(name = "propertyName") String propertyName,
+            @Optional(name = "value") String value,
+            @Required(name = "visibilitySource") String visibilitySource,
+            @Optional(name = "justificationText") String justificationText
+    ) {
+        return super.postProperty(graphVertexId, propertyKey, propertyName, value, null, visibilitySource, null, null, null, justificationText);
     }
 }

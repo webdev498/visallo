@@ -137,15 +137,16 @@ public class JavaClientApiFormat extends ClientApiFormat {
                 Class<?> parameterType = parameterTypes[i];
                 Annotation[] parameterAnnotations = parametersAnnotations[i];
                 String parameterName = getParameterName(parameterAnnotations);
-                if (parameterName == null) {
+                String name = parameterName;
+                if (name == null) {
                     continue;
                 }
-                parameterName = NameUtil.toFieldName(parameterName);
-                if (parameterType.isArray() && !parameterName.endsWith("s")) {
-                    parameterName += "s";
+                name = NameUtil.toFieldName(name);
+                if (parameterType.isArray() && !name.endsWith("s")) {
+                    name += "s";
                 }
                 String javadoc = isRequired(parameterAnnotations) ? "REQUIRED" : "OPTIONAL";
-                results.add(new Parameter(parameterName, javadoc));
+                results.add(new Parameter(name, parameterName, javadoc));
             }
             return results;
         }
@@ -251,11 +252,13 @@ public class JavaClientApiFormat extends ClientApiFormat {
         }
 
         public static class Parameter {
+            private final String parameterName;
             private final String name;
             private final String javadoc;
 
-            public Parameter(String name, String javadoc) {
+            public Parameter(String name, String parameterName, String javadoc) {
                 this.name = name;
+                this.parameterName = parameterName;
                 this.javadoc = javadoc;
             }
 
@@ -265,6 +268,10 @@ public class JavaClientApiFormat extends ClientApiFormat {
 
             public String getJavadoc() {
                 return javadoc;
+            }
+
+            public String getParameterName() {
+                return parameterName;
             }
         }
     }

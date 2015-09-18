@@ -92,26 +92,28 @@ public class VertexNew implements ParameterizedHandler {
         ClientApiAddElementProperties properties = null;
         if (propertiesJsonString != null && propertiesJsonString.length() > 0) {
             properties = ClientApiConverter.toClientApi(propertiesJsonString, ClientApiAddElementProperties.class);
-            for (ClientApiAddElementProperties.Property property : properties.properties) {
-                OntologyProperty ontologyProperty = ontologyRepository.getPropertyByIRI(property.propertyName);
-                checkNotNull(ontologyProperty, "Could not find ontology property '" + property.propertyName + "'");
-                Object value = ontologyProperty.convertString(property.value);
-                Metadata metadata = VertexiumMetadataUtil.metadataStringToMap(property.metadataString, this.visibilityTranslator.getDefaultVisibility());
-                VisibilityAndElementMutation<Vertex> setPropertyResult = graphRepository.setProperty(
-                        vertex,
-                        property.propertyName,
-                        property.propertyKey,
-                        value,
-                        metadata,
-                        null,
-                        property.visibilitySource,
-                        workspaceId,
-                        justificationText,
-                        sourceInfo,
-                        user,
-                        authorizations
-                );
-                setPropertyResult.elementMutation.save(authorizations);
+            if (properties.properties != null) {
+                for (ClientApiAddElementProperties.Property property : properties.properties) {
+                    OntologyProperty ontologyProperty = ontologyRepository.getPropertyByIRI(property.propertyName);
+                    checkNotNull(ontologyProperty, "Could not find ontology property '" + property.propertyName + "'");
+                    Object value = ontologyProperty.convertString(property.value);
+                    Metadata metadata = VertexiumMetadataUtil.metadataStringToMap(property.metadataString, this.visibilityTranslator.getDefaultVisibility());
+                    VisibilityAndElementMutation<Vertex> setPropertyResult = graphRepository.setProperty(
+                            vertex,
+                            property.propertyName,
+                            property.propertyKey,
+                            value,
+                            metadata,
+                            null,
+                            property.visibilitySource,
+                            workspaceId,
+                            justificationText,
+                            sourceInfo,
+                            user,
+                            authorizations
+                    );
+                    setPropertyResult.elementMutation.save(authorizations);
+                }
             }
         }
         this.graph.flush();

@@ -6,28 +6,7 @@ public class VertexIntegrationTest extends VertextTestBase {
 //    private static final String NO_MATCHING_PROPERTY_VALUE = "NoMatchingProperty";
 //    private static final String EMPTY_FILTER = "[]";
 //
-//    @Test
-//    public void testFindMultiple() throws VisalloClientApiException {
-//        VertexVisibilityHelper helper = new VertexVisibilityHelper();
-//
-//        List<ClientApiVertex> vertices =
-//                helper.vertexApi.findMultiple(helper.allVertexIds, false).getVertices();
-//
-//        assertEquals(2, vertices.size());
-//        for (ClientApiVertex vertex : vertices) {
-//            assertEquals(2 + NUM_DEFAULT_PROPERTIES, vertex.getProperties().size());
-//        }
-//
-//        final List<String> allVertexIdsIncludingBadOne = new ArrayList<>();
-//        allVertexIdsIncludingBadOne.addAll(helper.allVertexIds);
-//        allVertexIdsIncludingBadOne.add("bad");
-//        Map<String, Boolean> exists = helper.vertexApi.doExist(allVertexIdsIncludingBadOne).getExists();
-//        assertEquals(4, exists.size()); // should include 2 you can see, one you can't see, and one with a bad id
-//        for (ClientApiVertex vertex : vertices) {
-//            assertTrue(vertex.getId() + " should exist", exists.get(vertex.getId()));
-//        }
-//        assertFalse("bad should not exist", exists.get("bad"));
-//    }
+
 //
 //    @Test
 //    public void testSearchVisibleWithQueryString() throws VisalloClientApiException {

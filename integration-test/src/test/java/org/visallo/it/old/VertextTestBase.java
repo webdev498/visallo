@@ -21,33 +21,12 @@ public abstract class VertextTestBase extends TestBase {
 //        addUserAuths(setupVisalloApi, USERNAME_TEST_USER_1, "a", "b", "c", "d", "e", "f", "x", "y", "z");
 //    }
 //
-//    protected List<String> createVertices(int numVertices, List<String> vertexVisibilities,
-//                                          int numPropertiesPerVertex, List<String> propertyVisibilities)
-//            throws ApiException {
-//        LoopingIterator vertexVizIterator = new LoopingIterator(vertexVisibilities);
-//        LoopingIterator propertyVizIterator = new LoopingIterator(propertyVisibilities);
-//        List<String> vertexIds = new ArrayList<>();
-//        for (int i = 0; i < numVertices; i++) {
-//            ClientApiElement vertex = setupVertexApi.create(TestOntology.CONCEPT_PERSON, (String) vertexVizIterator.next(), "justification");
-//            String vertexId = vertex.getId();
-//            setVertexProperties(numPropertiesPerVertex, propertyVizIterator, vertexId);
-//            vertexIds.add(vertexId);
-//        }
-//        return vertexIds;
-//    }
+
 //
 //    protected List<String> createPublicVertices(int numVertices, int numPropertiesPerVertex) throws VisalloClientApiException {
 //        return createVertices(numVertices, PUBLIC_VISIBILITY, numPropertiesPerVertex, PUBLIC_VISIBILITY);
 //    }
 //
-//    protected void setVertexProperties(int numPropertiesPerVertex, LoopingIterator propertyAuthIterator, String vertexId)
-//            throws VisalloClientApiException {
-//        for (int j = 0; j < numPropertiesPerVertex; j++) {
-//            setupVertexApi.setProperty(vertexId, PROPERTY_KEY_PREFIX + j, PROPERTY_NAME, PROPERTY_VALUE_PREFIX + j,
-//                    (String) propertyAuthIterator.next(), "", null, null);
-//
-//        }
-//    }
 //
 //    protected void createEdge(String sourceVertexId, String destVertexId, String edgeLabel) throws VisalloClientApiException {
 //        setupEdgeApi.create(sourceVertexId, destVertexId, edgeLabel, "", "ok", "{}", null);

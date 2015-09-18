@@ -16,33 +16,6 @@ public abstract class AdminBase extends CategoryBase {
     }
 
     /**
-     */
-    public String getAll(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        return getVisalloApi().execute("GET", "/admin/all", parameters, String.class);
-    }
-
-    /**
-     */
-    public JSONObject getPlugins(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        return getVisalloApi().execute("GET", "/admin/plugins", parameters, JSONObject.class);
-    }
-
-    /**
-     */
-    public void getRouteRunner(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
-        getVisalloApi().execute("GET", "/admin/routeRunner", parameters, null);
-    }
-
-    /**
      * @param documentIRI OPTIONAL
      */
     public void postUploadOntology(
@@ -95,6 +68,33 @@ public abstract class AdminBase extends CategoryBase {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
         getVisalloApi().execute("POST", "/admin/deleteEdge", parameters, null);
+    }
+
+    /**
+     */
+    public String getAll(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        return getVisalloApi().execute("GET", "/admin/all", parameters, String.class);
+    }
+
+    /**
+     */
+    public JSONObject getPlugins(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        return getVisalloApi().execute("GET", "/admin/plugins", parameters, JSONObject.class);
+    }
+
+    /**
+     */
+    public void getRouteRunner(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        getVisalloApi().execute("GET", "/admin/routeRunner", parameters, null);
     }
 
 }

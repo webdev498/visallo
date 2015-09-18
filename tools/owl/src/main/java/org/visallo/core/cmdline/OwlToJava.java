@@ -178,6 +178,11 @@ public class OwlToJava extends CommandLineTool {
     }
 
     private String toJavaConst(String label) {
+        int hashIndex = label.lastIndexOf('#');
+        if (hashIndex > 0) {
+            label = label.substring(hashIndex + 1);
+        }
+
         boolean lastCharLower = false;
         StringBuilder result = new StringBuilder();
         for (char c : label.toCharArray()) {

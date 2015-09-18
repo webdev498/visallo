@@ -26,7 +26,7 @@ public abstract class {{className}} extends CategoryBase {
     ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
         {{#each parameters}}
-        parameters.add(new VisalloApiBase.Parameter("{{name}}", {{name}}));
+        parameters.add(new VisalloApiBase.Parameter("{{parameterName}}", {{name}}));
         {{/each}}
         {{returnStmt}}getVisalloApi().execute("{{httpVerb}}", "{{path}}", parameters, {{returnTypeClass}});
     }

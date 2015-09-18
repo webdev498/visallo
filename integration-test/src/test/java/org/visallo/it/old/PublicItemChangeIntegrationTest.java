@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-@RunWith(MockitoJUnitRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 public class PublicItemChangeIntegrationTest extends TestBase {
 //    private ClientApiElement e1;
 //    private ClientApiElement v1;

@@ -100,57 +100,6 @@ public abstract class VisalloApiBase {
 
     public abstract <T> T execute(String httpVerb, String path, List<Parameter> parameters, Class<T> returnType);
 
-    protected String getParametersAsUrlEncodedString(List<Parameter> parameters) {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for (Parameter parameter : parameters) {
-            if (!first) {
-                result.append("&");
-            }
-            result.append(parameter.getName());
-            result.append("=");
-            result.append(parameterValueToUrlEncodedString(parameter.getValue()));
-            first = false;
-        }
-        return result.toString();
-    }
-
-    protected String parameterValueToUrlEncodedString(Object value) {
-        try {
-            return URLEncoder.encode(value.toString(), "utf8");
-        } catch (UnsupportedEncodingException ex) {
-            throw new VisalloClientApiException("Could not encode string", ex);
-        }
-    }
-
-    protected <T> T byteArrayToReturnType(byte[] result, Class<T> cls) {
-        try {
-            String json = new String(result);
-            if (String.class.equals(cls)) {
-                if (json.startsWith("\"") && json.endsWith("\"") && json.length() > 1) {
-                    return (T) json.substring(1, json.length() - 2);
-                } else {
-                    return (T) json;
-                }
-            } else {
-                return JsonUtil.getJsonMapper().readValue(json, cls);
-            }
-        } catch (IOException ex) {
-            throw new VisalloClientApiException("Could not convert results to " + cls.getName(), ex);
-        }
-    }
-
-    protected byte[] readAllFromHttpURLConnection(HttpURLConnection connection) throws IOException {
-        InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int read;
-        byte[] buffer = new byte[10 * 1024];
-        while ((read = in.read(buffer)) > 0) {
-            out.write(buffer, 0, read);
-        }
-        return out.toByteArray();
-    }
-
     protected abstract String getSessionCookieValue();
 
     public abstract String getWorkspaceId();
