@@ -52,14 +52,14 @@ public class EdgeDelete implements ParameterizedHandler {
         }
 
         Edge edge = graph.getEdge(edgeId, authorizations);
-        Vertex sourceVertex = edge.getVertex(Direction.OUT, authorizations);
-        Vertex destVertex = edge.getVertex(Direction.IN, authorizations);
+        Vertex outVertex = edge.getVertex(Direction.OUT, authorizations);
+        Vertex inVertex = edge.getVertex(Direction.IN, authorizations);
 
         SandboxStatus sandboxStatus = SandboxStatusUtil.getSandboxStatus(edge, workspaceId);
 
         boolean isPublicEdge = sandboxStatus == SandboxStatus.PUBLIC;
 
-        workspaceHelper.deleteEdge(workspaceId, edge, sourceVertex, destVertex, isPublicEdge, Priority.HIGH, authorizations, user);
+        workspaceHelper.deleteEdge(workspaceId, edge, outVertex, inVertex, isPublicEdge, Priority.HIGH, authorizations, user);
 
         return VisalloResponse.SUCCESS;
     }

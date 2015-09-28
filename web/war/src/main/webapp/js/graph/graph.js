@@ -79,8 +79,8 @@ define([
                 return {
                     edgeId: fullEdge.id,
                     label: fullEdge.label,
-                    inVertexId: fullEdge.destVertexId,
-                    outVertexId: fullEdge.sourceVertexId
+                    inVertexId: fullEdge.inVertexId,
+                    outVertexId: fullEdge.outVertexId
                 };
             },
             generateCompoundEdgeId = function(edge) {
@@ -1718,7 +1718,7 @@ define([
         this.createVertex = function(offset) {
             var self = this;
             if (Privileges.canEDIT) {
-                require(['util/popovers/createVertex/createVertex'], function(CreateVertex) {
+                require(['util/popovers/fileImport/fileImport'], function(CreateVertex) {
                     CreateVertex.attachTo(self.$node, {
                         anchorTo: {
                             page: {

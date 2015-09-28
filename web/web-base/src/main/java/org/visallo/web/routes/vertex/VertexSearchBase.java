@@ -11,10 +11,8 @@ import org.vertexium.query.*;
 import org.vertexium.util.CloseableIterable;
 import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
-import org.visallo.core.model.ontology.Concept;
 import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
-import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.core.trace.Trace;
 import org.visallo.core.trace.TraceSpan;
 import org.visallo.core.util.ClientApiConverter;
@@ -283,22 +281,10 @@ public abstract class VertexSearchBase {
     protected void applyConceptTypeFilterToQuery(QueryAndData queryAndData, HttpServletRequest request) {
         final String conceptType = VisalloBaseParameterProvider.getOptionalParameter(request, "conceptType");
         final String includeChildNodes = VisalloBaseParameterProvider.getOptionalParameter(request, "includeChildNodes");
+        Query query = queryAndData.getQuery();
         if (conceptType != null) {
-            Concept concept = ontologyRepository.getConceptByIRI(conceptType);
-            if (includeChildNodes == null || !includeChildNodes.equals("false")) {
-                Set<Concept> childConcepts = ontologyRepository.getConceptAndAllChildren(concept);
-                if (childConcepts.size() > 0) {
-                    String[] conceptIds = new String[childConcepts.size()];
-                    int count = 0;
-                    for (Concept c : childConcepts) {
-                        conceptIds[count] = c.getIRI();
-                        count++;
-                    }
-                    queryAndData.getQuery().has(VisalloProperties.CONCEPT_TYPE.getPropertyName(), Contains.IN, conceptIds);
-                }
-            } else {
-                queryAndData.getQuery().has(VisalloProperties.CONCEPT_TYPE.getPropertyName(), conceptType);
-            }
+            boolean includeChildNodesBoolean = includeChildNodes == null || !includeChildNodes.equals("false");
+            ontologyRepository.addConceptTypeFilterToQuery(query, conceptType, includeChildNodesBoolean);
         }
     }
 

@@ -313,11 +313,25 @@ define([
                     isVideo = displayType === 'video';
 
                 if (entityImageVertexId || isImage) {
-                    return 'vertex/thumbnail?' + $.param({
+                    var params = {
                         workspaceId: optionalWorkspaceId || visalloData.currentWorkspaceId,
                         graphVertexId: entityImageVertexId || vertex.id,
                         width: width || 150
+                    };
+
+                    _.each(vertex.properties, function(prop) {
+                        var intents = ontology.properties.byTitle[prop.name].intents;
+                        if (intents) {
+                            if (_.indexOf(intents, 'media.clockwiseRotation') >= 0) {
+                                params.rotation = prop.value;
+                            }
+                            if (_.indexOf(intents, 'media.yAxisFlipped') >= 0) {
+                                params.flip = prop.value;
+                            }
+                        }
                     });
+
+                    return 'vertex/thumbnail?' + $.param(params);
                 }
 
                 if (isVideo) {
@@ -804,7 +818,7 @@ define([
                     vertex.properties['http://visallo.org#conceptType'] === 'relationship';
                 return propsIsObjectNotArray ||
                     V.prop(vertex, 'conceptType') === 'relationship' ||
-                    (_.has(vertex, 'sourceVertexId') && _.has(vertex, 'destVertexId'));
+                    (_.has(vertex, 'outVertexId') && _.has(vertex, 'inVertexId'));
             },
 
             isArtifact: function(vertex) {

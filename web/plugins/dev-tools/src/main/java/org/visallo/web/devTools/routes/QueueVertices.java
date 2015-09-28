@@ -52,7 +52,7 @@ public class QueueVertices implements ParameterizedHandler {
                 Iterable<Vertex> vertices = graph.getVertices(authorizations);
                 for (Vertex vertex : vertices) {
                     if (finalPropertyName == null) {
-                        workQueueRepository.broadcastElement(vertex, null);
+                        workQueueRepository.pushElement(vertex, Priority.NORMAL);
                         pushedCount++;
                     } else {
                         Iterable<Property> properties = vertex.getProperties(finalPropertyName);

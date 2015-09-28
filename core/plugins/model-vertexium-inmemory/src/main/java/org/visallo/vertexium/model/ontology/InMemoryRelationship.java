@@ -16,8 +16,16 @@ public class InMemoryRelationship extends Relationship {
     private List<String> intents = new ArrayList<>();
     private boolean userVisible;
 
-    protected InMemoryRelationship(String relationshipIRI, String displayName, List<String> domainConceptIRIs, List<String> rangeConceptIRIs, String[] intents, boolean userVisible) {
-        super(domainConceptIRIs, rangeConceptIRIs);
+    protected InMemoryRelationship(
+            String parentIRI,
+            String relationshipIRI,
+            String displayName,
+            List<String> domainConceptIRIs,
+            List<String> rangeConceptIRIs,
+            String[] intents,
+            boolean userVisible
+    ) {
+        super(parentIRI, domainConceptIRIs, rangeConceptIRIs);
         this.relationshipIRI = relationshipIRI;
         this.displayName = displayName;
         this.intents.addAll(Arrays.asList(intents));
@@ -52,6 +60,16 @@ public class InMemoryRelationship extends Relationship {
     @Override
     public String[] getIntents() {
         return this.intents.toArray(new String[this.intents.size()]);
+    }
+
+    @Override
+    public void addIntent(String intent, Authorizations authorizations) {
+        this.intents.add(intent);
+    }
+
+    @Override
+    public void removeIntent(String intent, Authorizations authorizations) {
+        this.intents.remove(intent);
     }
 
     @Override

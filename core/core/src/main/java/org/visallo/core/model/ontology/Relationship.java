@@ -1,5 +1,6 @@
 package org.visallo.core.model.ontology;
 
+import com.google.common.collect.Lists;
 import org.json.JSONException;
 import org.vertexium.Authorizations;
 import org.visallo.web.clientapi.model.ClientApiOntology;
@@ -10,15 +11,21 @@ import java.util.Collection;
 import java.util.List;
 
 public abstract class Relationship {
+    private final String parentIRI;
     private final List<String> domainConceptIRIs;
     private final List<String> rangeConceptIRIs;
 
-    protected Relationship(List<String> domainConceptIRIs, List<String> rangeConceptIRIs) {
+    protected Relationship(String parentIRI, List<String> domainConceptIRIs, List<String> rangeConceptIRIs) {
+        this.parentIRI = parentIRI;
         this.domainConceptIRIs = domainConceptIRIs;
         this.rangeConceptIRIs = rangeConceptIRIs;
     }
 
     public abstract String getIRI();
+
+    public String getParentIRI() {
+        return parentIRI;
+    }
 
     public abstract String getDisplayName();
 
@@ -36,11 +43,30 @@ public abstract class Relationship {
 
     public abstract String[] getIntents();
 
+    public abstract void addIntent(String intent, Authorizations authorizations);
+
+    public abstract void removeIntent(String intent, Authorizations authorizations);
+
+    public void updateIntents(String[] newIntents, Authorizations authorizations) {
+        ArrayList<String> toBeRemovedIntents = Lists.newArrayList(getIntents());
+        for (String newIntent : newIntents) {
+            if (toBeRemovedIntents.contains(newIntent)) {
+                toBeRemovedIntents.remove(newIntent);
+            } else {
+                addIntent(newIntent, authorizations);
+            }
+        }
+        for (String toBeRemovedIntent : toBeRemovedIntents) {
+            removeIntent(toBeRemovedIntent, authorizations);
+        }
+    }
+
     public abstract void setProperty(String name, Object value, Authorizations authorizations);
 
     public ClientApiOntology.Relationship toClientApi() {
         try {
             ClientApiOntology.Relationship result = new ClientApiOntology.Relationship();
+            result.setParentIri(getParentIRI());
             result.setTitle(getIRI());
             result.setDisplayName(getDisplayName());
             result.setDomainConceptIris(getDomainConceptIRIs());

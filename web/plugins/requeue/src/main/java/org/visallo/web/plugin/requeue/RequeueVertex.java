@@ -8,7 +8,6 @@ import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Required;
 import org.vertexium.Authorizations;
 import org.vertexium.Graph;
-import org.vertexium.Property;
 import org.vertexium.Vertex;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
@@ -33,7 +32,7 @@ public class RequeueVertex implements ParameterizedHandler {
 
     @Handle
     public ClientApiSuccess handle(
-            @Required(name = "vertexIds[]") String [] vertexIdsParam,
+            @Required(name = "vertexIds[]") String[] vertexIdsParam,
             Authorizations authorizations
     ) throws Exception {
         LOGGER.debug("requeuing %d vertices: %s", vertexIdsParam.length, Joiner.on(", ").join(vertexIdsParam));
@@ -45,15 +44,12 @@ public class RequeueVertex implements ParameterizedHandler {
 
     private void requeueVertices(Iterable<Vertex> vertices) {
         for (Vertex vertex : vertices) {
-            LOGGER.debug("requeuing vertex: %s", vertex.getId());
             requeueVertex(vertex);
         }
     }
 
     private void requeueVertex(Vertex vertex) {
-        workQueueRepository.broadcastElement(vertex, null);
-        for (Property property : vertex.getProperties()) {
-            workQueueRepository.pushGraphPropertyQueue(vertex, property, Priority.HIGH);
-        }
+        LOGGER.debug("requeuing vertex: %s", vertex.getId());
+        workQueueRepository.pushElement(vertex, Priority.HIGH);
     }
 }
