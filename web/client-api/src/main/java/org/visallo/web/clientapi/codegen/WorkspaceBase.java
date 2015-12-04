@@ -16,6 +16,55 @@ public abstract class WorkspaceBase extends CategoryBase {
     }
 
     /**
+     */
+    public ClientApiWorkspaces getAll(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        return getVisalloApi().execute("GET", "/workspace/all", parameters, ClientApiWorkspaces.class);
+    }
+
+    /**
+     */
+    public ClientApiWorkspaceDiff getDiff(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        return getVisalloApi().execute("GET", "/workspace/diff", parameters, ClientApiWorkspaceDiff.class);
+    }
+
+    /**
+     * @param ids OPTIONAL
+     */
+    public ClientApiWorkspaceEdges getEdges(
+        @Optional(name = "ids[]") String[] ids
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        parameters.add(new VisalloApiBase.Parameter("ids[]", ids));
+        return getVisalloApi().execute("GET", "/workspace/edges", parameters, ClientApiWorkspaceEdges.class);
+    }
+
+    /**
+     */
+    public ClientApiWorkspaceVertices getVertices(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        return getVisalloApi().execute("GET", "/workspace/vertices", parameters, ClientApiWorkspaceVertices.class);
+    }
+
+    /**
+     * @param workspaceId REQUIRED
+     */
+    public ClientApiWorkspace get(
+        @Required(name = "workspaceId") String workspaceId
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
+        return getVisalloApi().execute("GET", "/workspace", parameters, ClientApiWorkspace.class);
+    }
+
+    /**
      * @param title OPTIONAL
      */
     public ClientApiWorkspace postCreate(
@@ -93,55 +142,6 @@ public abstract class WorkspaceBase extends CategoryBase {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
         getVisalloApi().execute("DELETE", "/workspace", parameters, null);
-    }
-
-    /**
-     */
-    public ClientApiWorkspaces getAll(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        return getVisalloApi().execute("GET", "/workspace/all", parameters, ClientApiWorkspaces.class);
-    }
-
-    /**
-     */
-    public ClientApiWorkspaceDiff getDiff(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        return getVisalloApi().execute("GET", "/workspace/diff", parameters, ClientApiWorkspaceDiff.class);
-    }
-
-    /**
-     * @param ids OPTIONAL
-     */
-    public ClientApiWorkspaceEdges getEdges(
-        @Optional(name = "ids[]") String[] ids
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        parameters.add(new VisalloApiBase.Parameter("ids[]", ids));
-        return getVisalloApi().execute("GET", "/workspace/edges", parameters, ClientApiWorkspaceEdges.class);
-    }
-
-    /**
-     */
-    public ClientApiWorkspaceVertices getVertices(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        return getVisalloApi().execute("GET", "/workspace/vertices", parameters, ClientApiWorkspaceVertices.class);
-    }
-
-    /**
-     * @param workspaceId REQUIRED
-     */
-    public ClientApiWorkspace get(
-        @Required(name = "workspaceId") String workspaceId
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
-        return getVisalloApi().execute("GET", "/workspace", parameters, ClientApiWorkspace.class);
     }
 
 }

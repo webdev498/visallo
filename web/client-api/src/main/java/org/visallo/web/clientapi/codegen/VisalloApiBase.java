@@ -6,14 +6,13 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class VisalloApiBase {
@@ -64,33 +63,33 @@ public abstract class VisalloApiBase {
             throw new VisalloClientApiException("Could not ignore SSL errors", ex);
         }
     }
-
+    
     public Edge getEdge() {
-        return edge;
+      return edge;
     }
 
     public Workspace getWorkspace() {
-        return workspace;
+      return workspace;
     }
 
     public Vertex getVertex() {
-        return vertex;
+      return vertex;
     }
 
     public Admin getAdmin() {
-        return admin;
+      return admin;
     }
 
     public User getUser() {
-        return user;
+      return user;
     }
 
     public LongRunningProcess getLongRunningProcess() {
-        return longRunningProcess;
+      return longRunningProcess;
     }
 
     public Ontology getOntology() {
-        return ontology;
+      return ontology;
     }
 
 

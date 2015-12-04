@@ -16,6 +16,52 @@ public abstract class UserBase extends CategoryBase {
     }
 
     /**
+     */
+    public ClientApiUser getMe(
+        
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        return getVisalloApi().execute("GET", "/user/me", parameters, ClientApiUser.class);
+    }
+
+    /**
+     * @param q OPTIONAL
+     * @param workspaceId OPTIONAL
+     * @param userIds OPTIONAL
+     * @param status OPTIONAL
+     * @param skip OPTIONAL
+     * @param limit OPTIONAL
+     */
+    public ClientApiUsers getAll(
+        @Optional(name = "q") String q,
+        @Optional(name = "workspaceId") String workspaceId,
+        @Optional(name = "userIds[]") String[] userIds,
+        @Optional(name = "status") String status,
+        @Optional(name = "skip", defaultValue = "0") int skip,
+        @Optional(name = "limit", defaultValue = "100") int limit
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        parameters.add(new VisalloApiBase.Parameter("q", q));
+        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
+        parameters.add(new VisalloApiBase.Parameter("userIds[]", userIds));
+        parameters.add(new VisalloApiBase.Parameter("status", status));
+        parameters.add(new VisalloApiBase.Parameter("skip", skip));
+        parameters.add(new VisalloApiBase.Parameter("limit", limit));
+        return getVisalloApi().execute("GET", "/user/all", parameters, ClientApiUsers.class);
+    }
+
+    /**
+     * @param userName REQUIRED
+     */
+    public ClientApiUser get(
+        @Required(name = "user-name") String userName
+    ) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
+        parameters.add(new VisalloApiBase.Parameter("user-name", userName));
+        return getVisalloApi().execute("GET", "/user", parameters, ClientApiUser.class);
+    }
+
+    /**
      * @param uiPreferences OPTIONAL
      * @param name OPTIONAL
      * @param value OPTIONAL
@@ -36,16 +82,25 @@ public abstract class UserBase extends CategoryBase {
      * @param q OPTIONAL
      * @param workspaceId OPTIONAL
      * @param userIds OPTIONAL
+     * @param status OPTIONAL
+     * @param skip OPTIONAL
+     * @param limit OPTIONAL
      */
     public ClientApiUsers postAll(
         @Optional(name = "q") String q,
         @Optional(name = "workspaceId") String workspaceId,
-        @Optional(name = "userIds[]") String[] userIds
+        @Optional(name = "userIds[]") String[] userIds,
+        @Optional(name = "status") String status,
+        @Optional(name = "skip", defaultValue = "0") int skip,
+        @Optional(name = "limit", defaultValue = "100") int limit
     ) {
         List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("q", q));
         parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
         parameters.add(new VisalloApiBase.Parameter("userIds[]", userIds));
+        parameters.add(new VisalloApiBase.Parameter("status", status));
+        parameters.add(new VisalloApiBase.Parameter("skip", skip));
+        parameters.add(new VisalloApiBase.Parameter("limit", limit));
         return getVisalloApi().execute("POST", "/user/all", parameters, ClientApiUsers.class);
     }
 
@@ -100,43 +155,6 @@ public abstract class UserBase extends CategoryBase {
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         parameters.add(new VisalloApiBase.Parameter("privileges", privileges));
         return getVisalloApi().execute("POST", "/user/privileges/update", parameters, JSONObject.class);
-    }
-
-    /**
-     */
-    public ClientApiUser getMe(
-        
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        return getVisalloApi().execute("GET", "/user/me", parameters, ClientApiUser.class);
-    }
-
-    /**
-     * @param q OPTIONAL
-     * @param workspaceId OPTIONAL
-     * @param userIds OPTIONAL
-     */
-    public ClientApiUsers getAll(
-        @Optional(name = "q") String q,
-        @Optional(name = "workspaceId") String workspaceId,
-        @Optional(name = "userIds[]") String[] userIds
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        parameters.add(new VisalloApiBase.Parameter("q", q));
-        parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
-        parameters.add(new VisalloApiBase.Parameter("userIds[]", userIds));
-        return getVisalloApi().execute("GET", "/user/all", parameters, ClientApiUsers.class);
-    }
-
-    /**
-     * @param userName REQUIRED
-     */
-    public ClientApiUser get(
-        @Required(name = "user-name") String userName
-    ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
-        parameters.add(new VisalloApiBase.Parameter("user-name", userName));
-        return getVisalloApi().execute("GET", "/user", parameters, ClientApiUser.class);
     }
 
 }
