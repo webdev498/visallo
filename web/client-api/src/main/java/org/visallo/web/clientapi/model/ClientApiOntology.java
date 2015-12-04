@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.*;
 
 public class ClientApiOntology implements ClientApiObject {
-    private List<Concept> concepts = new ArrayList<>();
-    private List<Property> properties = new ArrayList<>();
-    private List<Relationship> relationships = new ArrayList<>();
+    private List<Concept> concepts = new ArrayList<Concept>();
+    private List<Property> properties = new ArrayList<Property>();
+    private List<Relationship> relationships = new ArrayList<Relationship>();
 
     public List<Concept> getConcepts() {
         return concepts;
@@ -48,10 +48,12 @@ public class ClientApiOntology implements ClientApiObject {
         private String glyphIconHref;
         private String glyphIconSelectedHref;
         private String color;
-        private List<String> intents = new ArrayList<>();
-        private List<String> addRelatedConceptWhiteList = new ArrayList<>();
-        private List<String> properties = new ArrayList<>();
-        private Map<String, String> metadata = new HashMap<>();
+        private Boolean deleteable;
+        private Boolean updateable;
+        private List<String> intents = new ArrayList<String>();
+        private List<String> addRelatedConceptWhiteList = new ArrayList<String>();
+        private List<String> properties = new ArrayList<String>();
+        private Map<String, String> metadata = new HashMap<String, String>();
 
         public String getId() {
             return id;
@@ -165,6 +167,22 @@ public class ClientApiOntology implements ClientApiObject {
             this.color = color;
         }
 
+        public Boolean getUpdateable() {
+            return updateable;
+        }
+
+        public void setUpdateable(Boolean updateable) {
+            this.updateable = updateable;
+        }
+
+        public Boolean getDeleteable() {
+            return deleteable;
+        }
+
+        public void setDeleteable(Boolean deleteable) {
+            this.deleteable = deleteable;
+        }
+
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public Map<String, String> getMetadata() {
             return metadata;
@@ -195,11 +213,13 @@ public class ClientApiOntology implements ClientApiObject {
         private PropertyType dataType;
         private String displayType;
         private String propertyGroup;
-        private Map<String, String> possibleValues = new HashMap<>();
+        private Map<String, String> possibleValues = new HashMap<String, String>();
         private String validationFormula;
         private String displayFormula;
         private String[] dependentPropertyIris;
-        private List<String> intents = new ArrayList<>();
+        private boolean deleteable;
+        private boolean updateable;
+        private List<String> intents = new ArrayList<String>();
 
         public String getTitle() {
             return title;
@@ -247,6 +267,22 @@ public class ClientApiOntology implements ClientApiObject {
 
         public void setSortable(boolean sortable) {
             this.sortable = sortable;
+        }
+
+        public boolean isUpdateable() {
+            return updateable;
+        }
+
+        public void setUpdateable(boolean updateable) {
+            this.updateable = updateable;
+        }
+
+        public boolean isDeleteable() {
+            return deleteable;
+        }
+
+        public void setDeleteable(boolean deleteable) {
+            this.deleteable = deleteable;
         }
 
         public PropertyType getDataType() {
@@ -321,10 +357,16 @@ public class ClientApiOntology implements ClientApiObject {
         private String title;
         private String displayName;
         private Boolean userVisible;
-        private List<String> domainConceptIris = new ArrayList<>();
-        private List<String> rangeConceptIris = new ArrayList<>();
-        private List<InverseOf> inverseOfs = new ArrayList<>();
-        private List<String> intents = new ArrayList<>();
+        private Boolean updateable;
+        private Boolean deleteable;
+        private String titleFormula;
+        private String subtitleFormula;
+        private String timeFormula;
+        private List<String> domainConceptIris = new ArrayList<String>();
+        private List<String> rangeConceptIris = new ArrayList<String>();
+        private List<InverseOf> inverseOfs = new ArrayList<InverseOf>();
+        private List<String> intents = new ArrayList<String>();
+        private List<String> properties = new ArrayList<String>();
 
         public String getTitle() {
             return title;
@@ -372,6 +414,54 @@ public class ClientApiOntology implements ClientApiObject {
 
         public void setUserVisible(Boolean userVisible) {
             this.userVisible = userVisible;
+        }
+
+        public Boolean getUpdateable() {
+            return updateable;
+        }
+
+        public void setUpdateable(Boolean updateable) {
+            this.updateable = updateable;
+        }
+
+        public Boolean getDeleteable() {
+            return deleteable;
+        }
+
+        public void setDeleteable(Boolean deleteable) {
+            this.deleteable = deleteable;
+        }
+
+        public List<String> getProperties() {
+            return properties;
+        }
+
+        public void setProperties(List<String> properties) {
+            this.properties = properties;
+        }
+
+        public String getTitleFormula() {
+            return titleFormula;
+        }
+
+        public void setTitleFormula(String titleFormula) {
+            this.titleFormula = titleFormula;
+        }
+
+        public String getSubtitleFormula() {
+            return subtitleFormula;
+        }
+
+        public void setSubtitleFormula(String subtitleFormula) {
+            this.subtitleFormula = subtitleFormula;
+        }
+
+        public String getTimeFormula() {
+            return timeFormula;
+        }
+
+        public void setTimeFormula(String timeFormula) {
+            this.timeFormula = timeFormula;
         }
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)

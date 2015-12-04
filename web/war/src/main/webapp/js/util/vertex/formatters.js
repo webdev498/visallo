@@ -320,7 +320,8 @@ define([
                     };
 
                     _.each(vertex.properties, function(prop) {
-                        var intents = ontology.properties.byTitle[prop.name].intents;
+                        var ontologyProperty = ontology.properties.byTitle[prop.name],
+                            intents = ontologyProperty ? ontologyProperty.intents : null;
                         if (intents) {
                             if (_.indexOf(intents, 'media.clockwiseRotation') >= 0) {
                                 params.rotation = prop.value;
@@ -727,7 +728,7 @@ define([
             },
 
             title: function(vertex) {
-                var title = formulaResultForVertex(vertex, 'titleFormula')
+                var title = formulaResultForElement(vertex, 'titleFormula')
 
                 if (!title) {
                     title = V.prop(vertex, 'title', undefined, {
@@ -738,9 +739,9 @@ define([
                 return title;
             },
 
-            subtitle: _.partial(formulaResultForVertex, _, 'subtitleFormula', ''),
+            subtitle: _.partial(formulaResultForElement, _, 'subtitleFormula', ''),
 
-            time: _.partial(formulaResultForVertex, _, 'timeFormula', ''),
+            time: _.partial(formulaResultForElement, _, 'timeFormula', ''),
 
             heading: function(vertex) {
                 var headingProp = _.find(vertex.properties, function(p) {
@@ -813,6 +814,10 @@ define([
                 }
             },
 
+            isVertex: function(vertex) {
+                return vertex && vertex.id && _.isArray(vertex.properties) && !V.isEdge(vertex);
+            },
+
             isEdge: function(vertex) {
                 var propsIsObjectNotArray = _.isObject(vertex && vertex.properties) &&
                     vertex.properties['http://visallo.org#conceptType'] === 'relationship';
@@ -847,10 +852,16 @@ define([
             }
         };
 
+    var E = {
+        title: V.title,
+        subtitle: V.subtitle,
+        time: V.time
+    };
+
     // Legacy
     V.properties.byte = V.properties.bytes;
 
-    return $.extend({}, F, { vertex: V, vertexUrl: vertexUrl.vertexUrl });
+    return $.extend({}, F, { vertex: V, vertexUrl: vertexUrl.vertexUrl, edge: E });
 
     function treeLookupForConceptProperty(conceptId, propertyName) {
         var ontologyConcept = conceptId && ontology.concepts.byId[conceptId],
@@ -865,13 +876,26 @@ define([
         }
     }
 
-    function formulaResultForVertex(vertex, formulaKey, defaultValue) {
-        var conceptId = V.prop(vertex, 'conceptType'),
-            formulaString = treeLookupForConceptProperty(conceptId, formulaKey),
-            result = defaultValue;
+    function formulaResultForElement(vertexOrEdge, formulaKey, defaultValue) {
+        var isEdge = V.isEdge(vertexOrEdge),
+            result = defaultValue,
+            formulaString,
+            additionalScope = {};
+
+        if (isEdge) {
+            var edge = vertexOrEdge,
+                ontologyRelation = ontology.relationships.byTitle[edge.label],
+                label = ontologyRelation.displayName;
+            additionalScope.label = label;
+            formulaString = ontologyRelation[formulaKey];
+        } else {
+            var vertex = vertexOrEdge,
+                conceptId = V.prop(vertex, 'conceptType');
+            formulaString = treeLookupForConceptProperty(conceptId, formulaKey);
+        }
 
         if (formulaString) {
-            result = formula(formulaString, vertex, V);
+            result = formula(formulaString, vertexOrEdge, V, undefined, { additionalScope: additionalScope });
         }
 
         return result;

@@ -35,12 +35,18 @@ requirejs(['/base/js/require.config.js'], function(cfg) {
 
         deps: [
             'chai',
-            '../libs/es5-shim/es5-shim',
-            '../libs/es5-shim/es5-sham',
             '../libs/underscore/underscore'
         ],
 
         callback: function(chai) {
+            if (typeof Function.prototype.bind !== 'function') {
+                /*eslint no-extend-native:0 */
+                Function.prototype.bind = function() {
+                    var args = _.toArray(arguments),
+                        bindArgs = [this, args.shift()].concat(args);
+                    return _.bind.apply(_, bindArgs);
+                }
+            }
 
             window.visalloData = {
                 currentWorkspaceId: 'w1'

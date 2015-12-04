@@ -2,11 +2,14 @@ package org.visallo.vertexium.model.ontology;
 
 import org.vertexium.Authorizations;
 import org.vertexium.util.ConvertingIterable;
+import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.ontology.OntologyProperties;
+import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.Relationship;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class InMemoryRelationship extends Relationship {
@@ -14,7 +17,12 @@ public class InMemoryRelationship extends Relationship {
     private String displayName;
     private List<Relationship> inverseOfs = new ArrayList<>();
     private List<String> intents = new ArrayList<>();
-    private boolean userVisible;
+    private boolean userVisible = true;
+    private boolean deleteable;
+    private boolean updateable;
+    private String titleFormula;
+    private String subtitleFormula;
+    private String timeFormula;
 
     protected InMemoryRelationship(
             String parentIRI,
@@ -22,14 +30,19 @@ public class InMemoryRelationship extends Relationship {
             String displayName,
             List<String> domainConceptIRIs,
             List<String> rangeConceptIRIs,
+            Collection<OntologyProperty> properties,
             String[] intents,
-            boolean userVisible
+            boolean userVisible,
+            boolean deleteable,
+            boolean updateable
     ) {
-        super(parentIRI, domainConceptIRIs, rangeConceptIRIs);
+        super(parentIRI, domainConceptIRIs, rangeConceptIRIs, properties);
         this.relationshipIRI = relationshipIRI;
         this.displayName = displayName;
         this.intents.addAll(Arrays.asList(intents));
         this.userVisible = userVisible;
+        this.deleteable = deleteable;
+        this.updateable = updateable;
     }
 
     @Override
@@ -58,6 +71,30 @@ public class InMemoryRelationship extends Relationship {
     }
 
     @Override
+    public boolean getDeleteable() {
+        return deleteable;
+    }
+
+    @Override
+    public boolean getUpdateable() {
+        return updateable;
+    }
+
+    public String getTitleFormula() {
+        return titleFormula;
+    }
+
+    @Override
+    public String getSubtitleFormula() {
+        return this.subtitleFormula;
+    }
+
+    @Override
+    public String getTimeFormula() {
+        return this.timeFormula;
+    }
+
+    @Override
     public String[] getIntents() {
         return this.intents.toArray(new String[this.intents.size()]);
     }
@@ -76,6 +113,27 @@ public class InMemoryRelationship extends Relationship {
     public void setProperty(String name, Object value, Authorizations authorizations) {
         if (OntologyProperties.DISPLAY_NAME.getPropertyName().equals(name)) {
             this.displayName = (String) value;
+        } else if (OntologyProperties.TITLE_FORMULA.getPropertyName().equals(name)) {
+            this.titleFormula = (String) value;
+        } else if (OntologyProperties.SUBTITLE_FORMULA.getPropertyName().equals(name)) {
+            this.subtitleFormula = (String) value;
+        } else if (OntologyProperties.TIME_FORMULA.getPropertyName().equals(name)) {
+            this.timeFormula = (String) value;
+        } else if (OntologyProperties.USER_VISIBLE.getPropertyName().equals(name)) {
+            this.userVisible = (Boolean) value;
+        }
+    }
+
+    @Override
+    public void removeProperty(String name, Authorizations authorizations) {
+        if (OntologyProperties.TITLE_FORMULA.getPropertyName().equals(name)) {
+            this.titleFormula = null;
+        } else if (OntologyProperties.SUBTITLE_FORMULA.getPropertyName().equals(name)) {
+            this.subtitleFormula = null;
+        } else if (OntologyProperties.TIME_FORMULA.getPropertyName().equals(name)) {
+            this.timeFormula = null;
+        } else {
+            throw new VisalloException("Remove not implemented for property " + name);
         }
     }
 

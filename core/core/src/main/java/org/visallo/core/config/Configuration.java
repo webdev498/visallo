@@ -1,10 +1,10 @@
 package org.visallo.core.config;
 
 import org.apache.commons.beanutils.ConvertUtilsBean;
-import org.apache.hadoop.fs.FileSystem;
-import org.json.JSONObject;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.json.JSONObject;
 import org.visallo.core.bootstrap.InjectHelper;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.ontology.Concept;
@@ -15,11 +15,11 @@ import org.visallo.core.util.ClassUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.*;
 
 /**
@@ -30,11 +30,16 @@ public class Configuration {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(Configuration.class);
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    public static final String PROPERTY_HADOOP_CONF_DIR = "hadoop.conf.dir";
+    public static final String ENV_VARIABLE_HADOOP_CONF_DIR = "HADOOP_CONF_DIR";
+    public static final String DEFAULT_HADOOP_CONF_DIR = "/etc/hadoop/conf";
+    public static final String[] HADOOP_CONF_FILENAMES = new String[]{"core-site.xml", "hdfs-site.xml", "mapred-site.xml", "yarn-site.xml"};
+
     public static final String BASE_URL = "base.url";
-    public static final String HADOOP_URL = "hadoop.url";
     public static final String HDFS_LIB_SOURCE_DIRECTORY = "hdfsLib.sourceDirectory";
     public static final String HDFS_LIB_TEMP_DIRECTORY = "hdfsLib.tempDirectory";
-    public static final String HDFS_LIB_HDFS_USER = "hdfsLib.user";
+    public static final String HDFS_USER_NAME = "hdfsUserName";
+    public static final String HDFS_USER_NAME_DEFAULT = "hadoop";
     public static final String ZK_SERVERS = "zookeeper.serverNames";
     public static final String LOCK_REPOSITORY = "repository.lock";
     public static final String TRACE_REPOSITORY = "repository.trace";
@@ -43,18 +48,23 @@ public class Configuration {
     public static final String WORKSPACE_REPOSITORY = "repository.workspace";
     public static final String AUTHORIZATION_REPOSITORY = "repository.authorization";
     public static final String ONTOLOGY_REPOSITORY = "repository.ontology";
+    public static final String USER_SESSION_COUNTER_REPOSITORY = "repository.userSessionCounter";
     public static final String WORK_QUEUE_REPOSITORY = "repository.workQueue";
     public static final String LONG_RUNNING_PROCESS_REPOSITORY = "repository.longRunningProcess";
     public static final String SIMPLE_ORM_SESSION = "simpleOrmSession";
     public static final String HTTP_REPOSITORY = "repository.http";
     public static final String GEOCODER_REPOSITORY = "repository.geocoder";
     public static final String EMAIL_REPOSITORY = "repository.email";
+    public static final String STATUS_REPOSITORY = "repository.status";
     public static final String ONTOLOGY_REPOSITORY_OWL = "repository.ontology.owl";
+    public static final String ACL_PROVIDER_REPOSITORY = "repository.acl";
+    public static final String FILE_SYSTEM_REPOSITORY = "repository.fileSystem";
     public static final String GRAPH_PROVIDER = "graph";
     public static final String VISIBILITY_TRANSLATOR = "security.visibilityTranslator";
     public static final String DEFAULT_PRIVILEGES = "newuser.privileges";
     public static final String WEB_CONFIGURATION_PREFIX = "web.ui.";
     public static final String WEB_GEOCODER_ENABLED = WEB_CONFIGURATION_PREFIX + "geocoder.enabled";
+    public static final String MAPZEN_TILE_API_KEY = "mapzen.tile.api.key";
     public static final String DEV_MODE = "devMode";
     public static final String DEFAULT_SEARCH_RESULT_COUNT = "search.defaultSearchCount";
     public static final String LOCK_REPOSITORY_PATH_PREFIX = "lockRepository.pathPrefix";
@@ -67,9 +77,16 @@ public class Configuration {
     public static final String DEFAULT_STATUS_ZK_PATH = "/visallo/status";
     public static final String STATUS_PORT_RANGE = "status.portRange";
     public static final String DEFAULT_STATUS_PORT_RANGE = "40000-41000";
-    public static final String STATUS_REFRESH_INTERVAL = "status.refreshInterval";
-    public static final int DEFAULT_STATUS_REFRESH_INTERVAL = 10;
     public static final String BROADCAST_EXCHANGE_NAME_CONFIGURATION = "rabbitmq.broadcastExchangeName";
+
+    public static final String STATUS_REFRESH_INTERVAL_SECONDS = "status.refreshIntervalSeconds";
+    public static final int STATUS_REFRESH_INTERVAL_SECONDS_DEFAULT = 10;
+    public static final String STATUS_ENABLED = "status.enabled";
+    public static final boolean STATUS_ENABLED_DEFAULT = true;
+
+    public static final String CURATOR_ENABLED = "curator.enabled";
+    public static final boolean CURATOR_ENABLED_DEFAULT = true;
+
     private final ConfigurationLoader configurationLoader;
     private final VisalloResourceBundleManager visalloResourceBundleManager;
 
@@ -87,9 +104,9 @@ public class Configuration {
     }
 
     private void resolvePropertyReferences() {
-        for(Map.Entry<String, String> entry : config.entrySet()) {
+        for (Map.Entry<String, String> entry : config.entrySet()) {
             String entryValue = entry.getValue();
-            if(!StringUtils.isBlank(entryValue)) {
+            if (!StringUtils.isBlank(entryValue)) {
                 entry.setValue(StrSubstitutor.replace(entryValue, config));
             }
         }
@@ -325,6 +342,7 @@ public class Configuration {
         return sb.toString();
     }
 
+    @Deprecated
     public org.apache.hadoop.conf.Configuration toHadoopConfiguration() {
         org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
         for (Object entryObj : this.toMap().entrySet()) {
@@ -334,6 +352,7 @@ public class Configuration {
         return conf;
     }
 
+    @Deprecated
     public org.apache.hadoop.conf.Configuration toHadoopConfiguration(org.apache.hadoop.conf.Configuration additionalConfiguration) {
         org.apache.hadoop.conf.Configuration hadoopConfig = toHadoopConfiguration();
         hadoopConfig.setBoolean("mapred.used.genericoptionsparser", true); // eliminates warning on our version of hadoop
@@ -343,8 +362,96 @@ public class Configuration {
         return hadoopConfig;
     }
 
-    public File resolveFileName(String fileName) {
-        return this.configurationLoader.resolveFileName(fileName);
+    public org.apache.hadoop.conf.Configuration getHadoopConfiguration(org.apache.hadoop.conf.Configuration additionalConfiguration) {
+        org.apache.hadoop.conf.Configuration result = getHadoopConfiguration();
+        for (Map.Entry<String, String> entry : additionalConfiguration) {
+            result.set(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    public org.apache.hadoop.conf.Configuration getHadoopConfiguration() {
+        org.apache.hadoop.conf.Configuration hadoopConfiguration = new org.apache.hadoop.conf.Configuration();
+
+        for (Object entryObj : this.toMap().entrySet()) {
+            Map.Entry entry = (Map.Entry) entryObj;
+            hadoopConfiguration.set(entry.getKey().toString(), entry.getValue().toString());
+        }
+        hadoopConfiguration.setBoolean("mapred.used.genericoptionsparser", true);
+
+        File dir = null;
+        String property = get(PROPERTY_HADOOP_CONF_DIR, null);
+        String envVariable = System.getenv(ENV_VARIABLE_HADOOP_CONF_DIR);
+        if (property != null) {
+            dir = new File(property);
+            if (!dir.isDirectory()) {
+                LOGGER.warn("configuration property %s is not a directory", PROPERTY_HADOOP_CONF_DIR);
+                dir = null;
+            }
+        }
+        if (dir == null && envVariable != null) {
+            dir = new File(envVariable);
+            if (!dir.isDirectory()) {
+                LOGGER.warn("environment variable %s is not a directory", ENV_VARIABLE_HADOOP_CONF_DIR);
+                dir = null;
+            }
+        }
+        if (dir == null) {
+            dir = new File(DEFAULT_HADOOP_CONF_DIR);
+            if (!dir.isDirectory()) {
+                LOGGER.warn("(default) %s is not a directory", DEFAULT_HADOOP_CONF_DIR);
+                dir = null;
+            }
+        }
+        if (dir != null) {
+            for (String xmlFilename : HADOOP_CONF_FILENAMES) {
+                File file = new File(dir, xmlFilename);
+                if (file.isFile()) {
+                    LOGGER.info("adding resource: %s to Hadoop configuration", file);
+                    try {
+                        ByteArrayInputStream in = new ByteArrayInputStream(FileUtils.readFileToByteArray(file));
+                        hadoopConfiguration.addResource(in);
+                    } catch (Exception ex) {
+                        LOGGER.warn("error adding resource: " + xmlFilename + " to Hadoop configuration", ex);
+                    }
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        SortedSet<String> keys = new TreeSet<>();
+        for (Map.Entry<String, String> entry : hadoopConfiguration) {
+            keys.add(entry.getKey());
+        }
+
+        boolean first = true;
+        for (String key : keys) {
+            String[] sources = hadoopConfiguration.getPropertySources(key);
+            if (sources == null) {
+                continue;
+            }
+            String source = sources[sources.length - 1];
+
+            if (source.endsWith("default.xml") && !LOGGER.isTraceEnabled()) {
+                continue;
+            }
+
+            if (first) {
+                first = false;
+            } else {
+                sb.append(LINE_SEPARATOR);
+            }
+            if (key.toLowerCase().contains("password")) {
+                sb.append(key).append(": ********");
+            } else {
+                sb.append(key).append(": ").append(hadoopConfiguration.get(key));
+            }
+            sb.append(" (").append(source).append(")");
+        }
+
+        LOGGER.debug("Hadoop configuration:%n%s", sb.toString());
+
+        return hadoopConfiguration;
     }
 
     public JSONObject toJSON(Locale locale) {
@@ -462,17 +569,5 @@ public class Configuration {
 
     public JSONObject getConfigurationInfo() {
         return configurationLoader.getConfigurationInfo();
-    }
-
-    public FileSystem getFileSystem() {
-        FileSystem hdfsFileSystem;
-        org.apache.hadoop.conf.Configuration conf = toHadoopConfiguration();
-        try {
-            String hdfsRootDir = get(Configuration.HADOOP_URL, null);
-            hdfsFileSystem = FileSystem.get(new URI(hdfsRootDir), conf, "hadoop");
-        } catch (Exception e) {
-            throw new VisalloException("Could not open hdfs filesystem", e);
-        }
-        return hdfsFileSystem;
     }
 }

@@ -6,6 +6,7 @@ import com.google.common.io.Files;
 import com.google.inject.Inject;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.ParameterParser;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -19,13 +20,13 @@ import org.visallo.core.exception.VisalloException;
 import org.visallo.core.ingest.FileImport;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workspace.Workspace;
+import org.visallo.core.model.workspace.WorkspaceHelper;
 import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.user.User;
 import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.BadRequestException;
-import org.visallo.web.VisalloResponse;
 import org.visallo.web.clientapi.model.ClientApiArtifactImportResponse;
 import org.visallo.web.clientapi.model.ClientApiImportProperty;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
@@ -86,29 +87,32 @@ public class VertexImport implements ParameterizedHandler {
 
     @Handle
     public ClientApiArtifactImportResponse handle(
+            @Optional(name = "publish", defaultValue = "false") boolean shouldPublish,
+            @Optional(name = "addToWorkspace", defaultValue = "false") boolean addToWorkspace,
             @ActiveWorkspaceId String workspaceId,
             Authorizations authorizations,
             User user,
             ResourceBundle resourceBundle,
-            HttpServletRequest request,
-            VisalloResponse response
+            HttpServletRequest request
     ) throws Exception {
         if (!ServletFileUpload.isMultipartContent(request)) {
             throw new BadRequestException("file", "Could not process request without multi-part content");
         }
 
+        workspaceId = WorkspaceHelper.getWorkspaceIdOrNullIfPublish(workspaceId, shouldPublish, user);
+
         this.authorizations = authorizations;
 
         File tempDir = Files.createTempDir();
         try {
-            List<FileImport.FileOptions> files = getFiles(request, response, tempDir, resourceBundle, authorizations, user);
+            List<FileImport.FileOptions> files = getFiles(request, tempDir, resourceBundle, authorizations, user);
             if (files == null) {
                 throw new BadRequestException("file", "Could not process request without files");
             }
 
             Workspace workspace = workspaceRepository.findById(workspaceId, user);
 
-            List<Vertex> vertices = fileImport.importVertices(workspace, files, Priority.HIGH, user, authorizations);
+            List<Vertex> vertices = fileImport.importVertices(workspace, files, Priority.HIGH, addToWorkspace, user, authorizations);
 
             return toArtifactImportResponse(vertices);
         } finally {
@@ -126,7 +130,6 @@ public class VertexImport implements ParameterizedHandler {
 
     protected List<FileImport.FileOptions> getFiles(
             HttpServletRequest request,
-            VisalloResponse response,
             File tempDir,
             ResourceBundle resourceBundle,
             Authorizations authorizations,
@@ -162,8 +165,7 @@ public class VertexImport implements ParameterizedHandler {
 
         if (invalidVisibilities.size() > 0) {
             LOGGER.warn("%s is not a valid visibility for %s user", invalidVisibilities.toString(), user.getDisplayName());
-            response.respondWithBadRequest("visibilitySource", resourceBundle.getString("visibility.invalid"), invalidVisibilities);
-            return null;
+            throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"), invalidVisibilities);
         }
 
         return files;

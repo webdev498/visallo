@@ -24,15 +24,19 @@ import org.visallo.web.routes.admin.AdminUploadOntology;
 import org.visallo.web.routes.admin.PluginList;
 import org.visallo.web.routes.config.Configuration;
 import org.visallo.web.routes.edge.*;
+import org.visallo.web.routes.element.ElementSearch;
 import org.visallo.web.routes.longRunningProcess.LongRunningProcessById;
 import org.visallo.web.routes.longRunningProcess.LongRunningProcessCancel;
 import org.visallo.web.routes.longRunningProcess.LongRunningProcessDelete;
 import org.visallo.web.routes.map.GetGeocoder;
+import org.visallo.web.routes.map.MapzenTileProxy;
 import org.visallo.web.routes.notification.Notifications;
 import org.visallo.web.routes.notification.SystemNotificationDelete;
 import org.visallo.web.routes.notification.SystemNotificationSave;
 import org.visallo.web.routes.notification.UserNotificationMarkRead;
 import org.visallo.web.routes.ontology.Ontology;
+import org.visallo.web.routes.ping.Ping;
+import org.visallo.web.routes.ping.PingStats;
 import org.visallo.web.routes.resource.MapMarkerImage;
 import org.visallo.web.routes.resource.ResourceExternalGet;
 import org.visallo.web.routes.resource.ResourceGet;
@@ -104,11 +108,19 @@ public class Router extends HttpServlet {
                 configuration.set(org.visallo.core.config.Configuration.WEB_GEOCODER_ENABLED, true);
                 app.get("/map/geocode", authenticator, GetGeocoder.class);
             }
+            if (configuration.get(org.visallo.core.config.Configuration.MAPZEN_TILE_API_KEY, null) == null) {
+                LOGGER.warn("MapZen api key not found: %s", org.visallo.core.config.Configuration.MAPZEN_TILE_API_KEY);
+            }
+            app.get("/mapzen/{mapzenUri*}", authenticator, MapzenTileProxy.class);
 
             app.post("/search/save", authenticator, csrfProtector, SearchSave.class);
             app.get("/search/all", authenticator, csrfProtector, SearchList.class);
             app.get("/search/run", authenticator, csrfProtector, SearchRun.class);
+            app.post("/search/run", authenticator, csrfProtector, SearchRun.class);
             app.delete("/search", authenticator, csrfProtector, SearchDelete.class);
+
+            app.get("/element/search", authenticator, csrfProtector, ReadPrivilegeFilter.class, ElementSearch.class);
+            app.post("/element/search", authenticator, csrfProtector, ReadPrivilegeFilter.class, ElementSearch.class);
 
             app.delete("/vertex", authenticator, csrfProtector, EditPrivilegeFilter.class, VertexRemove.class);
             app.get("/vertex/highlighted-text", authenticator, csrfProtector, ReadPrivilegeFilter.class, VertexHighlightedText.class);
@@ -160,6 +172,8 @@ public class Router extends HttpServlet {
             app.get("/edge/property/details", authenticator, csrfProtector, ReadPrivilegeFilter.class, EdgePropertyDetails.class);
             app.get("/edge/details", authenticator, csrfProtector, ReadPrivilegeFilter.class, EdgeDetails.class);
             app.get("/edge/count", authenticator, csrfProtector, ReadPrivilegeFilter.class, EdgeGetCount.class);
+            app.get("/edge/search", authenticator, csrfProtector, ReadPrivilegeFilter.class, EdgeSearch.class);
+            app.post("/edge/search", authenticator, csrfProtector, ReadPrivilegeFilter.class, EdgeSearch.class);
 
             app.get("/workspace/all", authenticator, csrfProtector, ReadPrivilegeFilter.class, WorkspaceList.class);
             app.post("/workspace/create", authenticator, csrfProtector, ReadPrivilegeFilter.class, WorkspaceCreate.class);
@@ -186,6 +200,9 @@ public class Router extends HttpServlet {
             app.get("/admin/all", authenticator, csrfProtector, AdminPrivilegeFilter.class, AdminList.class);
             app.get("/admin/plugins", authenticator, csrfProtector, PluginList.class);
             app.post("/admin/upload-ontology", authenticator, csrfProtector, AdminPrivilegeFilter.class, AdminUploadOntology.class);
+
+            app.get("/ping", RateLimitFilter.class, Ping.class);
+            app.get("/ping/stats", authenticator, AdminPrivilegeFilter.class, PingStats.class);
 
             List<WebAppPlugin> webAppPlugins = toList(ServiceLoaderUtil.load(WebAppPlugin.class, configuration));
             for (WebAppPlugin webAppPlugin : webAppPlugins) {

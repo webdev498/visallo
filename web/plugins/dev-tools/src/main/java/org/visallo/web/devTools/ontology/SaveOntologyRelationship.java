@@ -3,6 +3,7 @@ package org.visallo.web.devTools.ontology;
 import com.google.inject.Inject;
 import com.v5analytics.webster.ParameterizedHandler;
 import com.v5analytics.webster.annotations.Handle;
+import com.v5analytics.webster.annotations.Optional;
 import com.v5analytics.webster.annotations.Required;
 import org.vertexium.Authorizations;
 import org.visallo.core.model.ontology.OntologyProperties;
@@ -24,7 +25,12 @@ public class SaveOntologyRelationship implements ParameterizedHandler {
     public void handle(
             @Required(name = "relationship") String relationshipIri,
             @Required(name = "displayName") String displayName,
+            @Required(name = "titleFormula") String titleFormula,
+            @Required(name = "subtitleFormula") String subtitleFormula,
+            @Required(name = "timeFormula") String timeFormula,
             @Required(name = "intents[]") String[] intents,
+            @Optional(name = "deleteable", defaultValue = "true") boolean deleteable,
+            @Optional(name = "updateable", defaultValue = "true") boolean updateable,
             User user,
             Authorizations authorizations,
             VisalloResponse response
@@ -35,8 +41,29 @@ public class SaveOntologyRelationship implements ParameterizedHandler {
             return;
         }
 
+        relationship.setProperty(OntologyProperties.UPDATEABLE.getPropertyName(), updateable, authorizations);
+        relationship.setProperty(OntologyProperties.DELETEABLE.getPropertyName(), deleteable, authorizations);
+
         if (displayName.length() != 0) {
             relationship.setProperty(OntologyProperties.DISPLAY_NAME.getPropertyName(), displayName, authorizations);
+        }
+
+        if (titleFormula.length() != 0) {
+            relationship.setProperty(OntologyProperties.TITLE_FORMULA.getPropertyName(), titleFormula, authorizations);
+        } else {
+            relationship.removeProperty(OntologyProperties.TITLE_FORMULA.getPropertyName(), authorizations);
+        }
+
+        if (subtitleFormula.length() != 0) {
+            relationship.setProperty(OntologyProperties.SUBTITLE_FORMULA.getPropertyName(), subtitleFormula, authorizations);
+        } else {
+            relationship.removeProperty(OntologyProperties.SUBTITLE_FORMULA.getPropertyName(), authorizations);
+        }
+
+        if (timeFormula.length() != 0) {
+            relationship.setProperty(OntologyProperties.TIME_FORMULA.getPropertyName(), timeFormula, authorizations);
+        } else {
+            relationship.removeProperty(OntologyProperties.TIME_FORMULA.getPropertyName(), authorizations);
         }
 
         relationship.updateIntents(StringArrayUtil.removeNullOrEmptyElements(intents), authorizations);

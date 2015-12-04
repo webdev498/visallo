@@ -2,11 +2,14 @@ package org.visallo.vertexium.model.ontology;
 
 import org.vertexium.Authorizations;
 import org.vertexium.Vertex;
+import org.vertexium.mutation.ElementMutation;
 import org.vertexium.util.IterableUtils;
 import org.visallo.core.model.ontology.OntologyProperties;
+import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.ontology.Relationship;
 
+import java.util.Collection;
 import java.util.List;
 
 public class VertexiumRelationship extends Relationship {
@@ -18,9 +21,10 @@ public class VertexiumRelationship extends Relationship {
             Vertex vertex,
             List<String> domainConceptIRIs,
             List<String> rangeConceptIRIs,
-            List<String> inverseOfIRIs
+            List<String> inverseOfIRIs,
+            Collection<OntologyProperty> properties
     ) {
-        super(parentIRI, domainConceptIRIs, rangeConceptIRIs);
+        super(parentIRI, domainConceptIRIs, rangeConceptIRIs, properties);
         this.vertex = vertex;
         this.inverseOfIRIs = inverseOfIRIs;
     }
@@ -45,6 +49,26 @@ public class VertexiumRelationship extends Relationship {
         getVertex().setProperty(name, value, OntologyRepository.VISIBILITY.getVisibility(), authorizations);
     }
 
+    @Override
+    public void removeProperty(String name, Authorizations authorizations) {
+        getVertex().softDeleteProperty(ElementMutation.DEFAULT_KEY, name, authorizations);
+    }
+
+    @Override
+    public String getTitleFormula() {
+        return OntologyProperties.TITLE_FORMULA.getPropertyValue(vertex);
+    }
+
+    @Override
+    public String getSubtitleFormula() {
+        return OntologyProperties.SUBTITLE_FORMULA.getPropertyValue(vertex);
+    }
+
+    @Override
+    public String getTimeFormula() {
+        return OntologyProperties.TIME_FORMULA.getPropertyValue(vertex);
+    }
+
     public String getIRI() {
         return OntologyProperties.ONTOLOGY_TITLE.getPropertyValue(vertex);
     }
@@ -61,6 +85,16 @@ public class VertexiumRelationship extends Relationship {
     @Override
     public boolean getUserVisible() {
         return OntologyProperties.USER_VISIBLE.getPropertyValue(vertex, true);
+    }
+
+    @Override
+    public boolean getDeleteable() {
+        return OntologyProperties.DELETEABLE.getPropertyValue(vertex, true);
+    }
+
+    @Override
+    public boolean getUpdateable() {
+        return OntologyProperties.UPDATEABLE.getPropertyValue(vertex, true);
     }
 
     public Vertex getVertex() {

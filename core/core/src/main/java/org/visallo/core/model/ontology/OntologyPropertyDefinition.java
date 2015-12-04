@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableList;
 import org.vertexium.TextIndexHint;
 import org.visallo.web.clientapi.model.PropertyType;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class OntologyPropertyDefinition {
     private final List<Concept> concepts;
+    private final List<Relationship> relationships;
     private final String propertyIri;
     private final String displayName;
     private final PropertyType dataType;
@@ -26,6 +28,8 @@ public class OntologyPropertyDefinition {
     private String displayFormula;
     private ImmutableList<String> dependentPropertyIris;
     private String[] intents;
+    private boolean deleteable;
+    private boolean updateable;
 
     public OntologyPropertyDefinition(
             List<Concept> concepts,
@@ -34,9 +38,14 @@ public class OntologyPropertyDefinition {
             PropertyType dataType
     ) {
         this.concepts = concepts;
+        this.relationships = new ArrayList<>();
         this.propertyIri = propertyIri;
         this.displayName = displayName;
         this.dataType = dataType;
+    }
+
+    public List<Relationship> getRelationships() {
+        return relationships;
     }
 
     public List<Concept> getConcepts() {
@@ -170,5 +179,21 @@ public class OntologyPropertyDefinition {
     public OntologyPropertyDefinition setIntents(String[] intents) {
         this.intents = intents;
         return this;
+    }
+
+    public boolean getDeleteable() {
+        return deleteable;
+    }
+
+    public void setDeleteable(boolean deleteable) {
+        this.deleteable = deleteable;
+    }
+
+    public boolean getUpdateable() {
+        return updateable;
+    }
+
+    public void setUpdateable(boolean updateable) {
+        this.updateable = updateable;
     }
 }

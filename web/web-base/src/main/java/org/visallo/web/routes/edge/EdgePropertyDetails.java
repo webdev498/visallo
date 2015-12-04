@@ -11,6 +11,7 @@ import org.vertexium.Graph;
 import org.vertexium.Visibility;
 import org.visallo.core.exception.VisalloResourceNotFoundException;
 import org.visallo.core.model.termMention.TermMentionRepository;
+import org.visallo.core.security.VisibilityTranslator;
 import org.visallo.core.user.User;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
@@ -24,14 +25,17 @@ public class EdgePropertyDetails implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(EdgePropertyDetails.class);
     private final Graph graph;
     private final TermMentionRepository termMentionRepository;
+    private final VisibilityTranslator visibilityTranslator;
 
     @Inject
     public EdgePropertyDetails(
             Graph graph,
-            TermMentionRepository termMentionRepository
+            TermMentionRepository termMentionRepository,
+            VisibilityTranslator visibilityTranslator
     ) {
         this.graph = graph;
         this.termMentionRepository = termMentionRepository;
+        this.visibilityTranslator = visibilityTranslator;
     }
 
     @Handle
@@ -44,7 +48,7 @@ public class EdgePropertyDetails implements ParameterizedHandler {
             User user,
             Authorizations authorizations
     ) throws Exception {
-        Visibility visibility = new Visibility(visibilitySource);
+        Visibility visibility = visibilityTranslator.toVisibility(visibilitySource).getVisibility();
         if (!graph.isVisibilityValid(visibility, authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
             throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));

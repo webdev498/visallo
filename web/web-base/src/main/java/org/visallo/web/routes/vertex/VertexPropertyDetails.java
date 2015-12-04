@@ -51,7 +51,7 @@ public class VertexPropertyDetails implements ParameterizedHandler {
             Authorizations authorizations,
             VisalloResponse response
     ) throws Exception {
-        Visibility visibility = new Visibility(visibilitySource);
+        Visibility visibility = visibilityTranslator.toVisibility(visibilitySource).getVisibility();
         if (!graph.isVisibilityValid(visibility, authorizations)) {
             LOGGER.warn("%s is not a valid visibility for %s user", visibilitySource, user.getDisplayName());
             throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));

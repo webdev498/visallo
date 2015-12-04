@@ -74,6 +74,17 @@
     
 
 
+    <!-- http://visallo.org#deleteable -->
+
+    <owl:AnnotationProperty rdf:about="http://visallo.org#deleteable">
+        <textIndexHints>NONE</textIndexHints>
+        <userVisible>false</userVisible>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+        <rdfs:domain rdf:resource="&owl;Thing"/>
+    </owl:AnnotationProperty>
+    
+
+
     <!-- http://visallo.org#dependentPropertyIri -->
 
     <owl:AnnotationProperty rdf:about="http://visallo.org#dependentPropertyIri">
@@ -101,6 +112,17 @@
     <owl:AnnotationProperty rdf:about="http://visallo.org#displayFormula">
         <userVisible>false</userVisible>
         <textIndexHints>NONE</textIndexHints>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain rdf:resource="&owl;Thing"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://visallo.org#displayName -->
+
+    <owl:AnnotationProperty rdf:about="http://visallo.org#displayName">
+        <textIndexHints>NONE</textIndexHints>
+        <userVisible>false</userVisible>
         <rdfs:range rdf:resource="&xsd;string"/>
         <rdfs:domain rdf:resource="&owl;Thing"/>
     </owl:AnnotationProperty>
@@ -143,6 +165,17 @@
     <!-- http://visallo.org#mapGlyphIconFileName -->
 
     <owl:AnnotationProperty rdf:about="http://visallo.org#mapGlyphIconFileName">
+        <textIndexHints>NONE</textIndexHints>
+        <userVisible>false</userVisible>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain rdf:resource="&owl;Thing"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://visallo.org#objectPropertyDomain -->
+
+    <owl:AnnotationProperty rdf:about="http://visallo.org#objectPropertyDomain">
         <textIndexHints>NONE</textIndexHints>
         <userVisible>false</userVisible>
         <rdfs:range rdf:resource="&xsd;string"/>
@@ -233,6 +266,17 @@
         <textIndexHints>NONE</textIndexHints>
         <userVisible>false</userVisible>
         <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain rdf:resource="&owl;Thing"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://visallo.org#updateable -->
+
+    <owl:AnnotationProperty rdf:about="http://visallo.org#updateable">
+        <userVisible>false</userVisible>
+        <textIndexHints>NONE</textIndexHints>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
         <rdfs:domain rdf:resource="&owl;Thing"/>
     </owl:AnnotationProperty>
     

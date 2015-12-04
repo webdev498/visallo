@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.vertexium.Authorizations;
 import org.vertexium.type.GeoCircle;
+import org.vertexium.type.GeoHash;
 import org.vertexium.type.GeoPoint;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.properties.types.*;
@@ -64,6 +65,10 @@ public abstract class OntologyProperty {
 
     public abstract String getDisplayFormula();
 
+    public abstract boolean getUpdateable();
+
+    public abstract boolean getDeleteable();
+
     public abstract ImmutableList<String> getDependentPropertyIris();
 
     public abstract String[] getIntents();
@@ -111,6 +116,8 @@ public abstract class OntologyProperty {
             result.setValidationFormula(getValidationFormula());
             result.setDisplayFormula(getDisplayFormula());
             result.setDependentPropertyIris(getDependentPropertyIris());
+            result.setDeleteable(getDeleteable());
+            result.setUpdateable(getUpdateable());
             if (getPossibleValues() != null) {
                 result.getPossibleValues().putAll(getPossibleValues());
             }
@@ -151,10 +158,15 @@ public abstract class OntologyProperty {
 
     public static Object convert(JSONArray values, PropertyType propertyDataType, int index) throws ParseException {
         switch (propertyDataType) {
-            case DATE:
+            case DATE: {
                 String valueStr = values.getString(index);
                 return parseDateTime(valueStr);
+            }
             case GEO_LOCATION:
+                if (values.get(index) instanceof String) {
+                    String valueStr = values.getString(index);
+                    return new GeoHash(valueStr);
+                }
                 return new GeoCircle(
                         values.getDouble(index),
                         values.getDouble(index + 1),
@@ -167,6 +179,13 @@ public abstract class OntologyProperty {
             case DOUBLE:
                 return values.getDouble(index);
             case BOOLEAN:
+                Object result = values.get(index);
+                if ("T".equals(result)) {
+                    return true;
+                }
+                if ("F".equals(result)) {
+                    return false;
+                }
                 return values.getBoolean(index);
         }
         return values.getString(index);
@@ -209,7 +228,11 @@ public abstract class OntologyProperty {
             try {
                 return DATE_TIME_FORMAT.parse(valueStr);
             } catch (ParseException ex2) {
-                return DATE_FORMAT.parse(valueStr);
+                try {
+                    return DATE_FORMAT.parse(valueStr);
+                } catch (ParseException ex3) {
+                    return new Date(Long.parseLong(valueStr));
+                }
             }
         }
     }
@@ -235,5 +258,25 @@ public abstract class OntologyProperty {
             default:
                 throw new VisalloException("Could not get " + VisalloProperty.class.getName() + " for data type " + getDataType());
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "{iri:" + getIri() + "}";
+    }
+
+    @Override
+    public int hashCode() {
+        return getIri().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof OntologyProperty)) {
+            return false;
+        }
+
+        String otherIri = ((OntologyProperty) obj).getIri();
+        return getIri().equals(otherIri);
     }
 }

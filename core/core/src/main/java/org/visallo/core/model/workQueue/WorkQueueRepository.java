@@ -1,13 +1,9 @@
 package org.visallo.core.model.workQueue;
 
 
-import org.visallo.core.ingest.graphProperty.GraphPropertyMessage;
-import org.visallo.core.ingest.graphProperty.GraphPropertyRunner;
-import org.visallo.core.model.WorkQueueNames;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.vertexium.*;
-import org.vertexium.util.IterableUtils;
 import org.visallo.core.config.Configuration;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.ingest.WorkerSpout;
@@ -18,6 +14,7 @@ import org.visallo.core.model.notification.SystemNotification;
 import org.visallo.core.model.notification.UserNotification;
 import org.visallo.core.model.properties.types.VisalloPropertyUpdate;
 import org.visallo.core.model.user.UserRepository;
+import org.visallo.core.status.model.Status;
 import org.visallo.core.user.User;
 import org.visallo.core.util.ClientApiConverter;
 import org.visallo.core.util.VisalloLogger;
@@ -28,7 +25,6 @@ import org.visallo.web.clientapi.model.UserStatus;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class WorkQueueRepository {
@@ -44,6 +40,7 @@ public abstract class WorkQueueRepository {
     }
 
     public void pushGraphPropertyQueue(final Element element, final Property property, Priority priority) {
+        checkNotNull(property, "property cannot be null");
         pushGraphPropertyQueue(element, property.getKey(), property.getName(), priority);
     }
 
@@ -94,6 +91,7 @@ public abstract class WorkQueueRepository {
     }
 
     public void pushGraphPropertyQueue(final Element element, String propertyKey, final String propertyName, Priority priority) {
+        checkNotNull(element, "element cannot be null");
         pushGraphPropertyQueue(element, propertyKey, propertyName, null, null, priority);
     }
 
@@ -115,10 +113,10 @@ public abstract class WorkQueueRepository {
                                                String workspaceId,
                                                String visibilitySource,
                                                Priority priority,
-                                               FlushFlag flushFlag){
+                                               FlushFlag flushFlag) {
 
         checkNotNull(elements);
-        if(!elements.iterator().hasNext()){
+        if (!elements.iterator().hasNext()) {
             return;
         }
 
@@ -128,7 +126,7 @@ public abstract class WorkQueueRepository {
         JSONArray vertices = new JSONArray();
         JSONArray edges = new JSONArray();
 
-        for(Element element : elements) {
+        for (Element element : elements) {
             if (element instanceof Vertex) {
                 vertices.put(element.getId());
             } else if (element instanceof Edge) {
@@ -143,7 +141,7 @@ public abstract class WorkQueueRepository {
 
         pushOnQueue(workQueueNames.getGraphPropertyQueueName(), flushFlag, data, priority);
 
-        for(Element element : elements) {
+        for (Element element : elements) {
             if (shouldBroadcastGraphPropertyChange(element, propertyKey, propertyName, workspaceId, priority)) {
                 broadcastPropertyChange(element, propertyKey, propertyName, workspaceId);
             }
@@ -180,10 +178,10 @@ public abstract class WorkQueueRepository {
     }
 
     private JSONObject createPropertySpecificJSON(
-                                               String propertyKey,
-                                               final String propertyName,
-                                               String workspaceId,
-                                               String visibilitySource){
+            String propertyKey,
+            final String propertyName,
+            String workspaceId,
+            String visibilitySource) {
         JSONObject data = new JSONObject();
 
         if (workspaceId != null && !workspaceId.equals("")) {
@@ -222,6 +220,18 @@ public abstract class WorkQueueRepository {
             data.put("visibilitySource", visibilitySource);
         }
 
+        pushOnQueue(workQueueNames.getGraphPropertyQueueName(), flushFlag, data, priority);
+    }
+
+    public void pushVertexIds(Iterable<String> vertexIds, Priority priority, FlushFlag flushFlag) {
+        for (String vertexId : vertexIds) {
+            pushVertexId(vertexId, priority, flushFlag);
+        }
+    }
+
+    private void pushVertexId(String vertexId, Priority priority, FlushFlag flushFlag) {
+        JSONObject data = new JSONObject();
+        data.put(GraphPropertyMessage.GRAPH_VERTEX_ID, vertexId);
         pushOnQueue(workQueueNames.getGraphPropertyQueueName(), flushFlag, data, priority);
     }
 
@@ -326,13 +336,13 @@ public abstract class WorkQueueRepository {
     }
 
     public void pushVertexDeletion(Vertex vertex) {
-        broadcastVertexDeletion(vertex);
+        pushVertexDeletion(vertex.getId());
     }
 
-    protected void broadcastVertexDeletion(Vertex vertex) {
-        JSONArray vertexIds = new JSONArray();
-        vertexIds.put(vertex.getId());
-        broadcastVerticesDeletion(vertexIds);
+    public void pushVertexDeletion(String vertexId) {
+        JSONArray verticesDeleted = new JSONArray();
+        verticesDeleted.put(vertexId);
+        broadcastVerticesDeletion(verticesDeleted);
     }
 
     public void pushVerticesDeletion(JSONArray verticesDeleted) {
@@ -579,7 +589,7 @@ public abstract class WorkQueueRepository {
         return json;
     }
 
-    public abstract void pushOnQueue(String queueName, FlushFlag flushFlag, JSONObject json, Priority priority);
+    public abstract void pushOnQueue(String queueName, @Deprecated FlushFlag flushFlag, JSONObject json, Priority priority);
 
     public void init(Map map) {
 
@@ -702,6 +712,8 @@ public abstract class WorkQueueRepository {
 
         return json;
     }
+
+    public abstract Map<String, Status> getQueuesStatus();
 
     private enum PublishType {
         TO_PUBLIC("toPublic"),

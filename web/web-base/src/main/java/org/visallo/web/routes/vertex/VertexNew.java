@@ -14,6 +14,7 @@ import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.model.workspace.Workspace;
+import org.visallo.core.model.workspace.WorkspaceHelper;
 import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.security.VisibilityTranslator;
 import org.visallo.core.user.User;
@@ -61,13 +62,14 @@ public class VertexNew implements ParameterizedHandler {
 
     @Handle
     public ClientApiElement handle(
-            @Optional(name = "vertexId") String vertexId,
-            @Required(name = "conceptType") String conceptType,
+            @Optional(name = "vertexId", allowEmpty = false) String vertexId,
+            @Required(name = "conceptType", allowEmpty = false) String conceptType,
             @Required(name = "visibilitySource") String visibilitySource,
-            @Optional(name = "properties") String propertiesJsonString,
+            @Optional(name = "properties", allowEmpty = false) String propertiesJsonString,
+            @Optional(name = "publish", defaultValue = "false") boolean shouldPublish,
             @JustificationText String justificationText,
             ClientApiSourceInfo sourceInfo,
-            @ActiveWorkspaceId String workspaceId,
+            @ActiveWorkspaceId(required = false) String workspaceId,
             ResourceBundle resourceBundle,
             User user,
             Authorizations authorizations
@@ -77,7 +79,7 @@ public class VertexNew implements ParameterizedHandler {
             throw new BadRequestException("visibilitySource", resourceBundle.getString("visibility.invalid"));
         }
 
-        Workspace workspace = workspaceRepository.findById(workspaceId, user);
+        workspaceId = WorkspaceHelper.getWorkspaceIdOrNullIfPublish(workspaceId, shouldPublish, user);
 
         Vertex vertex = graphRepository.addVertex(
                 vertexId,
@@ -118,9 +120,6 @@ public class VertexNew implements ParameterizedHandler {
         }
         this.graph.flush();
 
-        workspaceRepository.updateEntityOnWorkspace(workspace, vertex.getId(), true, null, user);
-        this.graph.flush();
-
         LOGGER.debug("Created new empty vertex with id: %s", vertex.getId());
 
         workQueueRepository.broadcastElement(vertex, workspaceId);
@@ -132,7 +131,14 @@ public class VertexNew implements ParameterizedHandler {
                 visibilitySource,
                 Priority.HIGH
         );
-        workQueueRepository.pushUserCurrentWorkspaceChange(user, workspaceId);
+
+        if (workspaceId != null) {
+            Workspace workspace = workspaceRepository.findById(workspaceId, user);
+            workspaceRepository.updateEntityOnWorkspace(workspace, vertex.getId(), true, null, user);
+            workQueueRepository.pushUserCurrentWorkspaceChange(user, workspaceId);
+            this.graph.flush();
+        }
+
         if (properties != null) {
             for (ClientApiAddElementProperties.Property property : properties.properties) {
                 workQueueRepository.pushGraphPropertyQueue(

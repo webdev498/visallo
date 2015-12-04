@@ -354,7 +354,11 @@ define([
                         .catch(this.requestFailure.bind(this));
                 }
             } else {
-                this.dataRequest('vertex', 'setProperty', vertexId, data.property)
+                this.dataRequest(
+                    data.isEdge ? 'edge' : 'vertex',
+                    'setProperty',
+                    vertexId,
+                    data.property)
                     .then(this.closePropertyForm.bind(this))
                     .catch(this.requestFailure.bind(this));
             }
@@ -491,9 +495,9 @@ define([
                     return cls + ' expanded';
                 }
 
-                return cls + (
+                return cls + ' ' + (
                     _.contains(expandedSections, d[0]) ?
-                        '' : ' collapsed'
+                        'expanded' : 'collapsed'
                 );
             });
 

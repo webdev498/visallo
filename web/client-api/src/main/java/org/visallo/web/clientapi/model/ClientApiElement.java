@@ -17,11 +17,13 @@ import java.util.List;
 })
 public abstract class ClientApiElement implements ClientApiObject {
     private String id;
-    private List<ClientApiProperty> properties = new ArrayList<>();
+    private List<ClientApiProperty> properties = new ArrayList<ClientApiProperty>();
     private SandboxStatus sandboxStatus;
     private String visibilitySource;
     private Double score;
     private Integer commonCount;
+    private Boolean deleteable;
+    private Boolean updateable;
 
     /**
      * search score
@@ -75,6 +77,22 @@ public abstract class ClientApiElement implements ClientApiObject {
 
     public void setVisibilitySource(String visibilitySource) {
         this.visibilitySource = visibilitySource;
+    }
+
+    public Boolean getDeleteable() {
+        return deleteable;
+    }
+
+    public void setDeleteable(Boolean deleteable) {
+        this.deleteable = deleteable;
+    }
+
+    public Boolean getUpdateable() {
+        return updateable;
+    }
+
+    public void setUpdateable(Boolean updateable) {
+        this.updateable = updateable;
     }
 
     @Override

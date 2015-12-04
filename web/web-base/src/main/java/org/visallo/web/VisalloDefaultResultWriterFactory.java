@@ -1,22 +1,31 @@
 package org.visallo.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.v5analytics.webster.HandlerChain;
+import com.google.inject.Inject;
 import com.v5analytics.webster.resultWriters.ResultWriter;
 import com.v5analytics.webster.resultWriters.ResultWriterBase;
 import com.v5analytics.webster.resultWriters.ResultWriterFactory;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.visallo.core.exception.VisalloException;
+import org.visallo.core.security.ACLProvider;
 import org.visallo.web.clientapi.model.ClientApiObject;
 import org.visallo.web.clientapi.util.ObjectMapperFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 
 public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
+    private ACLProvider aclProvider;
+
+    @Inject
+    public VisalloDefaultResultWriterFactory(ACLProvider aclProvider) {
+        this.aclProvider = aclProvider;
+    }
+
     @Override
     public ResultWriter createResultWriter(Method handleMethod) {
         return new ResultWriterBase(handleMethod) {
@@ -39,14 +48,13 @@ public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
             }
 
             @Override
-            public void write(Object result, HttpServletRequest request, HttpServletResponse response, HandlerChain chain) throws Exception {
+            protected void writeResult(HttpServletRequest request, HttpServletResponse response, Object result) throws IOException {
                 if (result != null) {
                     response.setCharacterEncoding("UTF-8");
                     if (resultIsClientApiObject) {
                         try {
-                            String jsonObject = ObjectMapperFactory.getInstance().writeValueAsString(result);
+                            String jsonObject = ObjectMapperFactory.getInstance().writeValueAsString(aclProvider.appendACL((ClientApiObject) result));
                             response.getWriter().write(jsonObject);
-                            return;
                         } catch (JsonProcessingException e) {
                             throw new VisalloException("Could not write json", e);
                         }
@@ -56,9 +64,10 @@ public class VisalloDefaultResultWriterFactory implements ResultWriterFactory {
                         } finally {
                             response.flushBuffer();
                         }
+                    } else {
+                        super.writeResult(request, response, result);
                     }
                 }
-                super.write(result, request, response, chain);
             }
         };
     }

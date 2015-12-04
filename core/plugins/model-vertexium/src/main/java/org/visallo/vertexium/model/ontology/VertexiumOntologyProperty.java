@@ -11,11 +11,12 @@ import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.util.JSONUtil;
 import org.visallo.web.clientapi.model.PropertyType;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class VertexiumOntologyProperty extends OntologyProperty {
     private final Vertex vertex;
-    private final ImmutableList<String> dependentPropertyIris;
+    private ImmutableList<String> dependentPropertyIris;
 
     public VertexiumOntologyProperty(Vertex vertex, ImmutableList<String> dependentPropertyIris) {
         this.vertex = vertex;
@@ -92,6 +93,22 @@ public class VertexiumOntologyProperty extends OntologyProperty {
         return b;
     }
 
+    public boolean getUpdateable() {
+        Boolean b = OntologyProperties.UPDATEABLE.getPropertyValue(vertex);
+        if (b == null) {
+            return true;
+        }
+        return b;
+    }
+
+    public boolean getDeleteable() {
+        Boolean b = OntologyProperties.DELETEABLE.getPropertyValue(vertex);
+        if (b == null) {
+            return true;
+        }
+        return b;
+    }
+
     @Override
     public boolean getAddable() {
         Boolean b = OntologyProperties.ADDABLE.getPropertyValue(vertex);
@@ -124,5 +141,9 @@ public class VertexiumOntologyProperty extends OntologyProperty {
 
     public Vertex getVertex() {
         return this.vertex;
+    }
+
+    public void setDependentProperties(Collection<String> newDependentPropertyIris) {
+        this.dependentPropertyIris = ImmutableList.copyOf(newDependentPropertyIris);
     }
 }

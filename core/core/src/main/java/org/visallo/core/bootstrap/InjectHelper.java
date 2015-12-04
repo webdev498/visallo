@@ -1,6 +1,7 @@
 package org.visallo.core.bootstrap;
 
 import com.fasterxml.jackson.module.guice.ObjectMapperModule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -45,11 +46,15 @@ public class InjectHelper {
     }
 
     public static <T> T getInstance(Class<? extends T> clazz) {
-        LOGGER.debug("getInstance of class: " + clazz.getSimpleName());
+        LOGGER.debug("getInstance of class: " + clazz.getName());
         if (injector == null) {
             throw new VisalloException("Could not find injector");
         }
-        return injector.getInstance(clazz);
+        try {
+            return injector.getInstance(clazz);
+        } catch (Throwable ex) {
+            throw new VisalloException("Could not create class: " + clazz.getName(), ex);
+        }
     }
 
     public static <T> Collection<T> getInjectedServices(Class<T> clazz, Configuration configuration) {
@@ -67,6 +72,11 @@ public class InjectHelper {
 
     public static boolean hasInjector() {
         return injector != null;
+    }
+
+    @VisibleForTesting
+    public static void setInjector(Injector injector) {
+        InjectHelper.injector = injector;
     }
 
     public interface ModuleMaker {

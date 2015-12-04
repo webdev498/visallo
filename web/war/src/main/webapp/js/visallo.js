@@ -1,7 +1,5 @@
 require([
     'jquery',
-    'es5shim',
-    'es5sham',
     'flight/lib/compose',
     'flight/lib/registry',
     'flight/lib/advice',
@@ -17,8 +15,6 @@ require([
     'util/promise'
 ],
 function(jQuery,
-         es5shim,
-         es5sham,
          compose,
          registry,
          advice,
@@ -135,7 +131,10 @@ function(jQuery,
             });
         }
 
-        withDataRequest.dataRequest('user', 'me')
+        Promise.require('../plugins-before-auth')
+            .then(function() {
+                return withDataRequest.dataRequest('user', 'me')
+            })
             .then(function() {
                 attachApplication(false);
             })
@@ -157,29 +156,27 @@ function(jQuery,
             visalloData.isFullscreen = false;
 
             if (loginRequired) {
-                require(['../plugins-before-auth'], function() {
-                    updateVisalloLoadingProgress('User Interface');
+                updateVisalloLoadingProgress('User Interface');
 
-                    $(document).one('loginSuccess', function() {
-                        // FIXME: privilegesHelper not available yet
-                        document.addEventListener('pluginsLoaded', function loaded() {
-                            document.removeEventListener('pluginsLoaded', loaded);
-                            loginSuccess(true);
-                        }, false);
-                        document.dispatchEvent(new Event('readyForPlugins'));
-                    });
+                $(document).one('loginSuccess', function() {
+                    // FIXME: privilegesHelper not available yet
+                    document.addEventListener('pluginsLoaded', function loaded() {
+                        document.removeEventListener('pluginsLoaded', loaded);
+                        loginSuccess(true);
+                    }, false);
+                    document.dispatchEvent(new Event('readyForPlugins'));
+                });
 
-                    require(['login'], function(Login) {
-                        removeVisalloLoading().then(function() {
-                            Login.teardownAll();
-                            Login.attachTo('#login', {
-                                errorMessage: message,
-                                errorMessageOptions: options,
-                                toOpen: toOpen
-                            });
-                        })
-                    });
-                })
+                require(['login'], function(Login) {
+                    removeVisalloLoading().then(function() {
+                        Login.teardownAll();
+                        Login.attachTo('#login', {
+                            errorMessage: message,
+                            errorMessageOptions: options,
+                            toOpen: toOpen
+                        });
+                    })
+                });
             } else {
                 document.addEventListener('pluginsLoaded', function loaded() {
                     updateVisalloLoadingProgress('User Interface');

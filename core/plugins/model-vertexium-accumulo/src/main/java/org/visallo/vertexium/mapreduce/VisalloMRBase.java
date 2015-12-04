@@ -10,6 +10,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.CounterGroup;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobStatus;
 import org.apache.hadoop.util.Tool;
 import org.vertexium.accumulo.AccumuloGraphConfiguration;
 import org.vertexium.accumulo.mapreduce.AccumuloElementOutputFormat;
@@ -17,6 +18,7 @@ import org.vertexium.accumulo.mapreduce.ElementMapper;
 import org.visallo.core.bootstrap.InjectHelper;
 import org.visallo.core.bootstrap.VisalloBootstrap;
 import org.visallo.core.config.ConfigurationLoader;
+import org.visallo.core.exception.VisalloException;
 import org.visallo.core.util.VersionUtil;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
@@ -90,6 +92,10 @@ public abstract class VisalloMRBase extends Configured implements Tool {
         long endTime = System.currentTimeMillis();
         LOGGER.info("Job complete");
 
+        if (job.getStatus().getState() != JobStatus.State.SUCCEEDED) {
+            LOGGER.warn("Unexpected job state: %s", job.getStatus().getState());
+        }
+
         if (periodicCounterOutputTimer != null) {
             periodicCounterOutputTimer.cancel();
         }
@@ -107,6 +113,18 @@ public abstract class VisalloMRBase extends Configured implements Tool {
 
     protected void printCounters(Job job) {
         try {
+            if (job.getJobState() != JobStatus.State.RUNNING) {
+                return;
+            }
+        } catch (IllegalStateException e) {
+            if (e.getMessage().contains("Job in state DEFINE instead of RUNNING")) {
+                return;
+            }
+            throw new VisalloException("Could not get job state", e);
+        } catch (Exception e) {
+            throw new VisalloException("Could not get job state", e);
+        }
+        try {
             LOGGER.info("Counters");
             for (String groupName : job.getCounters().getGroupNames()) {
                 CounterGroup groupCounters = job.getCounters().getGroup(groupName);
@@ -120,7 +138,9 @@ public abstract class VisalloMRBase extends Configured implements Tool {
         }
     }
 
-    protected abstract String getJobName();
+    protected String getJobName() {
+        return this.getClass().getSimpleName();
+    }
 
     protected abstract void setupJob(Job job) throws Exception;
 

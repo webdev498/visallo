@@ -10,7 +10,7 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     private Long totalTime = null;
     private Long totalHits = null;
     private Long searchTime = null;
-    private Map<String, AggregateResult> aggregates = new HashMap<>();
+    private Map<String, AggregateResult> aggregates = new HashMap<String, AggregateResult>();
 
     public Integer getNextOffset() {
         return nextOffset;
@@ -64,20 +64,43 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     }
 
     public abstract static class AggregateResult {
+        public abstract static class BucketBase {
+            private final Map<String, AggregateResult> nestedResults;
 
+            protected BucketBase(Map<String, AggregateResult> nestedResults) {
+                this.nestedResults = nestedResults;
+            }
+
+            public Map<String, AggregateResult> getNestedResults() {
+                return nestedResults;
+            }
+        }
     }
 
     public static class TermsAggregateResult extends AggregateResult {
-        private Map<String, Long> buckets = new HashMap<>();
+        private Map<String, Bucket> buckets = new HashMap<String, Bucket>();
 
-        public Map<String, Long> getBuckets() {
+        public Map<String, Bucket> getBuckets() {
             return buckets;
+        }
+
+        public static class Bucket extends BucketBase {
+            private final long count;
+
+            public Bucket(long count, Map<String, AggregateResult> nestedResults) {
+                super(nestedResults);
+                this.count = count;
+            }
+
+            public long getCount() {
+                return count;
+            }
         }
     }
 
     public static class GeohashAggregateResult extends AggregateResult {
         private long maxCount;
-        private Map<String, Bucket> buckets = new HashMap<>();
+        private Map<String, Bucket> buckets = new HashMap<String, Bucket>();
 
         public void setMaxCount(long maxCount) {
             this.maxCount = maxCount;
@@ -91,12 +114,13 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
             return buckets;
         }
 
-        public static class Bucket {
+        public static class Bucket extends BucketBase {
             private final ClientApiGeoRect cell;
             private final ClientApiGeoPoint point;
             private final long count;
 
-            public Bucket(ClientApiGeoRect cell, ClientApiGeoPoint point, long count) {
+            public Bucket(ClientApiGeoRect cell, ClientApiGeoPoint point, long count, Map<String, AggregateResult> nestedResults) {
+                super(nestedResults);
                 this.cell = cell;
                 this.point = point;
                 this.count = count;
@@ -117,10 +141,23 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     }
 
     public static class HistogramAggregateResult extends AggregateResult {
-        private Map<String, Long> buckets = new HashMap<>();
+        private Map<String, Bucket> buckets = new HashMap<String, Bucket>();
 
-        public Map<String, Long> getBuckets() {
+        public Map<String, Bucket> getBuckets() {
             return buckets;
+        }
+
+        public static class Bucket extends BucketBase {
+            private final long count;
+
+            public Bucket(long count, Map<String, AggregateResult> nestedResults) {
+                super(nestedResults);
+                this.count = count;
+            }
+
+            public long getCount() {
+                return count;
+            }
         }
     }
 
@@ -184,10 +221,10 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     public static ClientApiSearchResponse listToClientApiSearchResponse(List<List<Object>> rows) {
         ClientApiSearchResponse results;
         if (rows == null || rows.size() == 0) {
-            results = new ClientApiVertexSearchResponse();
+            results = new ClientApiElementSearchResponse();
         } else if (rows.get(0).size() == 1 && rows.get(0).get(0) instanceof ClientApiVertex) {
-            results = new ClientApiVertexSearchResponse();
-            ((ClientApiVertexSearchResponse) results).getVertices().addAll(toClientApiVertex(rows));
+            results = new ClientApiElementSearchResponse();
+            ((ClientApiElementSearchResponse) results).getElements().addAll(toClientApiVertex(rows));
         } else if (rows.get(0).size() == 1 && rows.get(0).get(0) instanceof ClientApiEdge) {
             results = new ClientApiEdgeSearchResponse();
             ((ClientApiEdgeSearchResponse) results).getResults().addAll(toClientApiEdge(rows));
@@ -199,7 +236,7 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     }
 
     private static Collection<ClientApiVertex> toClientApiVertex(List<List<Object>> rows) {
-        List<ClientApiVertex> results = new ArrayList<>();
+        List<ClientApiVertex> results = new ArrayList<ClientApiVertex>();
         for (List<Object> row : rows) {
             results.add((ClientApiVertex) row.get(0));
         }
@@ -207,7 +244,7 @@ public abstract class ClientApiSearchResponse implements ClientApiObject {
     }
 
     private static Collection<ClientApiEdge> toClientApiEdge(List<List<Object>> rows) {
-        List<ClientApiEdge> results = new ArrayList<>();
+        List<ClientApiEdge> results = new ArrayList<ClientApiEdge>();
         for (List<Object> row : rows) {
             results.add((ClientApiEdge) row.get(0));
         }

@@ -13,6 +13,8 @@ import org.visallo.web.clientapi.model.ClientApiOntology;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,6 +56,8 @@ public interface OntologyRepository {
 
     Set<Concept> getConceptAndAllChildren(Concept concept);
 
+    Set<Relationship> getRelationshipAndAllChildren(Relationship relationship);
+
     Concept getOrCreateConcept(Concept parent, String conceptIRI, String displayName, File inDir);
 
     Relationship getOrCreateRelationshipType(
@@ -63,7 +67,9 @@ public interface OntologyRepository {
             String relationshipIRI,
             String displayName,
             String[] intents,
-            boolean userVisible
+            boolean userVisible,
+            boolean deleteable,
+            boolean updateable
     );
 
     OntologyProperty getOrCreateProperty(OntologyPropertyDefinition ontologyPropertyDefinition);
@@ -123,4 +129,10 @@ public interface OntologyRepository {
     OntologyProperty getDependentPropertyParent(String iri);
 
     void addConceptTypeFilterToQuery(Query query, String conceptTypeIri, boolean includeChildNodes);
+
+    void addEdgeLabelFilterToQuery(Query query, String edgeLabel, boolean includeChildNodes);
+
+    void updatePropertyDependentIris(OntologyProperty property, Collection<String> dependentPropertyIris);
+
+    void updatePropertyDomainIris(OntologyProperty property, Set<String> domainIris);
 }

@@ -35,11 +35,13 @@ define([
             Promise.all([
                 Promise.require('fields/selection/selection'),
                 Promise.require('util/messages'),
-                this.dataRequest('ontology', 'properties')
+                this.dataRequest('ontology', 'properties'),
+                this.dataRequest('ontology', 'concepts')
             ]).done(function(results) {
                 var FieldSelection = results.shift(),
                     i18n = results.shift(),
                     properties = results.shift();
+                self.concepts = results.shift();
 
                 FieldSelection.attachTo(self.select('propertySelector'), {
                     properties: properties.list,
@@ -63,10 +65,13 @@ define([
                     sortable: this.$node.find('.sortable').is(':checked'),
                     searchable: this.$node.find('.searchable').is(':checked'),
                     userVisible: this.$node.find('.userVisible').is(':checked'),
+                    updateable: this.$node.find('.updateable').is(':checked'),
+                    deleteable: this.$node.find('.deleteable').is(':checked'),
                     displayFormula: this.$node.find('.displayFormula').val(),
                     validationFormula: this.$node.find('.validationFormula').val(),
                     possibleValues: this.$node.find('.possibleValues').val(),
                     intents: this.$node.find('.intents').val().split(/[\n\s,]+/),
+                    domains: this.$node.find('.domains').val().split(/[\n\s,]+/),
                     dependentPropertyIris: this.$node.find('.dependentPropertyIris')
                         .val().split(/[\n\s,]+/)
                 })
@@ -91,6 +96,8 @@ define([
                 data.property.searchable = data.property.searchable !== false;
                 data.property.addable = data.property.addable !== false;
                 data.property.sortable = data.property.sortable !== false;
+                data.property.deleteable = data.property.deleteable !== false;
+                data.property.updateable = data.property.updateable !== false;
 
                 this.$node.find('*').not('.property-container *').val('').removeAttr('checked');
                 _.each(data.property, function(value, key) {
@@ -105,6 +112,16 @@ define([
                     }
                     self.updateFieldValue(key, value)
                 });
+
+                var domains = [];
+                _.each(self.concepts.byId, function(value, key) {
+                    _.each(value.properties, function(prop) {
+                        if(prop == data.property.title) {
+                            domains.push(key);
+                        }
+                    });
+                });
+                self.updateFieldValue('domains', domains.join('\n'));
             } else {
                 this.$node.find('.btn-primary').attr('disabled', true);
             }

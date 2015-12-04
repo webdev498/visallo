@@ -21,7 +21,7 @@ public class Workspace extends WorkspaceBase {
     }
 
     public ClientApiWorkspacePublishResponse postPublishAll(List<ClientApiWorkspaceDiff.Item> diffItems) {
-        List<ClientApiPublishItem> publishItems = new ArrayList<>();
+        List<ClientApiPublishItem> publishItems = new ArrayList<ClientApiPublishItem>();
         for (ClientApiWorkspaceDiff.Item diffItem : diffItems) {
             publishItems.add(workspaceDiffItemToPublishItem(diffItem));
         }
@@ -32,7 +32,7 @@ public class Workspace extends WorkspaceBase {
         if (workspaceDiffItem instanceof ClientApiWorkspaceDiff.VertexItem) {
             ClientApiWorkspaceDiff.VertexItem vertexDiffItem = (ClientApiWorkspaceDiff.VertexItem) workspaceDiffItem;
             ClientApiVertexPublishItem publishItem = new ClientApiVertexPublishItem();
-            publishItem.setAction(ClientApiPublishItem.Action.addOrUpdate);
+            publishItem.setAction(ClientApiPublishItem.Action.ADD_OR_UPDATE);
             publishItem.setVertexId(vertexDiffItem.getVertexId());
             return publishItem;
         } else if (workspaceDiffItem instanceof ClientApiWorkspaceDiff.PropertyItem) {
@@ -54,7 +54,7 @@ public class Workspace extends WorkspaceBase {
     }
 
     public ClientApiWorkspaceUndoResponse postUndoAll(List<ClientApiWorkspaceDiff.Item> diffItems) {
-        List<ClientApiUndoItem> undoItems = new ArrayList<>();
+        List<ClientApiUndoItem> undoItems = new ArrayList<ClientApiUndoItem>();
         for (ClientApiWorkspaceDiff.Item diffItem : diffItems) {
             undoItems.add(workspaceDiffItemToUndoItem(diffItem));
         }

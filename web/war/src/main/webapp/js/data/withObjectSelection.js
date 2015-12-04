@@ -33,7 +33,6 @@ define([], function() {
             this.on('selectConnected', this.onSelectConnected);
 
             this.on('deleteSelected', this.onDeleteSelected);
-            this.on('deleteEdges', this.onDeleteEdges);
             this.on('edgesLoaded', this.onEdgesLoaded);
             this.on('edgesDeleted', function(event, data) {
                 if (selectedObjects && _.findWhere(selectedObjects.edges, { id: data.edgeId })) {
@@ -56,7 +55,7 @@ define([], function() {
                         });
                     }
                 }
-            })
+            });
 
             this.on('searchTitle', this.onSearchTitle);
             this.on('searchRelated', this.onSearchRelated);
@@ -130,23 +129,9 @@ define([], function() {
                         self.trigger('updateWorkspace', {
                             entityDeletes: _.pluck(selectedObjects.vertices, 'id')
                         });
-                    } else if (selectedObjects.edges.length) {
-                        self.trigger('deleteEdges', { edges: selectedObjects.edges });
                     }
                 }
             });
-        };
-
-        this.onDeleteEdges = function(event, data) {
-            var edge = data && data.edges && data.edges.length === 1 && data.edges[0];
-
-            if (edge) {
-                this.dataRequestPromise.done(function(dataRequest) {
-                    dataRequest('edge', 'delete', edge.id);
-                });
-            } else {
-                this.trigger('promptEdgeDelete', data);
-            }
         };
 
         this.onSelectObjects = function(event, data) {
@@ -222,7 +207,7 @@ define([], function() {
                                 if (data && 'options' in data) {
                                     postData.options = data.options;
                                 }
-                                self.trigger('objectsSelected', postData);
+                                self.trigger(event.target, 'objectsSelected', postData);
                             });
                     });
             });
@@ -265,7 +250,7 @@ define([], function() {
                         vertex = results.shift(),
                         title = F.vertex.title(vertex);
 
-                    self.trigger('searchForPhrase', { query: title });
+                    self.trigger('searchByParameters', { submit: true, parameters: { q: title }});
                 })
             }
         };
@@ -409,8 +394,8 @@ define([], function() {
                         ).then(function(edges) {
                             edgesById = _.indexBy(_.compact(edges), 'id');
                             edges.forEach(function(edge) {
-                                vertexIdsToRequest.push(edge.outVertexId)
-                                vertexIdsToRequest.push(edge.inVertexId)
+                                vertexIdsToRequest.push(edge.outVertexId);
+                                vertexIdsToRequest.push(edge.inVertexId);
                             });
                             if (vertexIdsToRequest.length) {
                                 return dataRequest('vertex', 'store', { vertexIds: _.unique(vertexIdsToRequest) });
@@ -422,10 +407,10 @@ define([], function() {
                                 var hadVertexIds = s.vertexIds.length;
                                 s.vertexIds = _.filter(s.vertexIds, function(vertexId) {
                                     return vertexId in verticesById;
-                                })
+                                });
                                 s.edgeIds = _.filter(s.edgeIds, function(edgeId) {
                                     return edgeId in edgesById;
-                                })
+                                });
                                 if (hadVertexIds) {
                                     if (s.vertexIds.length === 1) {
                                         s.title = F.vertex.title(verticesById[s.vertexIds[0]]);
@@ -453,7 +438,7 @@ define([], function() {
                                 } else {
                                     s.hide = true;
                                 }
-                            })
+                            });
                             notHidden = _.reject(selectedObjectsStack, function(s) {
                                 return s.hide;
                             });

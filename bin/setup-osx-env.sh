@@ -10,7 +10,7 @@ function _usage {
   fi
   echo >&2
   echo >&2 '----------------------------------------------------------'
-  echo >&2 $'Mac OSX \e[01;31mVisallo\e[00;00m Development Environment Setup Instructions'
+  echo >&2 $'Mac OS X \e[01;31mVisallo\e[00;00m Development Environment Setup Instructions'
   echo >&2 '----------------------------------------------------------'
   echo >&2
   echo >&2 '1) Download and install the latest Java 8 SE Development Kit from http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html'
@@ -33,7 +33,6 @@ _message 'Creating Docker virtial machine'
 docker-machine create \
   --driver virtualbox \
   --virtualbox-memory 8192 \
-  --virtualbox-boot2docker-url https://github.com/boot2docker/boot2docker/releases/download/v1.8.1/boot2docker.iso \
   visallo-dev
 
 eval "$(docker-machine env visallo-dev)"

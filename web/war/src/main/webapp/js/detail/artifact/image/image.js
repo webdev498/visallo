@@ -5,7 +5,7 @@ define([
     'util/withAsyncQueue',
     'util/privileges',
     'util/detectedObjects/withFacebox'
-], function(defineComponent, template, withAsyncQueue, Privileges, withFacebox) {
+], function(defineComponent, template, withAsyncQueue, Privileges, withFacebox, withFileDrop) {
     'use strict';
 
     return defineComponent(ImageView, withAsyncQueue, withFacebox);

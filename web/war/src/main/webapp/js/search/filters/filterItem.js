@@ -53,6 +53,7 @@ define([
                 this.setCurrentProperty(this.attr);
             } else {
                 this.createFieldSelection();
+                this.trigger('fieldRendered');
             }
         });
 
@@ -81,7 +82,8 @@ define([
             var valid = this.isValid(),
                 filter = {
                     propertyId: this.filter.propertyId,
-                    predicate: this.filter.predicate
+                    predicate: this.filter.predicate,
+                    metadata: this.filter.metadata
                 };
 
             if (this.predicateNeedsValues()) {
@@ -156,6 +158,8 @@ define([
                 if (index !== 0) return;
                 this.filter.values = [data.value];
             }
+            this.filter.metadata = data.metadata;
+
             this.triggerChange();
         };
 
@@ -182,6 +186,9 @@ define([
                 hasProperty = !!property;
 
             this.currentProperty = property;
+            if (data.predicate === 'equal') {
+                data.predicate = '=';
+            }
             this.filter = {
                 predicate: data.predicate,
                 propertyId: property && property.title,

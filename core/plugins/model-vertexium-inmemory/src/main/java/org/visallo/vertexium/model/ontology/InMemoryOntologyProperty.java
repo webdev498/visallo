@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import org.vertexium.Authorizations;
 import org.visallo.core.model.ontology.OntologyProperties;
 import org.visallo.core.model.ontology.OntologyProperty;
-import org.visallo.core.util.JSONUtil;
 import org.visallo.web.clientapi.model.PropertyType;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +25,8 @@ public class InMemoryOntologyProperty extends OntologyProperty {
     private Double boost;
     private String validationFormula;
     private String displayFormula;
+    private boolean updateable;
+    private boolean deleteable;
     private ImmutableList<String> dependentPropertyIris = ImmutableList.of();
     private List<String> intents = new ArrayList<>();
 
@@ -93,6 +95,12 @@ public class InMemoryOntologyProperty extends OntologyProperty {
         return dependentPropertyIris;
     }
 
+    @Override
+    public boolean getDeleteable() { return deleteable; }
+
+    @Override
+    public boolean getUpdateable() { return updateable; }
+
     public String[] getIntents() {
         return this.intents.toArray(new String[this.intents.size()]);
     }
@@ -153,9 +161,13 @@ public class InMemoryOntologyProperty extends OntologyProperty {
         this.displayFormula = displayFormula;
     }
 
-    public void setDependentPropertyIris(ImmutableList<String> dependentPropertyIris) {
-        this.dependentPropertyIris = dependentPropertyIris == null ? ImmutableList.<String>of() : dependentPropertyIris;
+    public void setDependentPropertyIris(Collection<String> dependentPropertyIris) {
+        this.dependentPropertyIris = dependentPropertyIris == null ? ImmutableList.<String>of() : ImmutableList.copyOf(dependentPropertyIris);
     }
+
+    public void setUpdateable(boolean updateable) { this.updateable = updateable; }
+
+    public void setDeleteable(boolean deleteable) { this.deleteable = deleteable; }
 
     @Override
     public void setProperty(String name, Object value, Authorizations authorizations) {
@@ -165,8 +177,8 @@ public class InMemoryOntologyProperty extends OntologyProperty {
             this.displayFormula = (String) value;
         } else if (OntologyProperties.DISPLAY_NAME.getPropertyName().equals(name)) {
             this.displayName = (String) value;
-        } else if (OntologyProperties.EDGE_LABEL_DEPENDENT_PROPERTY.equals(name)) {
-            this.dependentPropertyIris = ImmutableList.copyOf(JSONUtil.toStringList(JSONUtil.parseArray((String) value)));
+        } else if (OntologyProperties.PROPERTY_GROUP.getPropertyName().equals(name)) {
+            this.propertyGroup = (String) value;
         } else if (OntologyProperties.SEARCHABLE.getPropertyName().equals(name)) {
             if (value instanceof Boolean) {
                 this.searchable = (Boolean) value;
@@ -190,6 +202,18 @@ public class InMemoryOntologyProperty extends OntologyProperty {
                 this.userVisible = (Boolean) value;
             } else {
                 this.userVisible = Boolean.parseBoolean((String) value);
+            }
+        } else if (OntologyProperties.DELETEABLE.getPropertyName().equals(name)) {
+            if (value instanceof Boolean) {
+                this.deleteable = (Boolean) value;
+            } else {
+                this.deleteable = Boolean.parseBoolean((String) value);
+            }
+        } else if (OntologyProperties.UPDATEABLE.getPropertyName().equals(name)) {
+            if (value instanceof Boolean) {
+                this.updateable = (Boolean) value;
+            } else {
+                this.updateable = Boolean.parseBoolean((String) value);
             }
         }
     }

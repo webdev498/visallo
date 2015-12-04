@@ -7,6 +7,7 @@ public class OntologyProperties {
 
     public static final StringSingleValueVisalloProperty TITLE = new StringSingleValueVisalloProperty("http://visallo.org#title");
     public static final StreamingVisalloProperty ONTOLOGY_FILE = new StreamingVisalloProperty("http://visallo.org#ontologyFile");
+    public static final IntegerSingleValueVisalloProperty DEPENDENT_PROPERTY_ORDER_PROPERTY_NAME = new IntegerSingleValueVisalloProperty("order");
     public static final StringSingleValueVisalloProperty TEXT_INDEX_HINTS = new StringSingleValueVisalloProperty("http://visallo.org#textIndexHints");
     public static final StringSingleValueVisalloProperty ONTOLOGY_TITLE = new StringSingleValueVisalloProperty("http://visallo.org#ontologyTitle");
     public static final StringSingleValueVisalloProperty DISPLAY_NAME = new StringSingleValueVisalloProperty("http://visallo.org#displayName");
@@ -33,4 +34,6 @@ public class OntologyProperties {
     public static final StringSingleValueVisalloProperty DATA_TYPE = new StringSingleValueVisalloProperty("http://visallo.org#dataType");
     public static final DoubleSingleValueVisalloProperty BOOST = new DoubleSingleValueVisalloProperty("http://visallo.org#boost");
     public static final JsonSingleValueVisalloProperty POSSIBLE_VALUES = new JsonSingleValueVisalloProperty("http://visallo.org#possibleValues");
+    public static final BooleanSingleValueVisalloProperty DELETEABLE = new BooleanSingleValueVisalloProperty("http://visallo.org#deleteable");
+    public static final BooleanSingleValueVisalloProperty UPDATEABLE = new BooleanSingleValueVisalloProperty("http://visallo.org#updateable");
 }

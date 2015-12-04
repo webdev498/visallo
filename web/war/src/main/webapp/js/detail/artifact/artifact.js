@@ -19,7 +19,8 @@ define([
     'util/vertex/formatters',
     'util/withDataRequest',
     'd3',
-    'sf'
+    'sf',
+    'require'
 ], function(
     defineComponent,
     VideoScrubber,
@@ -39,7 +40,8 @@ define([
     F,
     withDataRequest,
     d3,
-    sf) {
+    sf,
+    require) {
     'use strict';
 
     var PERCENT_CLOSE_FOR_ROUNDING = 5; // Used for sorting x/y coordinates of detected objects
@@ -51,6 +53,7 @@ define([
     function Artifact() {
 
         this.defaultAttrs({
+            glyphIconSelector: '.entity-glyphIcon',
             previewSelector: '.preview',
             audioPreviewSelector: '.audio-preview',
             currentTranscriptSelector: '.currentTranscript',
@@ -65,7 +68,8 @@ define([
             relationshipsSelector: '.relationships',
             commentsSelector: '.comments',
             titleSelector: '.artifact-title',
-            timestampAnchorSelector: '.av-times a'
+            timestampAnchorSelector: '.av-times a',
+            ignoreDetectedObjects: true
         });
 
         this.after('initialize', function() {
@@ -168,6 +172,8 @@ define([
                 vertex: vertex
             });
 
+            var canAddImage = displayType !== 'image' && displayType !== 'video';
+
             Toolbar.attachTo(this.select('toolbarSelector'), {
                 toolbar: [
                     {
@@ -192,6 +198,7 @@ define([
                         title: i18n('detail.toolbar.add'),
                         submenu: [
                             Toolbar.ITEMS.ADD_PROPERTY,
+                            canAddImage ? Toolbar.ITEMS.ADD_IMAGE : undefined,
                             Toolbar.ITEMS.ADD_COMMENT
                         ]
                     },
@@ -213,6 +220,14 @@ define([
                 this[displayType + 'Setup'](this.attr.data, config);
             }
 
+            if (canAddImage) {
+                require(['../entity/image/image'], function(EntityImage) {
+                    EntityImage.attachTo(self.select('glyphIconSelector'), {
+                        data: vertex
+                    });
+                });
+            }
+
             this.update();
             this.updateText();
         };
@@ -230,7 +245,7 @@ define([
         };
 
         this.updateDetectedObjects = function() {
-            if (this.ignoreDetectedObjects) {
+            if (this.attr.ignoreDetectedObjects === true) {
                 return;
             }
             var self = this,
@@ -520,16 +535,12 @@ define([
         };
 
         this.audioSetup = function(vertex) {
-            this.ignoreDetectedObjects = true;
-
             AudioScrubber.attachTo(this.select('audioPreviewSelector'), {
                 rawUrl: F.vertex.raw(vertex)
             })
         };
 
         this.videoSetup = function(vertex, config) {
-            this.ignoreDetectedObjects = true;
-
             VideoScrubber.attachTo(this.select('previewSelector'), {
                 rawUrl: F.vertex.raw(vertex),
                 posterFrameUrl: F.vertex.image(vertex),
@@ -545,6 +556,7 @@ define([
                     src: F.vertex.imageDetail(vertex),
                     id: vertex.id
                 };
+            this.attr.ignoreDetectedObjects = false;
             Image.attachTo(this.select('imagePreviewSelector'), { data: data });
             this.before('teardown', function() {
                 self.select('imagePreviewSelector').teardownComponent(Image);

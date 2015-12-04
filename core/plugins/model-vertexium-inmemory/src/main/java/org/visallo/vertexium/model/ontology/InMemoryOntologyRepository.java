@@ -100,6 +100,12 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
     }
 
     @Override
+    public void updatePropertyDependentIris(OntologyProperty property, Collection<String> dependentPropertyIris) {
+        InMemoryOntologyProperty inMemoryOntologyProperty = (InMemoryOntologyProperty) property;
+        inMemoryOntologyProperty.setDependentPropertyIris(dependentPropertyIris);
+    }
+
+    @Override
     protected List<OWLOntology> loadOntologyFiles(OWLOntologyManager m, OWLOntologyLoaderConfiguration config, IRI excludedIRI) throws Exception {
         List<OWLOntology> loadedOntologies = new ArrayList<>();
         for (OwlData owlData : fileCache) {
@@ -121,6 +127,7 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
     @Override
     protected OntologyProperty addPropertyTo(
             List<Concept> concepts,
+            List<Relationship> relationships,
             String propertyIri,
             String displayName,
             PropertyType dataType,
@@ -136,7 +143,9 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
             String validationFormula,
             String displayFormula,
             ImmutableList<String> dependentPropertyIris,
-            String[] intents
+            String[] intents,
+            boolean deleteable,
+            boolean updateable
     ) {
         checkNotNull(concepts, "concept was null");
         InMemoryOntologyProperty property = getOrCreatePropertyType(
@@ -155,13 +164,33 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
                 validationFormula,
                 displayFormula,
                 dependentPropertyIris,
-                intents
+                intents,
+                deleteable,
+                updateable
         );
         for (Concept concept : concepts) {
             concept.getProperties().add(property);
         }
+        for (Relationship relationship : relationships) {
+            relationship.getProperties().add(property);
+        }
         checkNotNull(property, "Could not find property: " + propertyIri);
         return property;
+    }
+
+    @Override
+    public void updatePropertyDomainIris(OntologyProperty property, Set<String> domainIris) {
+        for (Concept concept : getConceptsWithProperties()) {
+            if (concept.getProperties().contains(property)) {
+                if (!domainIris.remove(concept.getIRI())) {
+                    concept.getProperties().remove(property);
+                }
+            }
+        }
+
+        for (String domainIri : domainIris) {
+            getConceptByIRI(domainIri).getProperties().add(property);
+        }
     }
 
     @Override
@@ -189,7 +218,9 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
             String validationFormula,
             String displayFormula,
             ImmutableList<String> dependentPropertyIris,
-            String[] intents
+            String[] intents,
+            boolean deleteable,
+            boolean updateabale
     ) {
         InMemoryOntologyProperty property = (InMemoryOntologyProperty) getPropertyByIRI(propertyIri);
         if (property == null) {
@@ -209,6 +240,8 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
             property.setValidationFormula(validationFormula);
             property.setDisplayFormula(displayFormula);
             property.setDependentPropertyIris(dependentPropertyIris);
+            property.setDeleteable(deleteable);
+            property.setUpdateable(updateabale);
             if (intents != null) {
                 for (String intent : intents) {
                     property.addIntent(intent);
@@ -307,6 +340,17 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
     }
 
     @Override
+    protected List<Relationship> getChildRelationships(Relationship relationship) {
+        List<Relationship> results = new ArrayList<>();
+        for (Relationship childRelationship : relationshipsCache.values()) {
+            if (relationship.getIRI().equals(childRelationship.getParentIRI())) {
+                results.add(childRelationship);
+            }
+        }
+        return results;
+    }
+
+    @Override
     public Concept getOrCreateConcept(Concept parent, String conceptIRI, String displayName, File inDir) {
         InMemoryConcept concept = (InMemoryConcept) getConceptByIRI(conceptIRI);
         if (concept != null) {
@@ -332,7 +376,9 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
             String relationshipIRI,
             String displayName,
             String[] intents,
-            boolean userVisible
+            boolean userVisible,
+            boolean deleteable,
+            boolean updateable
     ) {
         Relationship relationship = getRelationshipByIRI(relationshipIRI);
         if (relationship != null) {
@@ -354,7 +400,19 @@ public class InMemoryOntologyRepository extends OntologyRepositoryBase {
         });
 
         String parentIRI = parent == null ? null : parent.getIRI();
-        InMemoryRelationship inMemRelationship = new InMemoryRelationship(parentIRI, relationshipIRI, displayName, domainConceptIris, rangeConceptIris, intents, userVisible);
+        Collection<OntologyProperty> properties = new ArrayList<>();
+        InMemoryRelationship inMemRelationship = new InMemoryRelationship(
+                parentIRI,
+                relationshipIRI,
+                displayName,
+                domainConceptIris,
+                rangeConceptIris,
+                properties,
+                intents,
+                userVisible,
+                deleteable,
+                updateable
+        );
         relationshipsCache.put(relationshipIRI, inMemRelationship);
         return inMemRelationship;
     }

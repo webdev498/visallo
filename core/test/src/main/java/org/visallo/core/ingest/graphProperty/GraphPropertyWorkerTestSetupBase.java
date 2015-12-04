@@ -1,7 +1,5 @@
 package org.visallo.core.ingest.graphProperty;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.junit.Before;
 import org.mockito.Mock;
 import org.vertexium.Authorizations;
@@ -69,12 +67,18 @@ public abstract class GraphPropertyWorkerTestSetupBase {
         when(ontologyRepository.getRequiredConceptIRIByIntent("phoneNumber")).thenReturn("http://visallo.org/test#phoneNumber");
         when(ontologyRepository.getRequiredRelationshipIRIByIntent("artifactHasEntity")).thenReturn("http://visallo.org/test#artifactHasEntity");
 
+        when(user.getUserId()).thenReturn("USER123");
+
         List<TermMentionFilter> termMentionFilters = new ArrayList<>();
-        FileSystem hdfsFileSystem = FileSystem.get(new Configuration());
         authorizations = new InMemoryAuthorizations(VISIBILITY_SOURCE);
         configuration.putAll(getAdditionalConfiguration());
         GraphPropertyWorkerPrepareData workerPrepareData = new GraphPropertyWorkerPrepareData(
-                configuration, termMentionFilters, hdfsFileSystem, user, authorizations, null);
+                configuration,
+                termMentionFilters,
+                user,
+                authorizations,
+                null
+        );
         graph = InMemoryGraph.create();
         termMentionAuthorizations = graph.createAuthorizations(TermMentionRepository.VISIBILITY_STRING, VISIBILITY_SOURCE, WORKSPACE_ID);
         visibility = new Visibility(VISIBILITY_SOURCE);

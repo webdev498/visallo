@@ -14,11 +14,18 @@ public abstract class Relationship {
     private final String parentIRI;
     private final List<String> domainConceptIRIs;
     private final List<String> rangeConceptIRIs;
+    private final Collection<OntologyProperty> properties;
 
-    protected Relationship(String parentIRI, List<String> domainConceptIRIs, List<String> rangeConceptIRIs) {
+    protected Relationship(
+            String parentIRI,
+            List<String> domainConceptIRIs,
+            List<String> rangeConceptIRIs,
+            Collection<OntologyProperty> properties
+    ) {
         this.parentIRI = parentIRI;
         this.domainConceptIRIs = domainConceptIRIs;
         this.rangeConceptIRIs = rangeConceptIRIs;
+        this.properties = properties;
     }
 
     public abstract String getIRI();
@@ -26,6 +33,12 @@ public abstract class Relationship {
     public String getParentIRI() {
         return parentIRI;
     }
+
+    public abstract String getTitleFormula();
+
+    public abstract String getSubtitleFormula();
+
+    public abstract String getTimeFormula();
 
     public abstract String getDisplayName();
 
@@ -41,7 +54,15 @@ public abstract class Relationship {
 
     public abstract boolean getUserVisible();
 
+    public abstract boolean getDeleteable();
+
+    public abstract boolean getUpdateable();
+
     public abstract String[] getIntents();
+
+    public Collection<OntologyProperty> getProperties() {
+        return properties;
+    }
 
     public abstract void addIntent(String intent, Authorizations authorizations);
 
@@ -63,6 +84,8 @@ public abstract class Relationship {
 
     public abstract void setProperty(String name, Object value, Authorizations authorizations);
 
+    public abstract void removeProperty(String name, Authorizations authorizations);
+
     public ClientApiOntology.Relationship toClientApi() {
         try {
             ClientApiOntology.Relationship result = new ClientApiOntology.Relationship();
@@ -72,6 +95,11 @@ public abstract class Relationship {
             result.setDomainConceptIris(getDomainConceptIRIs());
             result.setRangeConceptIris(getRangeConceptIRIs());
             result.setUserVisible(getUserVisible());
+            result.setDeleteable(getDeleteable());
+            result.setUpdateable(getUpdateable());
+            result.setTitleFormula(getTitleFormula());
+            result.setSubtitleFormula(getSubtitleFormula());
+            result.setTimeFormula(getTimeFormula());
             if (getIntents() != null) {
                 result.getIntents().addAll(Arrays.asList(getIntents()));
             }
@@ -82,6 +110,12 @@ public abstract class Relationship {
                 inverseOf.setIri(inverseOfIRI);
                 inverseOf.setPrimaryIri(getPrimaryInverseOfIRI(getIRI(), inverseOfIRI));
                 result.getInverseOfs().add(inverseOf);
+            }
+
+            if (this.properties != null) {
+                for (OntologyProperty property : this.properties) {
+                    result.getProperties().add(property.getTitle());
+                }
             }
 
             return result;

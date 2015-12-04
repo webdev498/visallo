@@ -43,6 +43,7 @@
 
         <!-- Dependency Versions -->
         <accumulo.version>1.6.1</accumulo.version>
+        <h2.version>1.4.188</h2.version>
         <ant.version>1.4.1</ant.version>
         <atmosphere.version>2.2.7</atmosphere.version>
         <commons.beanutils.version>1.9.1</commons.beanutils.version>
@@ -72,9 +73,9 @@
         <log4j.version>1.2.17</log4j.version>
         <lucene.version>4.7.0</lucene.version>
         <metrics.version>3.0.2</metrics.version>
-        <vertexium.version>2.0.3</vertexium.version>
-        <simple-orm.version>1.0.0</simple-orm.version>
-        <groovy.version>2.3.7</groovy.version>
+        <vertexium.version>2.2.3</vertexium.version>
+        <simple-orm.version>1.0.2</simple-orm.version>
+        <groovy.version>2.4.3</groovy.version>
         <zip4j.version>1.3.1</zip4j.version>
         <zookeeper.version>3.4.6</zookeeper.version>
         <jersey.version>1.19</jersey.version>
@@ -84,9 +85,12 @@
         <xerces.version>2.9.1</xerces.version>
         <xalan.version>2.7.1</xalan.version>
         <owlapi.version>4.0.2</owlapi.version>
-        <webster.version>2.1.1-SNAPSHOT</webster.version>
+        <webster.version>2.2.0</webster.version>
         <drewnoakes.version>2.8.1</drewnoakes.version>
         <jai-imageio.version>1.2.1</jai-imageio.version>
+        <spark.version>1.5.1</spark.version>
+        <spark.scala.version>2.10</spark.scala.version>
+        <spark.scala.library.version>2.10.6</spark.scala.library.version>
 
         <!-- update monthly -->
         <uadetector.resources.version>2014.06</uadetector.resources.version>
@@ -119,15 +123,18 @@
         <plugin.maven.site.version>3.3</plugin.maven.site.version>
         <plugin.maven.source.version>2.2.1</plugin.maven.source.version>
         <plugin.maven.surefire.version>2.16</plugin.maven.surefire.version>
+        <plugin.maven.antrun.version>1.8</plugin.maven.antrun.version>
+        <plugin.build-helper-maven-plugin>1.9.1</plugin.build-helper-maven-plugin>
         <plugin.pmd.version>3.0.1</plugin.pmd.version>
         <plugin.sonar.version>4.0</plugin.sonar.version>
         <plugin.taglist.version>2.4</plugin.taglist.version>
         <plugin.template.resgen.version>0.11</plugin.template.resgen.version>
+        <plugin.frontend>0.0.26</plugin.frontend>
         <commons-fileupload.version>1.3.1</commons-fileupload.version>
         <handlebars.version>1.0.0</handlebars.version>
         <javax.mail.version>1.4.5</javax.mail.version>
-        <node.version>v0.12.0</node.version>
-        <npm.version>2.5.1</npm.version>
+        <node.version>v4.2.1</node.version>
+        <npm.version>3.3.8</npm.version>
     </properties>
 
     <distributionManagement>
@@ -517,6 +524,11 @@
                 <version>${simple-orm.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.vertexium</groupId>
                 <artifactId>vertexium-core</artifactId>
                 <version>${vertexium.version}</version>
@@ -533,17 +545,17 @@
             </dependency>
             <dependency>
                 <groupId>org.vertexium</groupId>
-                <artifactId>vertexium-elasticsearch-base</artifactId>
-                <version>${vertexium.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.vertexium</groupId>
                 <artifactId>vertexium-elasticsearch-singledocument</artifactId>
                 <version>${vertexium.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.vertexium</groupId>
                 <artifactId>vertexium-tools</artifactId>
+                <version>${vertexium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.vertexium</groupId>
+                <artifactId>vertexium-sql</artifactId>
                 <version>${vertexium.version}</version>
             </dependency>
             <dependency>
@@ -560,6 +572,11 @@
             <dependency>
                 <groupId>org.vertexium</groupId>
                 <artifactId>vertexium-kryo-serializer</artifactId>
+                <version>${vertexium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.vertexium</groupId>
+                <artifactId>vertexium-xstream-serializer</artifactId>
                 <version>${vertexium.version}</version>
             </dependency>
             <dependency>
@@ -706,6 +723,12 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${plugin.build-helper-maven-plugin}</version>
+                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>

@@ -1,6 +1,4 @@
-
-define([
-], function() {
+define([], function() {
     'use strict';
 
     var ERROR_NO_POSITION_RESPONSE =
