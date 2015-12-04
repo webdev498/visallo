@@ -20,7 +20,7 @@ public abstract class OntologyBase extends CategoryBase {
     public ClientApiOntology get(
         
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         return getVisalloApi().execute("GET", "/ontology", parameters, ClientApiOntology.class);
     }
 

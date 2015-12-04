@@ -4,8 +4,8 @@ import org.visallo.web.clientapi.codegen.VertexBase;
 import org.visallo.web.clientapi.codegen.VisalloApiBase;
 import org.visallo.web.clientapi.model.ClientApiArtifactImportResponse;
 import org.visallo.web.clientapi.model.ClientApiElement;
+import org.visallo.web.clientapi.model.ClientApiElementSearchResponse;
 import org.visallo.web.clientapi.model.ClientApiVertexEdges;
-import org.visallo.web.clientapi.model.ClientApiVertexSearchResponse;
 import org.visallo.web.clientapi.util.Optional;
 import org.visallo.web.clientapi.util.Required;
 
@@ -18,10 +18,10 @@ public class Vertex extends VertexBase {
         super(visalloApi);
     }
 
-    public ClientApiVertexSearchResponse getSearch(String query) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+    public ClientApiElementSearchResponse getSearch(String query) {
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("q", query));
-        return getVisalloApi().execute("GET", "/vertex/search", parameters, ClientApiVertexSearchResponse.class);
+        return getVisalloApi().execute("GET", "/vertex/search", parameters, ClientApiElementSearchResponse.class);
     }
 
     public InputStream getRaw(String graphVertexId) {
@@ -29,7 +29,7 @@ public class Vertex extends VertexBase {
     }
 
     public ClientApiArtifactImportResponse postImport(String visibilitySource, String fileName, InputStream data) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("visibilitySource", visibilitySource));
         parameters.add(new VisalloApiBase.MultiPartParameter("file", fileName, data));
         return getVisalloApi().execute("POST", "/vertex/import", parameters, ClientApiArtifactImportResponse.class);

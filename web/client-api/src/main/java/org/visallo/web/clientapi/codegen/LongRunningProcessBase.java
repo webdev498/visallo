@@ -21,7 +21,7 @@ public abstract class LongRunningProcessBase extends CategoryBase {
     public void postCancel(
         @Required(name = "longRunningProcessId") String longRunningProcessId
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("longRunningProcessId", longRunningProcessId));
         getVisalloApi().execute("POST", "/long-running-process/cancel", parameters, null);
     }
@@ -32,7 +32,7 @@ public abstract class LongRunningProcessBase extends CategoryBase {
     public void delete(
         @Required(name = "longRunningProcessId") String longRunningProcessId
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("longRunningProcessId", longRunningProcessId));
         getVisalloApi().execute("DELETE", "/long-running-process", parameters, null);
     }
@@ -43,7 +43,7 @@ public abstract class LongRunningProcessBase extends CategoryBase {
     public JSONObject get(
         @Required(name = "longRunningProcessId") String longRunningProcessId
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("longRunningProcessId", longRunningProcessId));
         return getVisalloApi().execute("GET", "/long-running-process", parameters, JSONObject.class);
     }

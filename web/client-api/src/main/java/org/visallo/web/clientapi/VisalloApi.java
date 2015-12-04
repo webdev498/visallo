@@ -61,7 +61,7 @@ public class VisalloApi extends VisalloApiBase {
 
     public <T> T execute(String httpVerb, String path, List<Parameter> parameters, Class<T> returnType) {
         if (parameters == null) {
-            parameters = new ArrayList<>();
+            parameters = new ArrayList<Parameter>();
         }
         String targetUrl = getTargetUrl(path);
         HttpURLConnection connection = null;

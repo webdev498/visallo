@@ -25,7 +25,7 @@ public abstract class UserBase extends CategoryBase {
         @Optional(name = "name") String name,
         @Optional(name = "value") String value
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("ui-preferences", uiPreferences));
         parameters.add(new VisalloApiBase.Parameter("name", name));
         parameters.add(new VisalloApiBase.Parameter("value", value));
@@ -42,7 +42,7 @@ public abstract class UserBase extends CategoryBase {
         @Optional(name = "workspaceId") String workspaceId,
         @Optional(name = "userIds[]") String[] userIds
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("q", q));
         parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
         parameters.add(new VisalloApiBase.Parameter("userIds[]", userIds));
@@ -57,7 +57,7 @@ public abstract class UserBase extends CategoryBase {
         @Required(name = "user-name") String userName,
         @Required(name = "auth") String auth
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         parameters.add(new VisalloApiBase.Parameter("auth", auth));
         return getVisalloApi().execute("POST", "/user/auth/add", parameters, JSONObject.class);
@@ -71,7 +71,7 @@ public abstract class UserBase extends CategoryBase {
         @Required(name = "user-name") String userName,
         @Required(name = "auth") String auth
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         parameters.add(new VisalloApiBase.Parameter("auth", auth));
         return getVisalloApi().execute("POST", "/user/auth/remove", parameters, JSONObject.class);
@@ -83,7 +83,7 @@ public abstract class UserBase extends CategoryBase {
     public void postDelete(
         @Required(name = "user-name") String userName
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         getVisalloApi().execute("POST", "/user/delete", parameters, null);
     }
@@ -96,7 +96,7 @@ public abstract class UserBase extends CategoryBase {
         @Required(name = "user-name") String userName,
         @Required(name = "privileges") String privileges
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         parameters.add(new VisalloApiBase.Parameter("privileges", privileges));
         return getVisalloApi().execute("POST", "/user/privileges/update", parameters, JSONObject.class);
@@ -107,7 +107,7 @@ public abstract class UserBase extends CategoryBase {
     public ClientApiUser getMe(
         
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         return getVisalloApi().execute("GET", "/user/me", parameters, ClientApiUser.class);
     }
 
@@ -121,7 +121,7 @@ public abstract class UserBase extends CategoryBase {
         @Optional(name = "workspaceId") String workspaceId,
         @Optional(name = "userIds[]") String[] userIds
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("q", q));
         parameters.add(new VisalloApiBase.Parameter("workspaceId", workspaceId));
         parameters.add(new VisalloApiBase.Parameter("userIds[]", userIds));
@@ -134,7 +134,7 @@ public abstract class UserBase extends CategoryBase {
     public ClientApiUser get(
         @Required(name = "user-name") String userName
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("user-name", userName));
         return getVisalloApi().execute("GET", "/user", parameters, ClientApiUser.class);
     }

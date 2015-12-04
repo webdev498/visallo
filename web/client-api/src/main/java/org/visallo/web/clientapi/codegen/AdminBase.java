@@ -21,7 +21,7 @@ public abstract class AdminBase extends CategoryBase {
     public void postUploadOntology(
         @Optional(name = "documentIRI") String documentIRI
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("documentIRI", documentIRI));
         getVisalloApi().execute("POST", "/admin/upload-ontology", parameters, null);
     }
@@ -32,7 +32,7 @@ public abstract class AdminBase extends CategoryBase {
     public void postQueueVertices(
         @Optional(name = "propertyName") String propertyName
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("propertyName", propertyName));
         getVisalloApi().execute("POST", "/admin/queueVertices", parameters, null);
     }
@@ -43,7 +43,7 @@ public abstract class AdminBase extends CategoryBase {
     public void postQueueEdges(
         @Optional(name = "label") String label
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("label", label));
         getVisalloApi().execute("POST", "/admin/queueEdges", parameters, null);
     }
@@ -54,7 +54,7 @@ public abstract class AdminBase extends CategoryBase {
     public void postDeleteVertex(
         @Required(name = "graphVertexId") String graphVertexId
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("graphVertexId", graphVertexId));
         getVisalloApi().execute("POST", "/admin/deleteVertex", parameters, null);
     }
@@ -65,7 +65,7 @@ public abstract class AdminBase extends CategoryBase {
     public void postDeleteEdge(
         @Required(name = "edgeId") String edgeId
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         parameters.add(new VisalloApiBase.Parameter("edgeId", edgeId));
         getVisalloApi().execute("POST", "/admin/deleteEdge", parameters, null);
     }
@@ -75,7 +75,7 @@ public abstract class AdminBase extends CategoryBase {
     public String getAll(
         
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         return getVisalloApi().execute("GET", "/admin/all", parameters, String.class);
     }
 
@@ -84,7 +84,7 @@ public abstract class AdminBase extends CategoryBase {
     public JSONObject getPlugins(
         
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         return getVisalloApi().execute("GET", "/admin/plugins", parameters, JSONObject.class);
     }
 
@@ -93,7 +93,7 @@ public abstract class AdminBase extends CategoryBase {
     public void getRouteRunner(
         
     ) {
-        List<VisalloApiBase.Parameter> parameters = new ArrayList<>();
+        List<VisalloApiBase.Parameter> parameters = new ArrayList<VisalloApiBase.Parameter>();
         getVisalloApi().execute("GET", "/admin/routeRunner", parameters, null);
     }
 
