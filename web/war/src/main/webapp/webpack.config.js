@@ -18,7 +18,12 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.NoErrorsPlugin()
+        new webpack.NoErrorsPlugin(),
+        //todo remove globals
+        new webpack.ProvidePlugin({
+            $: 'jquery',
+            _: 'underscore'
+        })
     ],
     //todo use unminfied 3rd party deps?
     resolve: {
