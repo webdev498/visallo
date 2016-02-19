@@ -92,7 +92,7 @@ define([
                 (
                     component.Component ?
                         Promise.resolve(component.Component) :
-                        Promise.require(component.componentPath)
+                        System.import(component.componentPath)
                 ).then(function(Component) {
                     Component.attachTo(form, data);
                     self.trigger(container, 'paneResized');

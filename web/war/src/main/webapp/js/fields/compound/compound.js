@@ -105,10 +105,10 @@ define([
 
                 self.compoundValues[propertyIri] = previousValue;
 
-                return Promise.require(
+                return System.import(
                     ontologyProperty.possibleValues ?
-                        'fields/restrictValues' :
-                        'fields/' + ontologyProperty.dataType
+                        '../restrictValues' :
+                        '../' + ontologyProperty.dataType
                 ).then(function(PropertyField) {
                     PropertyField.attachTo(fieldContainer, {
                         property: ontologyProperty,

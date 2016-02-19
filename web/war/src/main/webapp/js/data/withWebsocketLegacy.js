@@ -9,7 +9,7 @@ define([], function() {
             var self = this,
                 config = this.getAtmosphereConfiguration(),
                 atmospherePromise = Promise.all([
-                    Promise.require('atmosphere'),
+                    System.import('atmosphere'),
                     new Promise(function(fulfill, reject) {
                         if (visalloData.currentUser) return fulfill();
                         self.on('applicationReady currentUserVisalloDataUpdated', fulfill);
@@ -65,7 +65,7 @@ define([], function() {
                 if (message && message.message) {
                     Promise.all([
                         atmospherePromise,
-                        Promise.require('util/websocket')
+                        System.import('../util/websocket')
                     ]).then(function(r) {
                         var socket = r[0],
                             websocketUtils = r[1];

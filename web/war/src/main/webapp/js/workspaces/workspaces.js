@@ -340,7 +340,7 @@ define([
             this.workspaces = workspaces;
 
             return Promise.all([
-                Promise.require('d3'),
+                System.import('d3'),
                 this.dataRequest('user', 'getUserNames', userIds)
             ]).then(function(results) {
                 var d3 = results.shift(),

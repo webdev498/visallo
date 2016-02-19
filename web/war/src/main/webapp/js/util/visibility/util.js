@@ -34,10 +34,10 @@ define(['configuration/plugins/registry'], function(registry) {
     }
 
     var promises = {
-            editor: Promise.require(
+            editor: System.import(
                 visibilityExtensions[0].editorComponentPath || defaultVisibility.editorComponentPath
             ).then(_.partial(setComponent, 'editor')),
-            viewer: Promise.require(
+            viewer: System.import(
                 visibilityExtensions[0].viewerComponentPath || defaultVisibility.viewerComponentPath
             ).then(_.partial(setComponent, 'viewer'))
         },

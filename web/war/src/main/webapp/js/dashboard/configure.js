@@ -45,7 +45,7 @@ define([
             config.empty = paths.length === 0;
 
             var configPathPromises = paths.map(function(path) {
-                return Promise.all([path, Promise.require(path)]);
+                return Promise.all([path, System.import(path)]);
             });
 
             this.after('setupWithTemplate', function() {
@@ -69,7 +69,7 @@ define([
                             .teardownAllComponents()
                             .remove();
                         this.renderConfigurations([
-                            Promise.all([reportConfigurationPath, Promise.require(reportConfigurationPath)])
+                            Promise.all([reportConfigurationPath, System.import(reportConfigurationPath)])
                         ]);
                     } else if (reportRemoved) {
                         this.getDivForPath(reportConfigurationPath)

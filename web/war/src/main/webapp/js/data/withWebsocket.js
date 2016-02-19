@@ -9,7 +9,7 @@ define(['util/websocket'], function(websocketUtils) {
             this.after('initialize', function() {
                 this.on('applicationReady currentUserVisalloDataUpdated', function() {
                     _.defer(function() {
-                        Promise.require('util/offlineOverlay').done(fulfill);
+                        System.import('../util/offlineOverlay').done(fulfill);
                     })
                 })
             })

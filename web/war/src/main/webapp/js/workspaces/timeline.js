@@ -93,7 +93,7 @@ define([
             this.$node.html(template({}));
 
             Promise.all([
-                Promise.require('fields/histogram/histogram'),
+                System.import('../fields/histogram/histogram'),
                 this.dataRequest('ontology', 'properties')
             ]).done(function(results) {
                 var Histogram = results.shift(),

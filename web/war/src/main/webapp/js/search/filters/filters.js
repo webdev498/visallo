@@ -1,4 +1,3 @@
-
 define([
     'flight/lib/component',
     'flight/lib/registry',
@@ -131,11 +130,12 @@ define([
                     { searchType: filterSearchType }
                 ),
                 componentPromises = _.map(extensions, function(extension) {
-                    return Promise.require(extension.componentPath);
+                    //todo does this work?
+                    return System.import(extension.componentPath);
                 });
 
             if (componentPromises.length) {
-                componentPromises.splice(0, 0, Promise.require('./extensionItem.hbs'))
+                componentPromises.splice(0, 0, System.import('./extensionItem.hbs'))
                 return Promise.all(componentPromises)
                     .then(function(components) {
                         var template = components.shift();

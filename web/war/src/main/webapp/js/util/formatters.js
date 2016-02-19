@@ -242,7 +242,7 @@ define([
                 if (!id) {
                     return Promise.resolve(null);
                 }
-                return Promise.require('util/withDataRequest')
+                return System.import('util/withDataRequest')
                       .then(function(dr) {
                           return dr.dataRequest('directory', 'getById', id)
                       })

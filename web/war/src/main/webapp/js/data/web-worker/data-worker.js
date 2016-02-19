@@ -5,6 +5,7 @@
 /*global store:false*/
 /*global BASE_URL:true*/
 /*global importScripts:false*/
+//todo where does importScripts come from?
 
 /*eslint strict:0*/
 var BASE_URL = '../../..',
@@ -80,7 +81,7 @@ function setupWebsocket(data) {
         }
         self.pushSocketMessage = function(message) {
             Promise.all([
-                Promise.require('util/websocket'),
+                System.import('../util/websocket'),
                 new Promise(function(fulfill, reject) {
                     if (atmosphere.util.__socketOpened) {
                         fulfill(publicData.socket);

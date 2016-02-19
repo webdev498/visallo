@@ -1,4 +1,3 @@
-
 define([
     '../formatters',
     './urlFormatters',
@@ -101,7 +100,7 @@ define([
                 },
 
                 userAsync: function(el, userId) {
-                    return Promise.require('util/withDataRequest')
+                    return System.import('../withDataRequest')
                         .then(function(withDataRequest) {
                             return withDataRequest.dataRequest('user', 'getUserNames', [userId])
                         })

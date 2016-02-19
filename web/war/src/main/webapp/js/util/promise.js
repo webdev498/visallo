@@ -45,7 +45,6 @@ define([
 
     addProgress();
     addTimeout();
-    addRequire();
 
     self.Promise = Promise;
     return Promise;
@@ -103,18 +102,6 @@ define([
                 });
             }
         } else console.warn('Native implementation of timeout');
-    }
-
-    function addRequire() {
-        if (typeof Promise.prototype.require !== 'function') {
-            Promise.require = function() {
-                var deps = Array.prototype.slice.call(arguments, 0);
-
-                return new Promise(function(fulfill, reject) {
-                    require(_.filter(deps, _.isString), fulfill, reject);
-                });
-            };
-        } else console.warn('Native implementation of require');
     }
 
 });

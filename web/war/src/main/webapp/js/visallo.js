@@ -26,6 +26,8 @@ function(jQuery,
          Privileges) {
     'use strict';
 
+    var $script = require('scriptjs');
+
     $.ui = { keyCode: { ENTER: 13 } };
 
     // Debug retina/non-retina by changing to 1/2
@@ -84,7 +86,7 @@ function(jQuery,
                     $(document).trigger('windowResize');
                 }, MAX_RESIZE_TRIGGER_INTERVAL));
 
-            Promise.require('util/messages')
+            System.import('util/messages')
                 .then(function(_i18n) {
                     window.i18n = _i18n;
                     updateVisalloLoadingProgress('dependencies');
@@ -137,7 +139,7 @@ function(jQuery,
             });
         }
 
-        Promise.all(visalloPluginResources.beforeAuth.map(Promise.require))
+        Promise.all(visalloPluginResources.beforeAuth.map($script))
             .then(function() {
                 return withDataRequest.dataRequest('user', 'me')
             })
@@ -165,7 +167,7 @@ function(jQuery,
                 updateVisalloLoadingProgress('userinterface');
 
                 $(document).one('loginSuccess', function() {
-                    Promise.all(visalloPluginResources.afterAuth.map(Promise.require))
+                    Promise.all(visalloPluginResources.afterAuth.map($script))
                         .catch(function(error) {
                             $('#login').trigger('showErrorMessage', {
                                 message: i18n('visallo.loading.progress.pluginerror')
@@ -192,7 +194,7 @@ function(jQuery,
                 var len = visalloPluginResources.afterAuth.length,
                     i = 0;
                 Promise.all(visalloPluginResources.afterAuth.map(function(path) {
-                    return Promise.require(path).then(function() {
+                    return $script(path).then(function() {
                         updateVisalloLoadingProgress('extensions', ++i / len);
                     })
                 }))

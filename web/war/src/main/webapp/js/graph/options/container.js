@@ -30,7 +30,7 @@ define([
                 $options = $(),
                 components = registry.extensionsForPoint('org.visallo.graph.options')
                     .map(function(option) {
-                        return Promise.require(option.optionComponentPath);
+                        return System.import(option.optionComponentPath);
                     });
 
             if (!components.length) {

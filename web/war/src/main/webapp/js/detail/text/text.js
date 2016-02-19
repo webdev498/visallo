@@ -211,8 +211,8 @@ define([
 
             if (!d3) {
                 return Promise.all([
-                    Promise.require('d3'),
-                    Promise.require('util/range')
+                    System.import('d3'),
+                    System.import('../../util/range')
                 ]).then(function(results) {
                     return internalUpdateText.apply(self, results);
                 })
@@ -328,8 +328,9 @@ define([
                 console.warn('Multiple extensions wanting to override text', extensions);
             }
 
+            //todo does this work?
             if (extensions.length) {
-                textPromise = Promise.require(extensions[0].componentPath)
+                textPromise = System.import(extensions[0].componentPath)
                     .then(function(Text) {
                         Text.attachTo($section.find('.text'), {
                             vertex: self.model,
@@ -1006,7 +1007,7 @@ define([
     }
 
     function requireAndCleanupActionBar() {
-        return Promise.require('util/actionbar/actionbar')
+        return System.import('../../util/actionbar/actionbar')
             .then(function(ActionBar) {
                 ActionBar.teardownAll();
                 return ActionBar;

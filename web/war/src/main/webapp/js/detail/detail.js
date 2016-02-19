@@ -86,7 +86,7 @@ define([
             edges = _.unique(edges, 'id');
 
             Promise.all([
-                Promise.require('detail/item/item'),
+                System.import('./item/item'),
                 this.collapsed ?
                     new Promise(function(f) {
                         pane.on(TRANSITION_END, function(e) {

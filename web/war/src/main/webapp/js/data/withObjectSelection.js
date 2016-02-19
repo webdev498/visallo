@@ -287,7 +287,7 @@ define([], function() {
 
             if (vertexId) {
                 Promise.all([
-                    Promise.require('util/vertex/formatters'),
+                    System.import('../util/vertex/formatters'),
                     this.dataRequestPromise.then(function(dataRequest) {
                         return dataRequest('vertex', 'store', { vertexIds: vertexId });
                     })
@@ -304,7 +304,7 @@ define([], function() {
         this.onSearchRelated = function(event, data) {
             var self = this;
 
-            Promise.require('util/vertex/formatters')
+            System.import('util/vertex/formatters')
                 .then(function(F) {
                     return F.vertex.getVertexIdsFromDataEventOrCurrentSelection(data, { async: true });
                 })
@@ -318,7 +318,7 @@ define([], function() {
         this.onAddRelatedItems = function(event, data) {
             var self = this;
 
-            Promise.require('util/vertex/formatters')
+            System.import('util/vertex/formatters')
                 .then(function(F) {
                     return F.vertex.getVertexIdsFromDataEventOrCurrentSelection(data, { async: true });
                 })
@@ -326,7 +326,7 @@ define([], function() {
 
                     if (vertexIds.length) {
                         Promise.all([
-                            Promise.require('util/popovers/addRelated/addRelated'),
+                            System.import('util/popovers/addRelated/addRelated'),
                             self.dataRequestPromise.then(function(dataRequest) {
                                 return dataRequest('vertex', 'store', { vertexIds: vertexIds })
                             })
@@ -406,7 +406,7 @@ define([], function() {
 
                 return Promise.all([
                     this.getConfigurationMaxHistory(),
-                    Promise.require('util/vertex/formatters'),
+                    System.import('util/vertex/formatters'),
                     this.dataRequestPromise.then(function(dataRequest) {
                         return dataRequest('ontology', 'relationships')
                     }),

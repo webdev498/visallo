@@ -299,7 +299,7 @@ define([
         var type = _.findWhere(registry.extensionsForPoint('org.visallo.layout.type'), { type: layoutConfig.type });
         if (!type) throw new Error('No registered layout type for: ' + layoutConfig.type);
 
-        return Promise.require(type.componentPath)
+        return System.import(type.componentPath)
             .then(function(LayoutType) {
                 var children = domElements.map(function(el, i) {
                     return {
@@ -347,7 +347,7 @@ define([
             return;
         }
         return function() {
-            return Promise.require(config.componentPath)
+            return System.import(config.componentPath)
                 .then(function(Component) {
                     var attrs = {};
                     if (config.modelAttribute) {

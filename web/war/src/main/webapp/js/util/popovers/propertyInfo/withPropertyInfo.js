@@ -12,7 +12,7 @@ define([
                 shouldOpen = $target.lookupAllComponents().length === 0;
 
             Promise.all([
-                Promise.require('util/popovers/propertyInfo/propertyInfo'),
+                System.import('./propertyInfo'),
                 withDataRequest.dataRequest('ontology', 'properties')
             ]).done(function(results) {
                 var PropertyInfo = results.shift(),

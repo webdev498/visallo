@@ -259,7 +259,7 @@ define([
                 fieldComponent = property.possibleValues ? 'fields/restrictValues' : 'fields/' + property.dataType;
             }
 
-            return Promise.require(fieldComponent).then(function(PropertyFieldItem) {
+            return System.import(fieldComponent).then(function(PropertyFieldItem) {
                 var node = self.select('fieldSelector'),
                     nodesRendered = _.reduce(node.toArray(), function(sum, el) {
                         return sum + ($(el).lookupComponent(PropertyFieldItem) ? 1 : 0);

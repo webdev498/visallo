@@ -531,12 +531,13 @@ define([
                     reportConfiguration = item.configuration[renderer.identifier];
                     path = renderer.componentPath;
                 } else {
-                    path = 'dashboard/reportRenderers/unknownType';
+                    path = './reportRenderers/unknownType';
                 }
             }
 
+            //todo fix?
             if (path) {
-                return Promise.require(path).then(function(Component) {
+                return System.import(path).then(function(Component) {
                     var $gridItem = $(node),
                         $content = $gridItem.find('.item-content')
                             .attr('class', 'item-content')
@@ -603,7 +604,7 @@ define([
                     dataAttrs: self.gridOptions({ 'no-move': true, 'no-resize': true })
                 }));
 
-            return Promise.require('dashboard/addItem').then(function(AddItem) {
+            return System.import('./addItem').then(function(AddItem) {
                 AddItem.attachTo(node.find('.item-content'), {});
                 return node;
             });
@@ -670,7 +671,7 @@ define([
                         }
                         return self.requestDashboards(layouts[0]);
                     } else {
-                        return Promise.require('dashboard/defaultLayout')
+                        return System.import('./defaultLayout')
                             .then(function(items) {
                                 return self.requestDashboards(items);
                             });

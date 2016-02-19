@@ -312,7 +312,8 @@ define([
                 .compact()
                 .value();
 
-            return Promise.require.apply(Promise, uniqueTypes)
+                //todo does this work?
+            return System.import.apply(System, uniqueTypes)
                 .then(function(deps) {
                     self.updateWithDependencies.apply(self, [data, uniqueTypes].concat(deps))
                 })

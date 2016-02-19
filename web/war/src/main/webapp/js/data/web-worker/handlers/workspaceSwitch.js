@@ -26,7 +26,7 @@ define(['../services/workspace'], function(Workspace) {
                 return Promise.all([
                     Workspace.edges(workspace.workspaceId),
                     Workspace.vertices(workspace.workspaceId),
-                    Promise.require('data/web-worker/util/store')
+                    System.import('../util/store')
                 ]).then(function(results) {
                     var edges = results.shift(),
                         vertices = results.shift().vertices,

@@ -48,13 +48,13 @@ define([
                         });
                     }
                 }).then(function() {
-                    return Promise.require('util/withDataRequest');
+                    return System.import('../util/withDataRequest');
                 }).then(function(withDataRequest) {
                     return withDataRequest.dataRequest;
                 });
 
             this.messagesPromise = this.dataRequestPromise.then(function() {
-                    return Promise.require('util/messages');
+                    return System.import('util/messages');
                 }).then(this.setupMessages.bind(this));
 
             if (typeof DEBUG !== 'undefined') {

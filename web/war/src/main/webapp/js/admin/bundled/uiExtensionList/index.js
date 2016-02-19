@@ -31,7 +31,7 @@ define([
                 $list = this.$node.empty().text('Loading...');
 
             Promise.all([
-                Promise.require('d3'),
+                System.import('d3'),
                 this.dataRequest('extensionRegistry', 'get')
             ]).done(function(results) {
                 var d3 = results.shift(),

@@ -240,7 +240,7 @@ define([
 
             if (report && _.isString(report.clickHandlerModulePath)) {
                 var target = d3.event.target;
-                return Promise.require(report.clickHandlerModulePath)
+                return System.import(report.clickHandlerModulePath)
                     .then(function(clickHandler) {
                         if (_.isFunction(clickHandler)) {
                             return Promise.resolve(clickHandler.apply(self, [target, object]));
@@ -429,7 +429,7 @@ define([
 
     function optionallyApplyTransformer(transformerModulePath, object) {
         if (_.isString(transformerModulePath) && transformerModulePath.length) {
-            return Promise.require(transformerModulePath)
+            return System.import(transformerModulePath)
                 .then(function(transformer) {
                     if (_.isFunction(transformer)) {
                         return Promise.resolve(transformer(object));

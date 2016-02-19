@@ -63,7 +63,8 @@ define([
             $nodeInDom = $.contains(document.documentElement, nodeEl) ? $node : $(document),
             args = arguments.length > argsStartIndex ? _.rest(arguments, argsStartIndex) : [],
             promise = new Promise(function(fulfill, reject) {
-                Promise.require('util/requirejs/promise!util/service/dataPromise')
+                //todo fix?
+                System.import('./service/dataPromise')
                     .then(function() {
                         requests[thisRequestId] = {
                             promiseFulfill: fulfill,

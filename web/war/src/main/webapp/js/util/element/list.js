@@ -89,7 +89,7 @@ define([
 
             var rendererPromises = _.map(this.renderers, function(extension) {
                     if (extension.componentPath && !extension.component) {
-                        return Promise.require(extension.componentPath).then(function(component) {
+                        return System.import(extension.componentPath).then(function(component) {
                             extension.component = component;
                         });
                     }

@@ -76,11 +76,11 @@ define([
 
             return (property.title === 'ALL_DATES' ?
                 Promise.all([
-                        Promise.require('data/web-worker/services/ontology').then(function(o) {
+                        System.import('./ontology').then(function(o) {
                             return o.ontology();
                         }),
                         (edgeIds = _.pluck(store.getObjects(workspace.workspaceId, 'workspaceEdges'), 'edgeId')).length ?
-                            Promise.require('data/web-worker/services/edge').then(function(edge) {
+                            System.import('./edge').then(function(edge) {
                                 return edge.multiple({ edgeIds: edgeIds })
                             }) : Promise.resolve([])
                     ]) :

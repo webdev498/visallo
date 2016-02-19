@@ -61,7 +61,7 @@ define([
 
             Promise.resolve(getTemplates())
                 .map(function(v) {
-                    return Promise.require(v.path).then(function(template) {
+                    return System.import(v.path).then(function(template) {
                         v.template = template;
                         return v;
                     })

@@ -405,7 +405,7 @@ define([
             }
             return Promise.all([
                 this.dataRequest('ontology', 'properties'),
-                Promise.require('util/ontology/propertySelect')
+                System.import('../../util/ontology/propertySelect')
             ]).done(function(results) {
                 var properties = results.shift(),
                     FieldSelection = results.shift();
