@@ -11,6 +11,11 @@ module.exports = {
         publicPath: '/jsc/',
         filename: 'bundle.js'
     },
+    module: {
+        loaders: [
+            { test: /\.hbs$/, loader: 'handlebars-loader' }
+        ]
+    },
     plugins: [
         new webpack.NoErrorsPlugin()
     ],

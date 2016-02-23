@@ -1,7 +1,7 @@
 define([
     'flight/lib/component',
     'configuration/plugins/registry',
-    'hbs!./welcomeTpl'
+    './welcomeTpl.hbs'
 ], function(
     defineComponent,
     registry,

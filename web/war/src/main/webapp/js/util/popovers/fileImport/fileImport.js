@@ -2,7 +2,7 @@
 define([
     'flight/lib/component',
     '../withPopover',
-    'hbs!./formattedFile',
+    './formattedFile.hbs',
     'detail/dropdowns/propertyForm/justification',
     'util/visibility/edit',
     'util/ontology/conceptSelect',

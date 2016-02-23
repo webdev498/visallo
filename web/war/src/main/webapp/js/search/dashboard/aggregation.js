@@ -2,7 +2,7 @@ define([
     'flight/lib/component',
     'util/withDataRequest',
     'util/requirejs/promise!util/service/ontologyPromise',
-    'hbs!./aggregationTpl'
+    './aggregationTpl.hbs'
 ], function(
     defineComponent,
     withDataRequest,

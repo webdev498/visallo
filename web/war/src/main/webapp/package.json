@@ -62,6 +62,7 @@
     "grunt-karma": "0.12.1",
     "grunt-notify": "0.4.3",
     "grunt-plato": "1.2.0",
+    "handlebars-loader": "^1.1.4",
     "karma": "0.13.19",
     "karma-chrome-launcher": "0.2.2",
     "karma-coverage": "0.5.3",

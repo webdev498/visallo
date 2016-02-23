@@ -8,6 +8,7 @@ define([], function() {
     return withPopover;
 
     function withPopover() {
+        var path = require('path');
 
         this.defaultAttrs({
             withPopoverInputSelector: 'input,select',
@@ -27,15 +28,15 @@ define([], function() {
 
         this.after('initialize', function() {
             var t = this.attr.template || 'noTemplate',
-                path;
+                tmplPath;
 
             if (/^\//.test(t)) {
-                path = 'hbs!' + t.substring(1);
+                tmplPath = t.substring(1) + '.hbs';
             } else {
-                path = 'hbs!util/popovers/' + t;
+                tmplPath = path.resolve(t + '.hbs');
             }
 
-            require([path], this.setupWithTemplate.bind(this));
+            require([tmplPath], this.setupWithTemplate.bind(this));
         });
 
         this.setupWithTemplate = function(tpl) {

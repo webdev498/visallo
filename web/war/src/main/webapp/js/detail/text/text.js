@@ -8,7 +8,7 @@ define([
     'util/jquery.withinScrollable',
     'util/withCollapsibleSections',
     'colorjs',
-    'hbs!./transcriptEntries',
+    './transcriptEntries.hbs',
     'tpl!util/alert',
     'require',
     'sf'
