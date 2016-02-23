@@ -18,7 +18,7 @@
     <link href='{{.}}' rel='stylesheet' media='screen'>
     {{/each}}
 
-    <script src='jsc/require.config.js'></script>
+    <script src='jsc/bundle.js'></script>
     <script>
     (function() {
       var MAX_BUILD_LENGTH = 5,
@@ -30,7 +30,8 @@
         versionParameter = versionParameter.substring(0, MAX_BUILD_LENGTH)
       }
 
-      require.urlArgs = window.visalloCacheBreaker = "vslo_v=" + versionParameter;
+      //todo required?
+      //window.visalloCacheBreaker = "vslo_v=" + versionParameter;
       window.visalloPluginResources = {
         beforeAuth: [
         {{#each pluginJsResourcesBeforeAuth}}  '{{.}}'{{#unless @last}},{{/unless}}
@@ -44,7 +45,6 @@
       };
     })();
   </script>
-  <script data-main="visallo" src='libs/requirejs/require.js'></script>
 </head>
 <body>
 <!-- Version: ${project.version} -->
