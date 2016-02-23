@@ -2,8 +2,8 @@
 define([
     'flight/lib/component',
     './form-tpl.hbs',
-    'tpl!./shareRow',
-    'tpl!./permissions',
+    './shareRow.ejs',
+    './permissions.ejs',
     'util/users/userSelect',
     'util/withDataRequest'
 ], function(

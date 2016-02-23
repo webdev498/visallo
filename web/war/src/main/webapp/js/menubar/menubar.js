@@ -3,7 +3,7 @@ define([
     'flight/lib/component',
     'configuration/plugins/registry',
     './activity/activity',
-    'tpl!./menubar'
+    './menubar.ejs'
 ], function(defineComponent, registry, Activity, template) {
     'use strict';
 

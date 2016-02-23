@@ -1,4 +1,4 @@
-define(['tpl!./alert'], function(alertTemplate) {
+define(['./alert.ejs'], function(alertTemplate) {
     'use strict';
 
     return withFormFieldErrors;

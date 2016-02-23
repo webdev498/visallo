@@ -1,5 +1,5 @@
 define([
-    'tpl!util/alert',
+    './util/alert.ejs',
     'util/messages'
 ], function(alertTemplate, i18n) {
     'use strict';

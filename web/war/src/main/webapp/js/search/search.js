@@ -2,7 +2,7 @@ define([
     'require',
     'flight/lib/component',
     './searchTpl.hbs',
-    'tpl!util/alert',
+    '../util/alert.ejs',
     'util/withDataRequest',
     'util/formatters',
     'util/popovers/withElementScrollingPositionUpdates',

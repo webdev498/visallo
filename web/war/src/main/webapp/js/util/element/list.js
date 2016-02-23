@@ -2,11 +2,11 @@
 define([
     'flight/lib/component',
     'configuration/plugins/registry',
-    'tpl!./list',
+    './list.ejs',
     './detail-relationship-item',
     './vertex-item',
     './edge-item',
-    'tpl!util/alert',
+    '../alert.ejs',
     'util/requirejs/promise!util/service/ontologyPromise',
     'util/vertex/formatters',
     'util/withDataRequest',

@@ -4,7 +4,7 @@ define([
     'flight/lib/registry',
     './filtersTpl.hbs',
     './filterItem',
-    'tpl!./entityItem',
+    './entityItem.ejs',
     'search/sort',
     'util/vertex/formatters',
     'util/ontology/conceptSelect',

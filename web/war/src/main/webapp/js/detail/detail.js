@@ -1,6 +1,6 @@
 define([
     'flight/lib/component',
-    'tpl!./detail',
+    './detail.ejs',
     'util/vertex/formatters',
     'util/withDataRequest',
     'configuration/plugins/registry'

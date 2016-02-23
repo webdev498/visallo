@@ -13,7 +13,8 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.hbs$/, loader: 'handlebars-loader' }
+            { test: /\.hbs$/, loader: 'handlebars-loader' },
+            { test: /\.ejs$/, loader: 'ejs-compiled?_with=false' }
         ]
     },
     plugins: [

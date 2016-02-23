@@ -4,7 +4,7 @@
 define([
     'flight/lib/component',
     'configuration/plugins/registry',
-    'tpl!util/alert',
+    './util/alert.ejs',
     'util/messages'
 ], function(defineComponent,
     registry,

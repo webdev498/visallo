@@ -1,8 +1,8 @@
 
 define([
     'flight/lib/component',
-    'tpl!./scrubber',
-    'tpl!./audio'
+    './scrubber.ejs',
+    './audio.ejs'
 ], function(defineComponent, template, audioTemplate) {
     'use strict';
 

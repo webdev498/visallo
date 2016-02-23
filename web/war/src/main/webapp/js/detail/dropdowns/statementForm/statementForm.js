@@ -1,8 +1,8 @@
 define([
     'flight/lib/component',
     'util/withDropdown',
-    'tpl!./statementForm',
-    'tpl!./relationship-options',
+    './statementForm.ejs',
+    './relationship-options.ejs',
     'util/withDataRequest'
 ], function(
     defineComponent,

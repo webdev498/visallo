@@ -2,8 +2,8 @@
 define([
     'flight/lib/component',
     'videojs',
-    'tpl!./scrubber',
-    'tpl!./video',
+    './scrubber.ejs',
+    './video.ejs',
     'util/withDataRequest'
 ], function(defineComponent, videojs, template, videoTemplate, withDataRequest) {
     'use strict';

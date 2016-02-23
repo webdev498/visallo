@@ -1,8 +1,8 @@
 define([
     'flight/lib/component',
     'util/withDropdown',
-    'tpl!./deleteForm',
-    'tpl!util/alert',
+    './deleteForm.ejs',
+    './util/alert.ejs',
     'util/withDataRequest',
     'util/vertex/formatters'
 ], function(

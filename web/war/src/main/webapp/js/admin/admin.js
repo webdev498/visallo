@@ -2,7 +2,7 @@ define([
     'flight/lib/component',
     'configuration/plugins/registry',
     './template.hbs',
-    'tpl!util/alert',
+    '../util/alert.ejs',
     './bundled/index'
 ], function(
     defineComponent,

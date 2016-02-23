@@ -1,8 +1,8 @@
 define([
     'flight/lib/component',
     'util/withDropdown',
-    'tpl!./commentForm',
-    'tpl!util/alert',
+    './commentForm.ejs',
+    './util/alert.ejs',
     'util/vertex/formatters',
     'util/withDataRequest'
 ], function(

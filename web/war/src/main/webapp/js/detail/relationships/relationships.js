@@ -1,7 +1,7 @@
 define([
     'flight/lib/component',
     'util/withDataRequest',
-    'tpl!util/alert',
+    './util/alert.ejs',
     'util/formatters',
     'util/element/list',
     'd3'

@@ -1,7 +1,7 @@
 define([
     'flight/lib/component',
     './userSelectTpl.hbs',
-    'tpl!./user',
+    './user.ejs',
     'util/withDataRequest'
 ], function(
     defineComponent,

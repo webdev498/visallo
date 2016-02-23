@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./diff',
+    './diff.ejs',
     'util/vertex/formatters',
     'util/privileges',
     'util/withDataRequest'

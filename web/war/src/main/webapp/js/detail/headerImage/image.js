@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./image',
+    './image.ejs',
     'util/retina',
     'util/withFileDrop',
     'util/privileges',

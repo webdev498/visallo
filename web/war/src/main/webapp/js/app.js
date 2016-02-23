@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!app',
+    './app.ejs',
     'menubar/menubar',
     'dashboard/dashboard',
     'search/search',

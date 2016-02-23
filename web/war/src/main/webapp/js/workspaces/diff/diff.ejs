@@ -41,7 +41,7 @@
                   <% } %>
                 </th>
                 <% if (diff.action.type !== 'update') { %>
-                  <% include workspaces/diff/actions %>
+                  <% include ./actions %>
                 <% } else { %>
                   <td>&nbsp;</td>
                 <% } %>
@@ -61,7 +61,7 @@
                   <% } %>
                 </th>
                 <% if (diff.action.type !== 'update') { %>
-                  <% include workspaces/diff/actions %>
+                  <% include ./actions %>
                 <% } else { %>
                   <td>&nbsp;</td>
                 <% } %>
@@ -88,7 +88,7 @@
 
 
             </td>
-            <% include workspaces/diff/actions %>
+            <% include ./actions %>
           </tr>
           <% }); %>
 

@@ -2,8 +2,8 @@
 define([
     'flight/lib/component',
     'util/formatters',
-    'tpl!./help',
-    'tpl!./sections'
+    './help.ejs',
+    './sections.ejs'
 ], function(
     defineComponent,
     F,

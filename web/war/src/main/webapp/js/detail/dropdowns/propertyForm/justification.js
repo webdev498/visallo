@@ -1,8 +1,8 @@
 
 define([
     'flight/lib/component',
-    'tpl!./justification',
-    'tpl!./justificationRef',
+    './justification.ejs',
+    './justificationRef.ejs',
     'util/withTeardown',
     'util/withDataRequest',
     'util/vertex/formatters'

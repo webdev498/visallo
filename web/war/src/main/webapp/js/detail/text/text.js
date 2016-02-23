@@ -9,7 +9,7 @@ define([
     'util/withCollapsibleSections',
     'colorjs',
     './transcriptEntries.hbs',
-    'tpl!util/alert',
+    './util/alert.ejs',
     'require',
     'sf'
 ], function(

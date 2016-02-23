@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./overlay',
+    './overlay.ejs',
     'util/formatters',
     'util/privileges',
     'util/withDataRequest',

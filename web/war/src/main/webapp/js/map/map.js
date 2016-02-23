@@ -1,10 +1,10 @@
 /*globals google:false*/
 define([
     'flight/lib/component',
-    'tpl!./template',
-    'tpl!./instructions/regionCenter',
-    'tpl!./instructions/regionRadius',
-    'tpl!./instructions/regionLoading',
+    './template.ejs',
+    './instructions/regionCenter.ejs',
+    './instructions/regionRadius.ejs',
+    './instructions/regionLoading.ejs',
     'util/retina',
     'util/controls',
     'util/vertex/formatters',

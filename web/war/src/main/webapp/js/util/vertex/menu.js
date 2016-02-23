@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./menu',
+    './menu.ejs',
     'configuration/plugins/registry',
     'util/vertex/formatters',
     'util/withDataRequest'

@@ -4,7 +4,7 @@ define([
     './loginTpl.hbs',
     'configuration/plugins/registry',
     'util/withDataRequest',
-    'tpl!util/alert',
+    './util/alert.ejs',
     'util/requirejs/promise!util/service/propertiesPromise'
 ], function(
     defineComponent,

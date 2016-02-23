@@ -2,8 +2,8 @@
 define([
     'flight/lib/component',
     'flight/lib/registry',
-    'tpl!./appFullscreenDetails',
-    'tpl!./appFullscreenDetailsError',
+    './appFullscreenDetails.ejs',
+    './appFullscreenDetailsError.ejs',
     'detail/item/item',
     'util/vertex/formatters',
     'util/withDataRequest',

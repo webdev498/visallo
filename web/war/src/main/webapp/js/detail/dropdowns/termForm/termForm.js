@@ -1,8 +1,8 @@
 define([
     'flight/lib/component',
     'util/withDropdown',
-    'tpl!./termForm',
-    'tpl!util/alert',
+    './termForm.ejs',
+    './util/alert.ejs',
     'util/vertex/formatters',
     'util/ontology/conceptSelect',
     'util/vertex/vertexSelect',

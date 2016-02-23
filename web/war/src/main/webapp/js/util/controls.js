@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./controls'
+    './controls.ejs'
 ], function(defineComponent, template) {
     'use strict';
 

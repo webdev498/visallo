@@ -1,7 +1,7 @@
 
 define([
     'flight/lib/component',
-    'tpl!./actionbar'
+    './actionbar.ejs'
 ], function(
     defineComponent,
     template

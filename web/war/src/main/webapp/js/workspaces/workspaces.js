@@ -2,9 +2,9 @@
 define([
     'flight/lib/component',
     './form/form',
-    'tpl!./workspaces',
+    './workspaces.ejs',
     './list-tpl.hbs',
-    'tpl!./item',
+    './item.ejs',
     'util/withDataRequest',
     'util/formatters'
 ], function(defineComponent,
