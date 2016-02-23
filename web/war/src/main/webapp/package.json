@@ -76,6 +76,7 @@
     "karma-script-launcher": "0.1.0",
     "mocha": "2.3.4",
     "phantomjs": "1.9.19",
+    "scriptjs": "^2.5.8",
     "webpack": "^2.1.0-beta.3"
   },
   "scripts": {

@@ -10,7 +10,8 @@ define([], function() {
                 if ('localStorage' in window) {
                     if (enable === true || typeof enable === 'undefined') {
                         console.debug('Enabling LiveReload...')
-                        require(['//localhost:35729/livereload.js'], function() {
+                        var $script = require('scriptjs');
+                        $script('//localhost:35729/livereload.js', function() {
                             console.debug('LiveReload successfully enabled');
                         });
                         localStorage.setItem('liveReloadEnabled', true);

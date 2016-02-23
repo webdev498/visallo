@@ -655,7 +655,8 @@ define([
 
             this.dataRequest('config', 'properties').done(function(configProperties) {
               if (configProperties['map.provider'] === 'google') {
-                require(['goog!maps,3,other_params:sensor=false'], function() {
+                var $script = require('scriptjs');
+                $script('http://maps.google.com/maps/api/js?v=3&sensor=false', function() {
                   google.maps.visualRefresh = true;
                   mapProviderDeferred.resolve(configProperties);
                 });
