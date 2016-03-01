@@ -2,7 +2,7 @@ define([
     'flight/lib/component',
     'util/ontology/propertySelect',
     './sortTpl.hbs',
-    'util/requirejs/promise!util/service/ontologyPromise',
+    'util/service/ontologyPromise',
     'd3',
     'jquery-ui'
 ], function(
@@ -12,6 +12,8 @@ define([
     ontologyPromise,
     d3) {
     'use strict';
+
+    var ontology;
 
     return defineComponent(SortByFields);
 
@@ -27,6 +29,10 @@ define([
         });
 
         this.after('initialize', function() {
+            ontologyPromise.then(function(value) {
+                ontology = value;
+            });
+
             this.sortFields = this.attr.sorts ? this.attr.sorts.slice() : [];
             this.on('click', {
                 listItemSelector: this.onItemClick,
@@ -90,7 +96,7 @@ define([
             var node = this.$node.find('.property-select');
             node.teardownComponent(FieldSelection);
             FieldSelection.attachTo(node, {
-                properties: _.reject(this.filteredProperties || ontologyPromise.properties.list, function(p) {
+                properties: _.reject(this.filteredProperties || ontology.properties.list, function(p) {
                     return p.searchable === false;
                 }),
                 onlySearchable: true,
@@ -135,10 +141,10 @@ define([
                 .call(function() {
                     this.select('span')
                         .text(function(d) {
-                            return ontologyPromise.properties.byTitle[d.field].displayName;
+                            return ontology.properties.byTitle[d.field].displayName;
                         })
                         .attr('title', function(d) {
-                            return ontologyPromise.properties.byTitle[d.field].displayName;
+                            return ontology.properties.byTitle[d.field].displayName;
                         })
                     this.select('a').attr('title', function(d) {
                         return d.direction.toLowerCase();

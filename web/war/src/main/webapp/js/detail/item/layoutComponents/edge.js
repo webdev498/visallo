@@ -1,10 +1,11 @@
 define([
     'util/vertex/formatters',
     'util/withDataRequest',
-    'util/requirejs/promise!util/service/ontologyPromise'
-    ], function(F, dataRequest, ontology) {
+    'util/service/ontologyPromise'
+    ], function(F, dataRequest, ontologyPromise) {
     'use strict';
 
+    //todo return promise instead of array?
     var conceptDisplay = _.compose(_.property('displayName'), F.vertex.concept),
         vertexStore = function(vertexId) {
             return dataRequest.dataRequest('vertex', 'store', { vertexIds: vertexId })
@@ -12,6 +13,7 @@ define([
         vertexDisplayId = function(vertexId) {
             return vertexStore(vertexId).then(F.vertex.title)
         },
+        ontology,
         edgeLabelDisplay = function(edge) {
             return ontology.relationships.byTitle[edge.label].displayName;
         },
@@ -23,6 +25,10 @@ define([
         inVertexConceptDisplay = function(edge) {
             return vertexStore(edge.inVertexId).then(conceptDisplay)
         };
+
+    ontologyPromise.then(function(value) {
+        ontology = value;
+    });
 
     return [
         {

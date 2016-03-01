@@ -5,14 +5,14 @@ define([
     'configuration/plugins/registry',
     'util/withDataRequest',
     './util/alert.ejs',
-    'util/requirejs/promise!util/service/propertiesPromise'
+    'util/service/propertiesPromise'
 ], function(
     defineComponent,
     template,
     registry,
     withDataRequest,
     alertTemplate,
-    configProperties) {
+    configPromise) {
     'use strict';
 
     return defineComponent(Login, withDataRequest);
@@ -28,43 +28,47 @@ define([
         });
 
         this.after('initialize', function() {
-            registry.documentExtensionPoint('org.visallo.authentication',
-                'Provides interface for authentication',
-                function(e) {
-                    return _.isString(e.componentPath);
+            var self = this;
+
+            configPromise.then(function(configProperties) {
+
+                registry.documentExtensionPoint('org.visallo.authentication',
+                    'Provides interface for authentication',
+                    function(e) {
+                        return _.isString(e.componentPath);
+                    }
+                );
+
+                self.$node.html(template({ showPoweredBy: configProperties['login.showPoweredBy'] === 'true' }));
+                var authPlugins = registry.extensionsForPoint('org.visallo.authentication'),
+                    authNode = self.select('authenticationSelector'),
+                    error = '',
+                    componentPath = '';
+
+                self.on('showErrorMessage', function(event, data) {
+                    authNode.html(alertTemplate({ error: data.message }));
+                })
+
+                if (authPlugins.length === 0) {
+                    console.warn('No authentication extension registered, Falling back to old plugin');
+                    componentPath = 'configuration/plugins/authentication/authentication';
+                } else if (authPlugins.length > 1) {
+                    error = 'Multiple authentication extensions registered. (See console for more)';
+                    console.error('Authentication plugins:', authPlugins);
+                } else {
+                    componentPath = authPlugins[0].componentPath;
                 }
-            );
 
-            this.$node.html(template({ showPoweredBy: configProperties['login.showPoweredBy'] === 'true' }));
-            var self = this,
-                authPlugins = registry.extensionsForPoint('org.visallo.authentication'),
-                authNode = this.select('authenticationSelector'),
-                error = '',
-                componentPath = '';
-
-            this.on('showErrorMessage', function(event, data) {
-                authNode.html(alertTemplate({ error: data.message }));
-            })
-
-            if (authPlugins.length === 0) {
-                console.warn('No authentication extension registered, Falling back to old plugin');
-                componentPath = 'configuration/plugins/authentication/authentication';
-            } else if (authPlugins.length > 1) {
-                error = 'Multiple authentication extensions registered. (See console for more)';
-                console.error('Authentication plugins:', authPlugins);
-            } else {
-                componentPath = authPlugins[0].componentPath;
-            }
-
-            if (error) {
-                authNode.html(alertTemplate({ error: error }));
-            } else if (componentPath) {
-                require([componentPath], function(AuthenticationPlugin) {
-                    AuthenticationPlugin.attachTo(authNode, {
-                        errorMessage: self.attr.errorMessage || ''
+                if (error) {
+                    authNode.html(alertTemplate({ error: error }));
+                } else if (componentPath) {
+                    require([componentPath], function(AuthenticationPlugin) {
+                        AuthenticationPlugin.attachTo(authNode, {
+                            errorMessage: self.attr.errorMessage || ''
+                        });
                     });
-                });
-            }
+                }
+            });
         });
 
     }

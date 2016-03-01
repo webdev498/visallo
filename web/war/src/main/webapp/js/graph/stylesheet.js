@@ -2,9 +2,8 @@
 define([
     'cytoscape',
     'util/retina',
-    'util/requirejs/promise!util/service/ontologyPromise',
     'colorjs'
-], function(cytoscape, retina, ontology, colorjs) {
+], function(cytoscape, retina, colorjs) {
     'use strict';
 
     var GENERIC_SIZE = 30,

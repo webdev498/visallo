@@ -5,12 +5,13 @@ define([
     'jstz',
     'moment-timezone',
     'duration-js',
-    'util/messages',
+    'util/service/messagesPromise',
     'jquery',
     'underscore'
-], function(sf, chrono, jstz, moment, Duration, i18n) {
+], function(sf, chrono, jstz, moment, Duration, i18nPromise) {
     'use strict';
 
+    //todo return promise?
     var BITS_FOR_INDEX = 12,
         BITS_FOR_OFFSET = 32 - BITS_FOR_INDEX,
         classNameIndex = 0,
@@ -18,6 +19,11 @@ define([
         fromClassNameMap = {},
         isMac = checkIfMac(),
         isFirefox = ~navigator.userAgent.indexOf('Firefox'),
+        keyboardMappings,
+        i18n;
+
+    i18nPromise.then(function(_i18n) {
+        i18n = _i18n;
         keyboardMappings = {
             metaIcons: {
                 shift: isMac ? '⇧' : i18n('keyboard.shift'),
@@ -37,6 +43,8 @@ define([
                 drag: isMac ? (isFirefox ? null : '') : null
             }
         };
+    });
+
 
     function checkIfMac() {
         return ~navigator.userAgent.indexOf('Mac OS X');

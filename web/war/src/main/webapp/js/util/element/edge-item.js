@@ -1,14 +1,14 @@
 define([
     'flight/lib/component',
     './edge-item.ejs',
-    'util/requirejs/promise!util/service/ontologyPromise',
+    'util/service/ontologyPromise',
     'util/vertex/justification/viewer',
     'util/withDataRequest',
     'util/vertex/formatters'
 ], function(
     defineComponent,
     template,
-    ontology,
+    ontologyPromise,
     JustificationViewer,
     withDataRequest,
     F) {
@@ -20,31 +20,35 @@ define([
 
         this.after('initialize', function() {
             var self = this,
-                edge = this.attr.item,
-                ontologyRelation = ontology.relationships.byTitle[edge.label],
-                title = ontologyRelation.titleFormula ? F.edge.title(edge) : ontologyRelation.displayName,
-                subtitle = ontologyRelation.subtitleFormula ? F.edge.subtitle(edge) : null,
-                timeSubtitle = ontologyRelation.timeFormula ? F.edge.time(edge) : null;
+                edge = this.attr.item;
 
             this.$node.data('edgeId', edge.id);
 
-            this.dataRequest('config', 'properties')
-                .done(function(properties) {
-                    self.$node
-                        .addClass('edge-item')
-                        .addClass(timeSubtitle ? 'has-timeSubtitle' : '')
-                        .addClass(subtitle ? 'has-subtitle' : '')
-                        .html(template({
-                            title: title,
-                            timeSubtitle: timeSubtitle,
-                            subtitle: subtitle
-                        }));
+            ontologyPromise.then(function(ontology) {
+                var ontologyRelation = ontology.relationships.byTitle[edge.label],
+                    title = ontologyRelation.titleFormula ? F.edge.title(edge) : ontologyRelation.displayName,
+                    subtitle = ontologyRelation.subtitleFormula ? F.edge.subtitle(edge) : null,
+                    timeSubtitle = ontologyRelation.timeFormula ? F.edge.time(edge) : null;
 
-                    if (properties['field.justification.validation'] !== 'NONE' &&
-                                        self.attr.usageContext === 'detail/multiple') {
-                        self.renderJustification();
-                    }
-                });
+                self.dataRequest('config', 'properties')
+                    .done(function(properties) {
+                        self.$node
+                            .addClass('edge-item')
+                            .addClass(timeSubtitle ? 'has-timeSubtitle' : '')
+                            .addClass(subtitle ? 'has-subtitle' : '')
+                            .html(template({
+                                title: title,
+                                timeSubtitle: timeSubtitle,
+                                subtitle: subtitle
+                            }));
+
+                        if (properties['field.justification.validation'] !== 'NONE' &&
+                                            self.attr.usageContext === 'detail/multiple') {
+                            self.renderJustification();
+                        }
+                    });
+            });
+
         });
 
         this.renderJustification = function() {

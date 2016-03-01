@@ -86,7 +86,7 @@ function(jQuery,
                     $(document).trigger('windowResize');
                 }, MAX_RESIZE_TRIGGER_INTERVAL));
 
-            System.import('util/messages')
+            System.import('util/service/messagesPromise')
                 .then(function(_i18n) {
                     window.i18n = _i18n;
                     updateVisalloLoadingProgress('dependencies');

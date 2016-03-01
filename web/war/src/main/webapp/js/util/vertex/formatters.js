@@ -2,21 +2,30 @@ define([
     '../formatters',
     './urlFormatters',
     './formula',
-    'util/messages',
-    'util/requirejs/promise!../service/ontologyPromise',
+    'util/service/messagesPromise',
+    '../service/ontologyPromise',
     'util/visibility/util'
 ], function(
     F,
     vertexUrl,
     formula,
-    i18n,
-    ontology,
+    i18nPromise,
+    ontologyPromise,
     visibilityUtil) {
     'use strict';
 
-    var propertiesByTitle = ontology.properties.byTitle,
-        propertiesByDependentToCompound = ontology.properties.byDependentToCompound,
-        V = {
+    //todo return promise?
+    var ontology, propertiesByTitle, propertiesByDependentToCompound, i18n;
+    ontologyPromise.then(function(_ontology) {
+        ontology = _ontology;
+        propertiesByTitle = ontology.properties.byTitle;
+        propertiesByDependentToCompound = ontology.properties.byDependentToCompound;
+    });
+    i18nPromise.then(function(_i18n) {
+        i18n = _i18n;
+    });
+
+    var V = {
 
             isPublished: function(vertex) {
                 return V.sandboxStatus.apply(null, arguments) === undefined;

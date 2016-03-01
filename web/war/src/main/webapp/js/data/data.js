@@ -54,7 +54,7 @@ define([
                 });
 
             this.messagesPromise = this.dataRequestPromise.then(function() {
-                    return System.import('util/messages');
+                return System.import('util/service/messagesPromise');
                 }).then(this.setupMessages.bind(this));
 
             if (typeof DEBUG !== 'undefined') {

@@ -7,7 +7,7 @@ define([
     './vertex-item',
     './edge-item',
     '../alert.ejs',
-    'util/requirejs/promise!util/service/ontologyPromise',
+    'util/service/ontologyPromise',
     'util/vertex/formatters',
     'util/withDataRequest',
     'util/popovers/withElementScrollingPositionUpdates',
@@ -27,7 +27,8 @@ define([
     withPositionUpdates) {
     'use strict';
 
-    var EXTENSION_POINT_NAME = 'org.visallo.entity.listItemRenderer';
+    var EXTENSION_POINT_NAME = 'org.visallo.entity.listItemRenderer',
+        ontology;
     registry.documentExtensionPoint(EXTENSION_POINT_NAME,
         'Implement custom implementations for rendering items into element lists. ' +
         'This allows plugins to adjust how list items are displayed in search results, details panels, ' +
@@ -58,7 +59,7 @@ define([
             if (vertexId && inWorkspace) {
                 return this.dataRequest('vertex', 'store', { vertexIds: [vertexId] }).then(function(vertices) {
                     inMap = vertices.length && _.some(vertices[0].properties, function(p) {
-                        var ontologyProperty = ontologyPromise.properties.byTitle[p.name];
+                        var ontologyProperty = ontology.properties.byTitle[p.name];
                         return ontologyProperty && ontologyProperty.dataType === 'geoLocation';
                     });
                     return { inGraph: inWorkspace, inMap: inMap };
@@ -70,6 +71,9 @@ define([
 
         this.after('initialize', function() {
             var self = this;
+            ontologyPromise.then(function(value) {
+                ontology = value;
+            });
 
             // Do this to support code that arrives here via the
             // deprecated vertex/list and edge/list components

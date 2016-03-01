@@ -3,16 +3,18 @@ define([
     './relationships.hbs',
     './relationship.hbs',
     'util/withDataRequest',
-    'util/requirejs/promise!util/service/ontologyPromise',
+    'util/service/ontologyPromise',
     './withSelect'
 ], function(
     defineComponent,
     template,
     relationshipTemplate,
     withDataRequest,
-    ontology,
+    ontologyPromise,
     withSelect) {
     'use strict';
+
+    var ontology;
 
     return defineComponent(RelationshipSelector, withDataRequest, withSelect);
 
@@ -26,6 +28,9 @@ define([
         });
 
         this.after('initialize', function() {
+            ontologyPromise.then(function(value) {
+                ontology = value;
+            });
             this.$node.html(template(this.attr));
 
             this.on('click', {

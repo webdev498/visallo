@@ -3,7 +3,7 @@ define([
     'flight/lib/registry',
     'util/vertex/formatters',
     'util/promise',
-    'util/requirejs/promise!util/service/ontologyPromise',
+    'util/service/ontologyPromise',
     'configuration/plugins/registry',
     './layoutComponents',
     './layoutTypes'
@@ -12,11 +12,13 @@ define([
     flightRegistry,
     F,
     Promise,
-    ontology,
+    ontologyPromise,
     registry,
     layoutComponents,
     layoutTypes) {
     'use strict';
+
+    var ontology;
 
     registry.documentExtensionPoint('org.visallo.layout.component', 'Layout Component', function(e) {
         if (!_.isFunction(e.applyTo) && _.isObject(e.applyTo)) {
@@ -55,6 +57,9 @@ define([
 
         this.after('initialize', function() {
             var self = this;
+            ontologyPromise.then(function(value) {
+                ontology = value;
+            });
 
             this.on('updateModel', this.onUpdateModel);
             this.on('updateConstraints', this.onUpdateConstraints);

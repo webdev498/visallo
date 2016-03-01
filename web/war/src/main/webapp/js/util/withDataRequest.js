@@ -6,7 +6,7 @@ define([
     'util/promise',
     'underscore',
     'jquery',
-    'util/requirejs/promise!util/service/dataPromise'
+    'util/service/dataPromise'
 ], function(Promise, _, $) {
     'use strict';
 
