@@ -32,7 +32,6 @@ module.exports = {
         alias: {
             arbor: 'cytoscape-arbor/arbor',
             async: 'requirejs-plugins/src/async',
-            atmosphere: 'atmosphere.js/lib/atmosphere',
             beautify: 'js-beautify/js/lib/beautify',
             bootstrap: 'bootstrap/docs/assets/js/bootstrap.min',
             'bootstrap-datepicker': 'bootstrap-datepicker/js/bootstrap-datepicker',

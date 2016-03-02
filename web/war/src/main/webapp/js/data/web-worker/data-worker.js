@@ -3,15 +3,10 @@
 /*global console:true*/
 /*global publicData:true*/
 /*global store:false*/
-/*global BASE_URL:true*/
-/*global importScripts:false*/
-//todo where does importScripts come from?
 
 /*eslint strict:0*/
-var BASE_URL = '../../..',
-    self = this,
-    needsInitialSetup = true,
-    publicData = {};
+//TODO self = this ???
+var needsInitialSetup = true;
 
 onmessage = function(event) {
     if (needsInitialSetup) {
@@ -31,9 +26,9 @@ onmessage = function(event) {
 };
 
 function setupAll(data) {
+    this.publicData = {};
     setupConsole();
     setupWebsocket(data);
-    setupRequireJs(data);
     documentExtensionPoints();
 }
 
@@ -69,33 +64,37 @@ function setupWebsocket(data) {
         supportedInWorker = !!(this.WebSocket || this.MozWebSocket) && !isFirefox;
 
     if (supportedInWorker) {
-        self.window = self;
-        importScripts(BASE_URL + '/libs/atmosphere.js/lib/atmosphere.js?' + data.cacheBreaker);
-        atmosphere.util.getAbsoluteURL = function() {
-            return publicData.atmosphereConfiguration.url;
-        }
-        self.closeSocket = function() {
-            if (publicData.socket) {
-                publicData.socket.close();
-            }
-        }
-        self.pushSocketMessage = function(message) {
-            Promise.all([
-                System.import('../util/websocket'),
-                new Promise(function(fulfill, reject) {
-                    if (atmosphere.util.__socketOpened) {
-                        fulfill(publicData.socket);
+        //set window required by atmosphere
+        //todo this.window -> do we need self?
+        this.window = this;
+        System.import('atmosphere.js')
+            .then(function(atmosphere) {
+                atmosphere.util.getAbsoluteURL = function() {
+                    return publicData.atmosphereConfiguration.url;
+                }
+                self.closeSocket = function() {
+                    if (publicData.socket) {
+                        publicData.socket.close();
                     }
-                    atmosphere.util.__socketPromiseFulfill = fulfill;
-                    atmosphere.util.__socketPromiseReject = reject;
-                })
-            ]).done(function(results) {
-                var websocketUtils = results[0],
-                    socket = results[1];
+                }
+                self.pushSocketMessage = function(message) {
+                    Promise.all([
+                        System.import('../../util/websocket'),
+                        new Promise(function(fulfill, reject) {
+                            if (atmosphere.util.__socketOpened) {
+                                fulfill(publicData.socket);
+                            }
+                            atmosphere.util.__socketPromiseFulfill = fulfill;
+                            atmosphere.util.__socketPromiseReject = reject;
+                        })
+                    ]).done(function(results) {
+                        var websocketUtils = results[0],
+                            socket = results[1];
 
-                websocketUtils.pushDataToSocket(socket, publicData.socketSourceGuid, message);
+                        websocketUtils.pushDataToSocket(socket, publicData.socketSourceGuid, message);
+                    });
+                }
             });
-        }
     } else {
         dispatchMain('websocketNotSupportedInWorker');
         self.closeSocket = function() {
@@ -105,20 +104,6 @@ function setupWebsocket(data) {
             dispatchMain('websocketFromWorker', { message: message });
         }
     }
-}
-
-function setupRequireJs(data) {
-    if (typeof File === 'undefined') {
-        self.File = Blob;
-    }
-    if (typeof FormData === 'undefined') {
-        importScripts('./util/formDataPolyfill.js?' + data.cacheBreaker);
-    }
-    importScripts(BASE_URL + '/jsc/require.config.js?' + data.cacheBreaker);
-    require.baseUrl = BASE_URL + '/jsc/';
-    require.urlArgs = data.cacheBreaker;
-    require.deps = data.webWorkerResources;
-    importScripts(BASE_URL + '/libs/requirejs/require.js?' + data.cacheBreaker);
 }
 
 function onMessageHandler(event) {
@@ -135,21 +120,22 @@ function processMainMessage(data) {
 }
 
 function documentExtensionPoints() {
-    require(['configuration/plugins/registry'], function(registry) {
-        registry.documentExtensionPoint('org.visallo.websocket.message',
-            'Add custom websocket message handlers',
-            function(e) {
-                return ('name' in e) && _.isFunction(e.handler)
-            }
-        );
-    })
+    System.import('configuration/plugins/registry')
+        .then(function(registry) {
+            registry.documentExtensionPoint('org.visallo.websocket.message',
+                'Add custom websocket message handlers',
+                function(e) {
+                    return ('name' in e) && _.isFunction(e.handler)
+                }
+            );
+        });
 }
 
 var lastPost = 0,
     MAX_SEND_RATE_MILLIS = 500,
     postMessageQueue = [],
     drainTimeout;
-function dispatchMain(type, message) {
+dispatchMain = function (type, message) {
     var now = Date.now(),
         duration = now - lastPost;
 

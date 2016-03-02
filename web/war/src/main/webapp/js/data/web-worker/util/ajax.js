@@ -3,6 +3,8 @@
 define(['util/promise'], function(Promise) {
     'use strict';
 
+    var BASE_URL = '../../..';
+
     return ajax;
 
     function paramPair(key, value) {

@@ -22,7 +22,7 @@ define([
 ) {
     'use strict';
 
-    var PATH_TO_WORKER = 'jsc/data/web-worker/data-worker.js',
+    var DataWorker = require('worker!./web-worker/data-worker'),
         mixins = Array.prototype.slice.call(arguments, 1);
 
     return defineComponent.apply(null, [Data].concat(mixins));
@@ -72,9 +72,8 @@ define([
         };
 
         this.setupDataWorker = function() {
-            this.worker = new Worker(PATH_TO_WORKER + '?' + visalloCacheBreaker);
+            this.worker = new DataWorker();
             this.worker.postMessage(JSON.stringify({
-                cacheBreaker: visalloCacheBreaker,
                 webWorkerResources: visalloPluginResources.webWorker
             }));
             this.worker.onmessage = this.onDataWorkerMessage.bind(this);

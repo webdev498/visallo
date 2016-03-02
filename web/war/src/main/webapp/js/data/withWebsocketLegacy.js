@@ -9,7 +9,7 @@ define([], function() {
             var self = this,
                 config = this.getAtmosphereConfiguration(),
                 atmospherePromise = Promise.all([
-                    System.import('atmosphere'),
+                    System.import('atmosphere.js'),
                     new Promise(function(fulfill, reject) {
                         if (visalloData.currentUser) return fulfill();
                         self.on('applicationReady currentUserVisalloDataUpdated', fulfill);
