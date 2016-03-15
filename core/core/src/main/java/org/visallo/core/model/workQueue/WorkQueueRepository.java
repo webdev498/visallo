@@ -261,38 +261,14 @@ public abstract class WorkQueueRepository {
         }
     }
 
-    private boolean canHandle(Element element, String propertyKey, String propertyName) {
-        if(this.graphPropertyRunner == null || !this.graphPropertyRunner.isStarted()){
-            //we are probably on a server and want to submit it to the architecture
+    private boolean canHandle(final Element element, String propertyKey, final String propertyName){
+        if(this.graphPropertyRunner == null){
             return true;
         }
 
-        Property property = element.getProperty(propertyKey, propertyName);
-
-        for(GraphPropertyWorker worker : this.graphPropertyRunner.getAllGraphPropertyWorkers()){
-            try {
-                if (worker.isHandled(element, property)) {
-                    return true;
-                }
-                else if(worker.isDeleteHandled(element, property)){
-                    return true;
-                }
-                else if(worker.isHiddenHandled(element, property)){
-                    return true;
-                }
-                else if(worker.isUnhiddenHandled(element, property)){
-                    return true;
-                }
-            } catch(Throwable t){
-                LOGGER.warn("Error checking to see if workers will handle graph property message.  Queueing anyways in case there was just a local error", t);
-                return true;
-            }
-        }
-
-        LOGGER.debug("No interested workers for %s %s %s so did not queue it", element.getId(), propertyKey, propertyName);
-
-        return false;
+        return this.graphPropertyRunner.canHandle(element, propertyKey, propertyName);
     }
+
 
     private JSONObject createPropertySpecificJSON(
             String propertyKey,
