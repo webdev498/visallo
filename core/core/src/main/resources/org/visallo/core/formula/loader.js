@@ -10,6 +10,7 @@ console = {
     warn: consoleWarn,
     error: consoleError
 };
+window.addEventListener = function() { };
 
 require.config({
     baseUrl: '',
@@ -50,6 +51,8 @@ require.config({
     }
 });
 
+define('util/visibility/util', [], {});
+
 var timerLoop = makeWindowTimer(this, function () { });
 
 require(['util/vertex/formatters'], function(F) {
@@ -63,7 +66,7 @@ require(['util/vertex/formatters'], function(F) {
     window.evaluateTimeFormulaJson = createFunction('time');
     window.evaluateSubtitleFormulaJson = createFunction('subtitle');
     window.evaluatePropertyFormulaJson = function(json, propertyKey, propertyName) {
-        return F.vertex['prop'](JSON.parse(json), propertyName);
+        return F.vertex['prop'](JSON.parse(json), propertyName, propertyKey);
     }
 });
 
