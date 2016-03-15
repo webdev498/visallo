@@ -274,8 +274,18 @@ public abstract class WorkQueueRepository {
                 if (worker.isHandled(element, property)) {
                     return true;
                 }
+                else if(worker.isDeleteHandled(element, property)){
+                    return true;
+                }
+                else if(worker.isHiddenHandled(element, property)){
+                    return true;
+                }
+                else if(worker.isUnhiddenHandled(element, property)){
+                    return true;
+                }
             } catch(Throwable t){
-                LOGGER.warn("Error checking to see if workers will handle graph property message", t);
+                LOGGER.warn("Error checking to see if workers will handle graph property message.  Queueing anyways in case there was just a local error", t);
+                return true;
             }
         }
 
