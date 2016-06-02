@@ -20,5 +20,6 @@
         <module>change-email</module>
         <module>change-password</module>
         <module>admin-user-tools</module>
+        <module>embed-external</module>
     </modules>
 </project>
