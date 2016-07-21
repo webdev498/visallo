@@ -72,6 +72,8 @@
             'rangy-serializer': '../libs/rangy/lib/rangy-serializer',
             'react': '../libs/react/dist/react-with-addons',
             'react-dom': '../libs/react-dom/dist/react-dom',
+            'react-redux': '../libs/react-redux/dist/react-redux',
+            'redux': '../libs/redux/dist/redux',
             'sf': '../libs/sf/sf',
             'text': '../libs/requirejs-text/text',
             'tpl': '../libs/@visallo/requirejs-ejs-plugin/rejs',

@@ -12,11 +12,28 @@ var BASE_URL = '../../..',
     needsInitialSetup = true,
     publicData = {};
 
+var timer;
 onmessage = function(event) {
     if (needsInitialSetup) {
         needsInitialSetup = false;
         setupAll(JSON.parse(event.data));
         return;
+    }
+
+
+    if (!timer) {
+    setTimeout(function() {
+        if (timer) return;
+        timer = true;
+        postMessage({
+            type: 'TEST',
+            meta: { WebWorker: true },
+            action: {
+                type: 'TEST',
+                test: 'hello from web worker delayed'
+            }
+        });
+    }, 5000)
     }
 
     require([
@@ -34,6 +51,19 @@ function setupAll(data) {
     setupWebsocket(data);
     setupRequireJs(data);
     documentExtensionPoints();
+    setupRedux();
+}
+
+function setupRedux() {
+    //require(['redux-worker'], function(reduxWorker) {
+        //var worker = reduxWorker.createWorker();
+
+        //worker.registerReducer(function(state, action) {
+            //console.log('Reducer', state);
+            //if (!state) return { test: 'hello world' }
+            //return state;
+        //})
+    //})
 }
 
 function setupConsole() {
@@ -126,7 +156,17 @@ function onMessageHandler(event) {
 }
 
 function processMainMessage(data) {
-    if (data.type) {
+    if (data.type && data.meta) {
+        console.log('Process action message', data)
+        postMessage({
+            type: data.type,
+            meta: { WebWorker: true },
+            action: {
+                type: 'TEST',
+                test: 'hello from web worker '
+            }
+        });
+    } else if (data.type) {
         require(['data/web-worker/handlers/' + data.type], function(handler) {
             handler(data);
         });

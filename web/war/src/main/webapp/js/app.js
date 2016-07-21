@@ -222,6 +222,9 @@ define([
 
             $(document.body).toggleClass('animatelogin', !!this.attr.animateFromLogin);
 
+            require(['react', 'react-dom', 'components/TestStore'], function(React, ReactDom, T) {
+               ReactDom.render(React.createElement(T, { store: visalloData._reduxStore }), $('<div>').appendTo(self.node).get(0));
+            })
 
             this.triggerPaneResized();
             this.dataRequest('config', 'properties')
