@@ -30,14 +30,20 @@ define([
             this.on('click', {
                 editContentsSelector: this.onEditContents
             });
-
-            $saveButton.on('click', this.onSaveClick.bind(this));
+            this.on($saveButton, 'click', this.onSaveClick);
+            this.preventConfigureClosing($modal);
 
             this.quill = new Quill($editor.get(0), {
                 theme: 'snow'
             });
             this.quill.addModule('toolbar', {container: $toolbar.get(0)});
         });
+
+        this.preventConfigureClosing = function($modal) {
+            this.on($modal, 'mousedown', function(e) {
+                e.stopPropagation();
+            })
+        };
 
         this.onSaveClick = function() {
             var html = this.quill.getHTML();
@@ -49,6 +55,7 @@ define([
                 extension: this.attr.extension,
                 item: this.attr.item
             });
+            this.trigger('closePopover');
             $('#edit-contents-modal').modal('hide');
         };
 
