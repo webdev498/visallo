@@ -1,10 +1,12 @@
 package org.visallo.common.rdf;
 
 import com.google.common.base.Strings;
-import org.vertexium.DateOnly;
-import org.vertexium.ElementType;
+import org.vertexium.*;
+import org.vertexium.mutation.ElementMutation;
 import org.vertexium.type.GeoPoint;
 import org.visallo.core.exception.VisalloException;
+import org.visallo.core.util.VisalloLogger;
+import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.clientapi.model.DirectoryEntity;
 
 import javax.xml.bind.DatatypeConverter;
@@ -14,7 +16,10 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class PropertyVisalloRdfTriple extends ElementVisalloRdfTriple {
+    private final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(PropertyVisalloRdfTriple.class);
     private final String propertyKey;
     private final String propertyName;
     private final String propertyVisibilitySource;
@@ -68,7 +73,7 @@ public abstract class PropertyVisalloRdfTriple extends ElementVisalloRdfTriple {
             throw new VisalloException("Unexpected null value");
         }
         if (getValue() instanceof String) {
-            return String.format("\"%s\"", getValue());
+            return String.format("\"%s\"", escape(getValue().toString(), '"'));
         }
         if (getValue() instanceof Integer) {
             return getValueRdfStringWithType(getValue(), VisalloRdfTriple.PROPERTY_TYPE_INT);
@@ -99,7 +104,8 @@ public abstract class PropertyVisalloRdfTriple extends ElementVisalloRdfTriple {
         if (getValue() instanceof DateOnly) {
             return getValueRdfStringWithType(getValue(), VisalloRdfTriple.PROPERTY_TYPE_DATE);
         }
-        throw new VisalloException("Unhandled value type \"" + getValue().getClass().getName() + "\" to convert to RDF string");
+        LOGGER.warn ("\"Unhandled value type " + getValue().getClass().getName() + " to convert to RDF string\"");
+        return null;
     }
 
     private static String getValueRdfStringWithType(Object value, String typeUri) {
@@ -131,5 +137,45 @@ public abstract class PropertyVisalloRdfTriple extends ElementVisalloRdfTriple {
         }
 
         return super.equals(that);
+    }
+
+    @Override
+    public ImportContext createImportContext(
+            ImportContext ctx,
+            RdfTripleImportHelper rdfTripleImportHelper,
+            Authorizations authorizations
+    ) {
+        ElementMutation m = getMutationForUpdate(rdfTripleImportHelper, authorizations);
+        return new ImportContext(getElementId(), m);
+    }
+
+    protected ElementMutation getMutationForUpdate(
+            RdfTripleImportHelper rdfTripleImportHelper,
+            Authorizations authorizations
+    ) {
+        Graph graph = rdfTripleImportHelper.getGraph();
+        if (getElementType() == ElementType.VERTEX) {
+            return graph.prepareVertex(
+                    getElementId(),
+                    rdfTripleImportHelper.getVisibility(getElementVisibilitySource())
+            );
+        } else {
+            Element element = getExistingElement(graph, this, authorizations);
+            return element.prepareMutation();
+        }
+    }
+
+    protected Element getExistingElement(Graph graph, PropertyVisalloRdfTriple triple, Authorizations authorizations) {
+        Element elem = triple.getElementType() == ElementType.VERTEX
+                ? graph.getVertex(triple.getElementId(), authorizations)
+                : graph.getEdge(triple.getElementId(), authorizations);
+        if (elem == null) {
+            graph.flush();
+            elem = triple.getElementType() == ElementType.VERTEX
+                    ? graph.getVertex(triple.getElementId(), authorizations)
+                    : graph.getEdge(triple.getElementId(), authorizations);
+        }
+        checkNotNull(elem, "Could not find element with id " + triple.getElementId());
+        return elem;
     }
 }

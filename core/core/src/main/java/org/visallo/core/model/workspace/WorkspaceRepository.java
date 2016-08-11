@@ -18,7 +18,7 @@ import org.visallo.core.model.ontology.OntologyProperty;
 import org.visallo.core.model.ontology.OntologyRepository;
 import org.visallo.core.model.properties.VisalloProperties;
 import org.visallo.core.model.termMention.TermMentionRepository;
-import org.visallo.core.model.user.UserRepository;
+import org.visallo.core.model.user.AuthorizationRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.security.VisalloVisibility;
@@ -54,8 +54,8 @@ public abstract class WorkspaceRepository {
     private final TermMentionRepository termMentionRepository;
     private final OntologyRepository ontologyRepository;
     private final WorkQueueRepository workQueueRepository;
-    private final UserRepository userRepository;
     private String entityHasImageIri;
+    private final AuthorizationRepository authorizationRepository;
 
     protected WorkspaceRepository(
             Graph graph,
@@ -63,16 +63,16 @@ public abstract class WorkspaceRepository {
             TermMentionRepository termMentionRepository,
             OntologyRepository ontologyRepository,
             WorkQueueRepository workQueueRepository,
-            UserRepository userRepository
+            AuthorizationRepository authorizationRepository
     ) {
         this.graph = graph;
         this.visibilityTranslator = visibilityTranslator;
         this.termMentionRepository = termMentionRepository;
         this.ontologyRepository = ontologyRepository;
         this.workQueueRepository = workQueueRepository;
-        this.userRepository = userRepository;
 
         this.entityHasImageIri = ontologyRepository.getRelationshipIRIByIntent("entityHasImage");
+        this.authorizationRepository = authorizationRepository;
         if (this.entityHasImageIri == null) {
             LOGGER.warn("'entityHasImage' intent has not been defined. Please update your ontology.");
         }
@@ -271,7 +271,9 @@ public abstract class WorkspaceRepository {
             workspaceClientApi.setTitle(workspace.getDisplayTitle());
 
             String creatorUserId = getCreatorUserId(workspace.getWorkspaceId(), user);
-            if (creatorUserId != null) {
+            if (creatorUserId == null) {
+                workspaceClientApi.setSharedToUser(true);
+            } else {
                 workspaceClientApi.setCreatedBy(creatorUserId);
                 workspaceClientApi.setSharedToUser(!creatorUserId.equals(user.getUserId()));
             }
@@ -957,19 +959,16 @@ public abstract class WorkspaceRepository {
             boolean includeHidden,
             User user
     ) {
-        Authorizations authorizations
-                = userRepository.getAuthorizations(user, VISIBILITY_STRING, workspace.getWorkspaceId());
+        Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
+                user,
+                VISIBILITY_STRING,
+                workspace.getWorkspaceId()
+        );
 
         Iterable<Vertex> vertices = stream(WorkspaceEntity.toVertices(workspaceEntities, getGraph(), authorizations))
                 .filter(vertex -> vertex != null)
                 .collect(Collectors.toList());
         Iterable<String> edgeIds = getGraph().findRelatedEdgeIdsForVertices(vertices, authorizations);
-        edgeIds = getGraph().filterEdgeIdsByAuthorization(
-                edgeIds,
-                workspace.getWorkspaceId(),
-                ElementFilter.ALL,
-                authorizations
-        );
 
         return getGraph().getEdges(
                 edgeIds,
@@ -1002,10 +1001,6 @@ public abstract class WorkspaceRepository {
 
     protected WorkQueueRepository getWorkQueueRepository() {
         return workQueueRepository;
-    }
-
-    protected UserRepository getUserRepository() {
-        return userRepository;
     }
 
     public abstract String addOrUpdateDashboardItem(
@@ -1055,6 +1050,10 @@ public abstract class WorkspaceRepository {
         public String getGraphLayoutJson() {
             return graphLayoutJson;
         }
+    }
+
+    protected AuthorizationRepository getAuthorizationRepository() {
+        return authorizationRepository;
     }
 }
 

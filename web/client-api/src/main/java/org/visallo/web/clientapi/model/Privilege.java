@@ -10,27 +10,29 @@ public final class Privilege {
     public static final String COMMENT = "COMMENT"; // add comments and edit/delete own comments
     public static final String COMMENT_EDIT_ANY = "COMMENT_EDIT_ANY"; // edit other users' comments
     public static final String COMMENT_DELETE_ANY = "COMMENT_DELETE_ANY"; // delete other users' comments
+    public static final String SEARCH_SAVE_GLOBAL = "SEARCH_SAVE_GLOBAL";
     public static final String EDIT = "EDIT";
     public static final String PUBLISH = "PUBLISH";
     public static final String ADMIN = "ADMIN";
 
-    private static final List<String> ALL_BUILT_IN;
-
-    public static final Set<String> NONE = Collections.emptySet();
-
     static {
-        List<String> allBuiltIn = new ArrayList<String>();
-        allBuiltIn.add(READ);
-        allBuiltIn.add(COMMENT);
-        allBuiltIn.add(COMMENT_EDIT_ANY);
-        allBuiltIn.add(COMMENT_DELETE_ANY);
-        allBuiltIn.add(EDIT);
-        allBuiltIn.add(PUBLISH);
-        allBuiltIn.add(ADMIN);
-        ALL_BUILT_IN = Collections.unmodifiableList(allBuiltIn);
+        // NOTE: Keep allNames in sync with the above public static strings.
+        final String[] allNames = new String[] {
+                READ, COMMENT, COMMENT_EDIT_ANY, COMMENT_DELETE_ANY, SEARCH_SAVE_GLOBAL, EDIT, PUBLISH, ADMIN
+        };
+        Set<Privilege> allPrivileges = new HashSet<Privilege>(allNames.length);
+        for (String name : allNames) {
+            allPrivileges.add(new Privilege(name));
+        }
+        ALL_BUILT_IN = Collections.unmodifiableSet(allPrivileges);
     }
 
-    private Privilege() {
+    public static final Set<Privilege> ALL_BUILT_IN;
+
+    private final String name;
+
+    public Privilege(String name) {
+        this.name = name;
     }
 
     public static Set<String> newSet(String... privileges) {
@@ -39,24 +41,13 @@ public final class Privilege {
         return Collections.unmodifiableSet(set);
     }
 
-    private static List<String> sortPrivileges(Collection<String> privileges) {
-        List<String> results = new ArrayList<String>();
-
-        for (String builtIn : ALL_BUILT_IN) {
-            if (privileges.contains(builtIn)) {
-                results.add(builtIn);
-            }
-        }
-
-        List<String> sortedPrivileges = new ArrayList<String>(privileges);
-        Collections.sort(sortedPrivileges);
+    private static List<String> sortPrivileges(Iterable<String> privileges) {
+        List<String> sortedPrivileges = new ArrayList<String>();
         for (String privilege : privileges) {
-            if (!ALL_BUILT_IN.contains(privilege)) {
-                results.add(privilege);
-            }
+            sortedPrivileges.add(privilege);
         }
-
-        return results;
+        Collections.sort(sortedPrivileges);
+        return sortedPrivileges;
     }
 
     public static JSONArray toJson(Set<String> privileges) {
@@ -69,7 +60,7 @@ public final class Privilege {
 
     public static Set<String> stringToPrivileges(String privilegesString) {
         if (privilegesString == null || privilegesString.equalsIgnoreCase("NONE")) {
-            return NONE;
+            return Collections.emptySet();
         }
 
         String[] privilegesStringParts = privilegesString.split(",");
@@ -78,13 +69,21 @@ public final class Privilege {
             if (privilegesStringPart.trim().length() == 0) {
                 continue;
             }
-            privileges.add(privilegesStringPart);
+            privileges.add(privilegesStringPart.trim());
         }
         return privileges;
     }
 
-    public static String toString(Collection<String> privileges) {
+    public static String toString(Iterable<String> privileges) {
         return StringUtils.join(sortPrivileges(privileges));
+    }
+
+    public static String toStringPrivileges(Iterable<Privilege> privileges) {
+        Collection<String> privilegeStrings = new ArrayList<String>();
+        for (Privilege privilege : privileges) {
+            privilegeStrings.add(privilege.getName());
+        }
+        return toString(privilegeStrings);
     }
 
     public static boolean hasAll(Set<String> userPrivileges, Set<String> requiredPrivileges) {
@@ -96,7 +95,12 @@ public final class Privilege {
         return true;
     }
 
-    public static Set<String> getAllBuiltIn() {
-        return newSet(ALL_BUILT_IN.toArray(new String[ALL_BUILT_IN.size()]));
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    public String getName() {
+        return name;
     }
 }

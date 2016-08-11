@@ -2,6 +2,7 @@ package org.visallo.common.rdf;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,7 @@ import org.visallo.core.model.workQueue.WorkQueueRepository;
 import org.visallo.core.security.DirectVisibilityTranslator;
 import org.visallo.core.security.VisalloVisibility;
 import org.visallo.core.security.VisibilityTranslator;
+import org.visallo.core.status.MetricsManager;
 import org.visallo.core.user.User;
 import org.visallo.core.util.VisalloDate;
 import org.visallo.core.util.VisalloDateTime;
@@ -27,6 +29,8 @@ import java.util.*;
 import java.util.function.Function;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.vertexium.util.IterableUtils.toList;
 
@@ -37,15 +41,18 @@ public class RdfTripleImportHelperTest {
     private Authorizations authorizations;
     private TimeZone timeZone;
     private File workingDir;
+    private String defaultVisibilitySource;
+    private String sourceFileName;
+    private Function<String, VisibilityJson> visibilitySourceToVisibilityJson;
 
     @Mock
     private WorkQueueRepository workQueueRepository;
 
     @Mock
     private User user;
-    private String defaultVisibilitySource;
-    private String sourceFileName;
-    private Function<String, VisibilityJson> visibilitySourceToVisibilityJson;
+
+    @Mock
+    private MetricsManager metricsManager;
 
     @Before
     public void setUp() {
@@ -63,7 +70,9 @@ public class RdfTripleImportHelperTest {
 
         when(user.getUserId()).thenReturn("user1");
 
-        rdfTripleImportHelper = new RdfTripleImportHelper(graph, visibilityTranslator, workQueueRepository);
+        when(metricsManager.timer(anyString())).thenReturn(mock(com.codahale.metrics.Timer.class));
+
+        rdfTripleImportHelper = new RdfTripleImportHelper(graph, visibilityTranslator, workQueueRepository, metricsManager);
         defaultVisibilitySource = "";
         sourceFileName = "test.nt";
         graph.addVertex("v1", new Visibility(""), authorizations);
@@ -164,6 +173,8 @@ public class RdfTripleImportHelperTest {
         importRdfLine("<v1> <http://visallo.org/test#prop1@metadata\\@1> \"metadata value 1\"");
         importRdfLine("<v1> <http://visallo.org/test#prop1@metadata2> \"metadata value 2\"");
         importRdfLine("<v1> <http://visallo.org/test#prop1@metadata2[S]> \"metadata value 2 S\"");
+        importRdfLine("<v1> <http://visallo.org/test#prop1@metadatajson> \"{\\\"source\\\":\\\"metadata value json source\\\"}\"");
+
         graph.flush();
 
         Vertex v1 = graph.getVertex("v1", authorizations);
@@ -172,6 +183,8 @@ public class RdfTripleImportHelperTest {
         assertEquals("metadata value 1", prop1.getMetadata().getValue("metadata@1"));
         assertEquals("metadata value 2", prop1.getMetadata().getValue("metadata2", new Visibility("")));
         assertEquals("metadata value 2 S", prop1.getMetadata().getValue("metadata2", new Visibility("((S))|visallo")));
+        JSONObject obj = new JSONObject(prop1.getMetadata().getValue("metadatajson").toString());
+        assertEquals("metadata value json source", obj.getString("source"));
     }
 
     @Test
@@ -464,7 +477,8 @@ public class RdfTripleImportHelperTest {
 
     private void importRdfLine(String line) {
         Set<Element> elements = new HashSet<>();
-        rdfTripleImportHelper.importRdfLine(
+        ImportContext ctx = rdfTripleImportHelper.importRdfLine(
+                null,
                 elements,
                 sourceFileName,
                 line,
@@ -474,5 +488,6 @@ public class RdfTripleImportHelperTest {
                 user,
                 authorizations
         );
+        ctx.save(authorizations);
     }
 }

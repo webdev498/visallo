@@ -1,5 +1,6 @@
 package org.visallo.core.model.workQueue;
 
+import com.drew.lang.Iterables;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.vertexium.*;
@@ -18,6 +19,7 @@ import org.visallo.core.model.notification.SystemNotification;
 import org.visallo.core.model.notification.UserNotification;
 import org.visallo.core.model.properties.types.VisalloPropertyUpdate;
 import org.visallo.core.model.properties.types.VisalloPropertyUpdateRemove;
+import org.visallo.core.model.user.AuthorizationRepository;
 import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.status.model.Status;
 import org.visallo.core.user.User;
@@ -27,10 +29,8 @@ import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.web.clientapi.model.ClientApiWorkspace;
 import org.visallo.web.clientapi.model.UserStatus;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -722,13 +722,36 @@ public abstract class WorkQueueRepository {
             String changedByUserId,
             String changedBySourceGuid
     ) {
-        JSONObject json = new JSONObject();
-        json.put("type", "workspaceChange");
-        json.put("modifiedBy", changedByUserId);
-        json.put("permissions", getPermissionsWithUsers(workspace, previousUsers));
-        json.put("data", new JSONObject(ClientApiConverter.clientApiToString(workspace)));
-        json.putOpt("sourceGuid", changedBySourceGuid);
-        broadcastJson(json);
+        UserRepository userRepository = InjectHelper.getInstance(UserRepository.class);
+        AuthorizationRepository authorizationRepository = InjectHelper.getInstance(AuthorizationRepository.class);
+
+        previousUsers.forEach(workspaceUser -> {
+            User user = userRepository.findById(workspaceUser.getUserId());
+            Authorizations authorizations = authorizationRepository.getGraphAuthorizations(user, workspace.getWorkspaceId());
+
+            JSONObject json = new JSONObject();
+            json.put("type", "workspaceChange");
+            json.put("modifiedBy", changedByUserId);
+            json.put("permissions", getPermissionsWithUsers(null, Arrays.asList(workspaceUser)));
+
+            JSONObject data = new JSONObject(ClientApiConverter.clientApiToString(workspace));
+
+            List<String> vertexIds = workspace.getVertices().stream()
+                    .map(vertex -> vertex.getVertexId())
+                    .collect(Collectors.toList());
+
+            List<String> visibleVertexIds = Iterables.toList(graph.filterVertexIdsByAuthorization(vertexIds, workspace.getWorkspaceId(), ElementFilter.ALL, authorizations));
+
+            List<ClientApiWorkspace.Vertex> filteredVertices = workspace.getVertices()
+                    .stream()
+                    .filter(vertex -> visibleVertexIds.contains(vertex.getVertexId()))
+                    .collect(Collectors.toList());
+
+            data.put("vertices", new JSONArray(ClientApiConverter.clientApiToString(filteredVertices)));
+            json.put("data", data);
+            json.putOpt("sourceGuid", changedBySourceGuid);
+            broadcastJson(json);
+        });
     }
 
     public void pushWorkspaceDelete(ClientApiWorkspace workspace) {
@@ -762,8 +785,10 @@ public abstract class WorkQueueRepository {
                 users.put(user.getUserId());
             }
         }
-        for (ClientApiWorkspace.User user : workspace.getUsers()) {
-            users.put(user.getUserId());
+        if (workspace != null) {
+            for (ClientApiWorkspace.User user : workspace.getUsers()) {
+                users.put(user.getUserId());
+            }
         }
         permissions.put("users", users);
         return permissions;

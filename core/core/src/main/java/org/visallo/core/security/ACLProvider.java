@@ -7,6 +7,8 @@ import org.visallo.core.exception.VisalloAccessDeniedException;
 import org.visallo.core.exception.VisalloException;
 import org.visallo.core.model.ontology.*;
 import org.visallo.core.model.properties.VisalloProperties;
+import org.visallo.core.model.user.AuthorizationRepository;
+import org.visallo.core.model.user.PrivilegeRepository;
 import org.visallo.core.model.user.UserRepository;
 import org.visallo.core.user.User;
 import org.visallo.web.clientapi.model.*;
@@ -23,12 +25,22 @@ public abstract class ACLProvider {
     protected final Graph graph;
     protected final UserRepository userRepository;
     protected final OntologyRepository ontologyRepository;
+    private final PrivilegeRepository privilegeRepository;
+    private final AuthorizationRepository authorizationRepository;
 
     @Inject
-    protected ACLProvider(Graph graph, UserRepository userRepository, OntologyRepository ontologyRepository) {
+    protected ACLProvider(
+            Graph graph,
+            UserRepository userRepository,
+            OntologyRepository ontologyRepository,
+            PrivilegeRepository privilegeRepository,
+            AuthorizationRepository authorizationRepository
+    ) {
         this.graph = graph;
         this.userRepository = userRepository;
         this.ontologyRepository = ontologyRepository;
+        this.privilegeRepository = privilegeRepository;
+        this.authorizationRepository = authorizationRepository;
     }
 
     public abstract boolean canDeleteElement(Element element, User user);
@@ -116,10 +128,6 @@ public abstract class ACLProvider {
         return clientApiObject;
     }
 
-    public Set<String> getAllPrivileges() {
-        return Privilege.getAllBuiltIn();
-    }
-
     protected final boolean isComment(String propertyName) {
         return VisalloProperties.COMMENT.isSameName(propertyName);
     }
@@ -135,7 +143,7 @@ public abstract class ACLProvider {
     }
 
     protected final boolean hasPrivilege(User user, String privilege) {
-        return user.getPrivileges().contains(privilege);
+        return privilegeRepository.hasPrivilege(user, privilege);
     }
 
     private void appendACL(Collection<? extends ClientApiObject> clientApiObject, User user) {
@@ -213,7 +221,7 @@ public abstract class ACLProvider {
 
     private Element findElement(ClientApiElement apiElement) {
         Element element;
-        Authorizations authorizations = userRepository.getAuthorizations(userRepository.getSystemUser());
+        Authorizations authorizations = authorizationRepository.getGraphAuthorizations(userRepository.getSystemUser());
         if (apiElement instanceof ClientApiVertex) {
             element = graph.getVertex(apiElement.getId(), authorizations);
             checkNotNull(element, "could not find vertex with id: " + apiElement.getId());
@@ -230,8 +238,13 @@ public abstract class ACLProvider {
         return hasPrivilege(user, Privilege.EDIT) && canDeleteElement(element, user);
     }
 
+    private boolean internalCanUpdateElement(Element element, User user) {
+        return hasPrivilege(user, Privilege.EDIT) && canUpdateElement(element, user);
+    }
+
     private boolean internalCanDeleteProperty(Element element, String propertyKey, String propertyName, User user) {
-        boolean canDelete = hasPrivilege(user, Privilege.EDIT) &&
+        boolean canDelete =
+                hasEditOrCommentPrivilege(propertyName, user) &&
                 canDeleteProperty(element, propertyKey, propertyName, user);
         if (canDelete && isComment(propertyName)) {
             canDelete = hasPrivilege(user, Privilege.COMMENT_DELETE_ANY) ||
@@ -240,12 +253,9 @@ public abstract class ACLProvider {
         return canDelete;
     }
 
-    private boolean internalCanUpdateElement(Element element, User user) {
-        return hasPrivilege(user, Privilege.EDIT) && canUpdateElement(element, user);
-    }
-
     private boolean internalCanUpdateProperty(Element element, String propertyKey, String propertyName, User user) {
-        boolean canUpdate = hasPrivilege(user, Privilege.EDIT) &&
+        boolean canUpdate =
+                hasEditOrCommentPrivilege(propertyName, user) &&
                 canUpdateProperty(element, propertyKey, propertyName, user);
         if (canUpdate && isComment(propertyName)) {
             canUpdate = hasPrivilege(user, Privilege.COMMENT_EDIT_ANY) ||
@@ -255,10 +265,16 @@ public abstract class ACLProvider {
     }
 
     private boolean internalCanAddProperty(Element element, String propertyKey, String propertyName, User user) {
-        boolean canAdd = hasPrivilege(user, Privilege.EDIT) && canAddProperty(element, propertyKey, propertyName, user);
+        boolean canAdd =
+                hasEditOrCommentPrivilege(propertyName, user) &&
+                canAddProperty(element, propertyKey, propertyName, user);
         if (canAdd && isComment(propertyName)) {
             canAdd = hasPrivilege(user, Privilege.COMMENT);
         }
         return canAdd;
+    }
+
+    private boolean hasEditOrCommentPrivilege(String propertyName, User user) {
+        return hasPrivilege(user, Privilege.EDIT) || (isComment(propertyName) && hasPrivilege(user, Privilege.COMMENT));
     }
 }
