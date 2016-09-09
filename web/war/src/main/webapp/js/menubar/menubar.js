@@ -9,7 +9,7 @@ define([
     'use strict';
 
     // Add class name of <li> buttons here
-    var BUTTONS = 'dashboard graph map search workspaces admin activity logout'.split(' '),
+    var BUTTONS = 'dashboard graph map search workspaces products admin activity logout'.split(' '),
         TOOLTIPS = {
             activity: i18n('menubar.icons.activity.tooltip'),
             dashboard: i18n('menubar.icons.dashboard.tooltip'),
@@ -17,6 +17,7 @@ define([
             map: i18n('menubar.icons.map.tooltip'),
             search: i18n('menubar.icons.search.tooltip'),
             workspaces: i18n('menubar.icons.workspaces.tooltip'),
+            products: i18n('menubar.icons.products.tooltip'),
             admin: i18n('menubar.icons.admin.tooltip'),
             logout: i18n('menubar.icons.logout.tooltip')
         },
@@ -24,7 +25,7 @@ define([
         // Which cannot both be active
         MUTALLY_EXCLUSIVE_SWITCHES = [
             { names: ['dashboard', 'graph', 'map'], options: { allowCollapse: false } },
-            { names: ['workspaces', 'search', 'admin'], options: { } }
+            { names: ['workspaces', 'search', 'admin', 'products'], options: { } }
         ],
 
         ACTION_TYPES = {

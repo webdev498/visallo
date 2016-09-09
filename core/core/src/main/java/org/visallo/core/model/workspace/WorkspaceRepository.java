@@ -21,6 +21,7 @@ import org.visallo.core.model.termMention.TermMentionRepository;
 import org.visallo.core.model.user.AuthorizationRepository;
 import org.visallo.core.model.workQueue.Priority;
 import org.visallo.core.model.workQueue.WorkQueueRepository;
+import org.visallo.core.model.workspace.product.Product;
 import org.visallo.core.security.VisalloVisibility;
 import org.visallo.core.security.VisibilityTranslator;
 import org.visallo.core.trace.Traced;
@@ -986,6 +987,12 @@ public abstract class WorkspaceRepository {
     public abstract DashboardItem findDashboardItemById(String workspaceId, String dashboardItemId, User user);
 
     public abstract void deleteDashboardItem(String workspaceId, String dashboardItemId, User user);
+
+    public abstract Collection<Product> findAllProductsForWorkspace(String workspaceId, User user);
+
+    public abstract String addOrUpdateProduct(String workspaceId, String productId, String title, String kind, JSONObject params, User user);
+
+    public abstract Product findProductById(String workspaceId, String productId, JSONObject params, User user);
 
     protected VisibilityTranslator getVisibilityTranslator() {
         return visibilityTranslator;

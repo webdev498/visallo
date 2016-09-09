@@ -8,12 +8,15 @@ define([
     'workspaces/workspaces',
     'workspaces/overlay',
     'workspaces/timeline',
+    'products/ProductsList',
     'admin/admin',
     'activity/activity',
     'graph/graph',
     'detail/detail',
     'map/map',
     'help/help',
+    'react',
+    'react-dom',
     'configuration/plugins/registry',
     'util/component/attacher',
     'util/mouseOverlay',
@@ -31,12 +34,15 @@ define([
     Workspaces,
     WorkspaceOverlay,
     WorkspaceTimeline,
+    ProductsList,
     Admin,
     Activity,
     Graph,
     Detail,
     Map,
     Help,
+    React,
+    ReactDom,
     registry,
     attacher,
     MouseOverlay,
@@ -189,6 +195,7 @@ define([
                 dashboardPane = content.filter('.dashboard-pane').data(DATA_MENUBAR_NAME, 'dashboard'),
                 searchPane = content.filter('.search-pane').data(DATA_MENUBAR_NAME, 'search'),
                 workspacesPane = content.filter('.workspaces-pane').data(DATA_MENUBAR_NAME, 'workspaces'),
+                productsPane = content.filter('.products-pane').data(DATA_MENUBAR_NAME, 'products'),
                 adminPane = content.filter('.admin-pane').data(DATA_MENUBAR_NAME, 'admin'),
                 activityPane = content.filter('.activity-pane').data(DATA_MENUBAR_NAME, 'activity'),
                 graphPane = content.filter('.graph-pane').data(DATA_MENUBAR_NAME, 'graph'),
@@ -203,6 +210,7 @@ define([
             // Configure splitpane resizing
             resizable(searchPane, 'e', 190, 300, this.onPaneResize.bind(this), this.onResizeCreateLoad.bind(this));
             resizable(workspacesPane, 'e', 190, 250, this.onPaneResize.bind(this), this.onResizeCreateLoad.bind(this));
+            resizable(productsPane, 'e', 190, 250, this.onPaneResize.bind(this), this.onResizeCreateLoad.bind(this));
             resizable(adminPane, 'e', 190, 250, this.onPaneResize.bind(this), this.onResizeCreateLoad.bind(this));
             resizable(detailPane, 'w', 225, 500, this.onPaneResize.bind(this), this.onResizeCreateLoad.bind(this));
 
@@ -219,6 +227,8 @@ define([
             Map.attachTo(mapPane);
             Detail.attachTo(detailPane.find('.content'));
             Help.attachTo(helpDialog);
+
+            ReactDom.render(React.createElement(ProductsList), productsPane.find('.content')[0]);
 
             this.$node.html(content);
 
@@ -556,7 +566,7 @@ define([
 
         this.toggleDisplay = function(e, data) {
             var self = this,
-                SLIDE_OUT = 'search workspaces admin',
+                SLIDE_OUT = 'search workspaces products admin',
                 pane = this.select(data.name + 'Selector'),
                 deferred = $.Deferred(),
                 menubarExtensions = registry.extensionsForPoint('org.visallo.menubar'),
@@ -595,19 +605,16 @@ define([
                                   this.onResizeCreateLoad.bind(this));
                     }
 
-                    require([data.action.componentPath], function(Component) {
-                        var node = data.action.type === 'pane' ? pane.find('.content') : pane;
-                        var options = { graphPadding: self.currentGraphPadding };
+                    var node = data.action.type === 'pane' ? pane.find('.content') : pane;
+                    var options = { graphPadding: self.currentGraphPadding };
 
-                        attacher()
-                            .node(node)
-                            .component(Component)
-                            .path(data.action.componentPath)
-                            .attach(options)
-                            .then(function() {
-                                deferred.resolve();
-                            });
-                    });
+                    attacher()
+                        .node(node)
+                        .path(data.action.componentPath)
+                        .attach(options)
+                        .then(function() {
+                            deferred.resolve();
+                        });
                 }
             } else if (pane.length === 0) {
                 pane = this.$node.find('.' + data.name + '-pane');
