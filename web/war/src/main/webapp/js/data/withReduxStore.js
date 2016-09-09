@@ -88,8 +88,10 @@ define([
                     keys = (patch.path || '').split('/');
                 for (var i = 1; i < keys.length; i++) {
                     var key = keys[i];
-                    obj[key] = copyIfNeeded(obj[key]);
-                    obj = obj[key]
+                    if (key in obj) {
+                        obj[key] = copyIfNeeded(obj[key]);
+                        obj = obj[key]
+                    }
                 }
             });
 

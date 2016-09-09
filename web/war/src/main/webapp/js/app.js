@@ -8,7 +8,7 @@ define([
     'workspaces/workspaces',
     'workspaces/overlay',
     'workspaces/timeline',
-    'products/ProductsList',
+    'product/ProductContainer',
     'admin/admin',
     'activity/activity',
     'graph/graph',
@@ -34,7 +34,7 @@ define([
     Workspaces,
     WorkspaceOverlay,
     WorkspaceTimeline,
-    ProductsList,
+    ProductContainer,
     Admin,
     Activity,
     Graph,
@@ -228,7 +228,7 @@ define([
             Detail.attachTo(detailPane.find('.content'));
             Help.attachTo(helpDialog);
 
-            ReactDom.render(React.createElement(ProductsList), productsPane.find('.content')[0]);
+            this.attachReactComponentWithStore(ProductContainer, productsPane.find('.content'));
 
             this.$node.html(content);
 
@@ -293,6 +293,13 @@ define([
                 });
             });
             this.trigger('loadCurrentWorkspace');
+        };
+
+        this.attachReactComponentWithStore = function(Comp, div) {
+            return visalloData.storePromise.then(function(store) {
+                var node = _.isFunction(div.get) ? div.get(0) : div;
+                ReactDom.render(React.createElement(Comp, { store: store }), node);
+            })
         };
 
         this.onRegisterForPositionChanges = function(event, data) {
