@@ -18,7 +18,10 @@ define([
             var initialState = message.state,
                 store = redux.createStore(
                     rootReducer(initialState),
-                    redux.applyMiddleware(webworkerMiddleware(this.worker))
+                    redux.compose(
+                        redux.applyMiddleware(webworkerMiddleware(this.worker)),
+                        window.devToolsExtension && window.devToolsExtension()
+                    )
                 );
 
             this._reduxStore = store;

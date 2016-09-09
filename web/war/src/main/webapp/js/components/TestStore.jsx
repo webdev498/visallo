@@ -5,9 +5,11 @@ define([
     'use strict';
 
     const TestStore = React.createClass({
+        componentWillMount() {
+            setTimeout(() => { this.props.onTest() }, 2000)
+        },
         render() {
             console.log('Prop Store is Dashboard Items?', this.props.keys)
-            //setTimeout(() => { this.props.onTest() }, 2000)
             return null;
         }
     });
