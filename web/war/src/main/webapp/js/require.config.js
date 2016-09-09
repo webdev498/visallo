@@ -45,6 +45,8 @@
             'duration-js': '../libs/duration-js/duration',
             'easing': '../libs/jquery.easing/jquery.easing.1.3',
             'ejs': '../libs/ejs/ejs',
+            'fast-json-patch': '../libs/fast-json-patch/dist/json-patch-duplex.min',
+            'flux-standard-action': '../libs/amd-wrap/flux-standard-action/lib/index',
             'flight': '../libs/flightjs/build/flight',
             'flight/lib': 'util/flight/compat',
             'goog': '../libs/requirejs-plugins/src/goog',
@@ -94,6 +96,7 @@
             'duration-js': { exports: 'Duration' },
             'easing': { init: function() { return $.easing; }, deps: ['jquery'] },
             'ejs': { exports: 'ejs' },
+            'fast-json-patch': { exports: 'jsonpatch' },
             'jquery': { exports: 'jQuery' },
             'jstz': { exports: 'jstz' },
             'openlayers': { exports: 'OpenLayers' },
@@ -108,7 +111,8 @@
             'videojs': { exports: 'videojs' }
         },
         amdWrap: [
-            'deep-freeze-strict/index.js'
+            'deep-freeze-strict/index.js',
+            'flux-standard-action/lib/index.js'
         ]
     };
 }));
