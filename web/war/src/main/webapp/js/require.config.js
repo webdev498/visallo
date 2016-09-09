@@ -45,6 +45,8 @@
             'duration-js': '../libs/duration-js/duration',
             'easing': '../libs/jquery.easing/jquery.easing.1.3',
             'ejs': '../libs/ejs/ejs',
+            'fast-json-patch': '../libs/fast-json-patch/dist/json-patch-duplex.min',
+            'flux-standard-action': '../libs/amd-wrap/flux-standard-action/lib/index',
             'flight': '../libs/flightjs/build/flight',
             'flight/lib': 'util/flight/compat',
             'goog': '../libs/requirejs-plugins/src/goog',
@@ -72,6 +74,8 @@
             'rangy-serializer': '../libs/rangy/lib/rangy-serializer',
             'react': '../libs/react/dist/react-with-addons',
             'react-dom': '../libs/react-dom/dist/react-dom',
+            'react-redux': '../libs/react-redux/dist/react-redux',
+            'redux': '../libs/redux/dist/redux',
             'sf': '../libs/sf/sf',
             'text': '../libs/requirejs-text/text',
             'tpl': '../libs/@visallo/requirejs-ejs-plugin/rejs',
@@ -92,6 +96,7 @@
             'duration-js': { exports: 'Duration' },
             'easing': { init: function() { return $.easing; }, deps: ['jquery'] },
             'ejs': { exports: 'ejs' },
+            'fast-json-patch': { exports: 'jsonpatch' },
             'jquery': { exports: 'jQuery' },
             'jstz': { exports: 'jstz' },
             'pathfinding': { exports: 'PF' },
@@ -105,7 +110,8 @@
             'videojs': { exports: 'videojs' }
         },
         amdWrap: [
-            'deep-freeze-strict/index.js'
+            'deep-freeze-strict/index.js',
+            'flux-standard-action/lib/index.js'
         ]
     };
 }));

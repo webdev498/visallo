@@ -14,6 +14,7 @@ var BASE_URL = '../../..',
     needsInitialSetup = true,
     publicData = {};
 
+var timer;
 onmessage = function(event) {
     if (needsInitialSetup) {
         needsInitialSetup = false;
@@ -36,6 +37,19 @@ function setupAll(data) {
     setupWebsocket(data);
     setupRequireJs(data);
     documentExtensionPoints();
+    setupRedux(data);
+}
+
+function setupRedux(data) {
+    require(['data/web-worker/store'], function(store) {
+        try {
+            var state = store.getStore().getState()
+            dispatchMain('reduxStoreInit', { state });
+        } catch(e) {
+            console.error(e)
+            throw e;
+        }
+    });
 }
 
 function setupConsole() {

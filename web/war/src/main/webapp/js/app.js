@@ -234,7 +234,6 @@ define([
 
             $(document.body).toggleClass('animatelogin', !!this.attr.animateFromLogin);
 
-
             this.triggerPaneResized();
             this.dataRequest('config', 'properties')
                 .done(function(properties) {
