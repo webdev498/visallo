@@ -8,8 +8,8 @@ define([
             const { items, loading, error } = this.props.product;
 
             var itemElements = items.map(function(item) {
-                return (<div>
-                    <p key={item.id}>{item.title} {item.kind}</p>
+                return (<div key={item.id}>
+                    <p>{item.title} {item.kind}</p>
                     <pre>
                         {JSON.stringify(item.data, null, 2)}
                     </pre>
@@ -24,6 +24,7 @@ define([
             return (
                 <div>
                     <h1>Products</h1>
+                    <button onClick={this.props.onCreateGraph}>Create Graph</button>
                     {content}
                 </div>
             );

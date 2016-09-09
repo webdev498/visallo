@@ -26,7 +26,7 @@ define([
             })
 
             return {
-                onTest: () => { dispatch({ type: 'INC' }) }
+                onCreateGraph: () => { dispatch(productActions.tempCreateGraph) }
             }
         }
 
