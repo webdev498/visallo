@@ -1,13 +1,14 @@
 # Visallo Features
 
-Many featues within Visallo are developed and run as plugins to the system. There are two basic types of plugins, web plugins and graph property worker plugins. Please see the [extension point documentation](extension-points/index.md) if you'd like to learn how to build your own Visallo plugins.
+Visallo is extensible at all levels: from the web interface, through
+data processing, to data persistance. Many core and example features are
+available in the [open source project](https://github.com/v5analytics/visallo)
+including:
 
-## Web Plugins
-
-The following web plugins come with Visallo, but not all are installed by default. 
+#### Web Plugins
 
 | Feature | Description |
-| ------- | -------------------|
+| ------- | ----------- |
 | admin-import-rdf | import RDF formatted data from the admin console |
 | auth-username-only | authentication via username only; useful during development |
 | auth-username-password | standard username password authentication |
@@ -15,9 +16,7 @@ The following web plugins come with Visallo, but not all are installed by defaul
 | change-password | UI plugin allowing users to change their password |
 | admin-user-tools | UI plugin allowing users to add/modify/delete users |
 
-## Graph Property Worker Plugins
-
-The following features are executed as graph property workers that run within the Visallo web application.
+#### Graph Property Workers
 
 | Feature | Description |
 | ------- | ----------- |
@@ -28,3 +27,9 @@ The following features are executed as graph property workers that run within th
 | tika-mime-type | sets MIME type metadata property of "raw" properties (e.g. file content) using [Tika](http://tika.apache.org/) |
 | mime-type-ontology-mapper | sets the concept type property of vertices based on their MIME type |
 
+
+# Licensed Features and Support
+
+Additional [licensed features](https://www.visallo.com/product/) and
+[support](https://www.visallo.com/support/) are available with a
+subscription.

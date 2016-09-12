@@ -1,3 +1,5 @@
+# Visallo IDE Setup
+
 The instructions below will help you setup the [IntelliJ IDEA](https://www.jetbrains.com/idea/) IDE for Visallo development. These instructions should work with both the Community and Ultimate editions.
 
 # Prerequisites

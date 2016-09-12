@@ -15,5 +15,17 @@ module.exports = {
   },
   search: {
     maxIndexSize: 1000000000
+  },
+  variables: {
+    v: {
+      javaMajor: '8',
+      javaExact: '8u51-b16',
+      maven: '3.3.3',
+      nodejs: 'v5.3.0',
+      npm: '3.3.12',
+      chrome: '<i>latest</i>',
+      firefox: '38',
+      ie: '11'
+    }
   }
 };
