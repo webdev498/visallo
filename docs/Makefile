@@ -1,6 +1,6 @@
 .PHONY: serve build check install javadoc clean clone push link-check
 
-serve: install javadoc
+serve: install
 	@./node_modules/.bin/gitbook serve
 
 build: install javadoc
