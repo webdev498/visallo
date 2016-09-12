@@ -9,13 +9,15 @@ public abstract class Product implements Serializable {
     private final String title;
     private final String kind;
     private final String data;
+    private final String extendedData;
 
 
-    public Product(String id, String workspaceId, String kind, String title, String data) {
+    public Product(String id, String workspaceId, String kind, String title, String data, String extendedData) {
         this.id = id;
         this.workspaceId = workspaceId;
         this.kind = kind;
         this.data = data;
+        this.extendedData = extendedData;
         this.title = title;
     }
 
@@ -37,6 +39,10 @@ public abstract class Product implements Serializable {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getExtendedData() {
+        return extendedData;
     }
 
     @Override

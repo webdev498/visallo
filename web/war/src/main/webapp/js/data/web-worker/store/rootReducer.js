@@ -5,10 +5,15 @@ define([
 
     // Reducers
     './dashboard/reducer',
-    './product/reducer'
+    './product/reducer',
+    './workspace/reducer',
+    './user/reducer'
 
     // Add reducers above, the name of the function will be used as the key
 ], function(registry, redux, ...reducers) {
+
+    // TODO: add all from an undocumented extension point (for internal use
+    // only for this release)
 
     var reducerMap = redux.combineReducers(
         _.object(

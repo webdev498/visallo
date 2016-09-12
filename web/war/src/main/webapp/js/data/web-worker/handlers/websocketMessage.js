@@ -1,7 +1,8 @@
 define([
     'require',
-    'configuration/plugins/registry'
-], function(require, registry) {
+    'configuration/plugins/registry',
+    '../store'
+], function(require, registry, store) {
     'use strict';
 
     var NOOP = function() {},
@@ -10,16 +11,16 @@ define([
         },
         socketHandlers = {
             workspaceChange: function(data, json) {
-                require(['../util/store'], function(store) {
-                    store.workspaceWasChangedRemotely(data);
+                require(['../util/store'], function(legacyStore) {
+                    legacyStore.workspaceWasChangedRemotely(data);
                 })
             },
             workspaceDelete: function(data) {
                 require([
                     '../util/store',
                     './workspaceSwitch'
-                ], function(store, workspaceSwitch) {
-                    store.removeWorkspace(data.workspaceId);
+                ], function(legacyStore, workspaceSwitch) {
+                    legacyStore.removeWorkspace(data.workspaceId);
                     workspaceSwitch(data);
                     dispatchMain('rebroadcastEvent', {
                         eventName: 'workspaceDeleted',
@@ -29,13 +30,22 @@ define([
                     })
                 });
             },
+            workProductChange: function(data) {
+                require(['../store/product/actions'], function(actions) {
+                    store.getStore().dispatch(actions.getProduct(data.id))
+                })
+            },
+            workProductDelete: function(data) {
+                require(['../store/product/actions'], function(actions) {
+                    store.getStore().dispatch(actions.removeProduct(data.id))
+                })
+            },
             sessionExpiration: function(data) {
                 dispatchMain('rebroadcastEvent', {
                     eventName: 'sessionExpiration'
                 });
             },
             userStatusChange: (function() {
-                // TODO: put into store
                 var previousById = {};
                 return function(data) {
                     var previous = data && previousById[data.id];
@@ -63,8 +73,8 @@ define([
                     throw new Error('Property change sent unknown type', data);
                 }
 
-                require(['../util/store'], function(store) {
-                    var storeObject = store.getObject(publicData.currentWorkspaceId, type, objectId),
+                require(['../util/store'], function(legacyStore) {
+                    var storeObject = legacyStore.getObject(publicData.currentWorkspaceId, type, objectId),
                         edgeCreation = type === 'edge' && !('propertyName' in data);
                     if (storeObject || edgeCreation) {
                         require(['../services/' + type], function(service) {
@@ -77,7 +87,7 @@ define([
                                     }
 
                                     if (type === 'vertex') {
-                                        store.removeWorkspaceVertexIds(publicData.currentWorkspaceId, objectId);
+                                        legacyStore.removeWorkspaceVertexIds(publicData.currentWorkspaceId, objectId);
                                         dispatchMain('rebroadcastEvent', {
                                             eventName: 'verticesDeleted',
                                             data: {
@@ -85,7 +95,7 @@ define([
                                             }
                                         });
                                     } else {
-                                        store.removeObject(publicData.currentWorkspaceId, 'edge', objectId);
+                                        legacyStore.removeObject(publicData.currentWorkspaceId, 'edge', objectId);
                                         dispatchMain('rebroadcastEvent', {
                                             eventName: 'edgesDeleted',
                                             data: {
@@ -99,9 +109,9 @@ define([
                 });
             },
             verticesDeleted: function(data) {
-                require(['../util/store'], function(store) {
+                require(['../util/store'], function(legacyStore) {
                     var storeObjects = _.compact(
-                            store.getObjects(publicData.currentWorkspaceId, 'vertex', data.vertexIds)
+                            legacyStore.getObjects(publicData.currentWorkspaceId, 'vertex', data.vertexIds)
                         );
                     if (storeObjects.length) {
                         require(['../services/vertex'], function(vertex) {
@@ -111,7 +121,7 @@ define([
                                         return !exists;
                                     }));
                                     if (deleted.length) {
-                                        store.removeWorkspaceVertexIds(publicData.currentWorkspaceId, deleted);
+                                        legacyStore.removeWorkspaceVertexIds(publicData.currentWorkspaceId, deleted);
                                         dispatchMain('rebroadcastEvent', {
                                             eventName: 'verticesDeleted',
                                             data: {
@@ -121,7 +131,7 @@ define([
                                     }
                                 })
                                 .catch(function() {
-                                    store.removeWorkspaceVertexIds(publicData.currentWorkspaceId, data.vertexIds);
+                                    legacyStore.removeWorkspaceVertexIds(publicData.currentWorkspaceId, data.vertexIds);
                                     dispatchMain('rebroadcastEvent', {
                                         eventName: 'verticesDeleted',
                                         data: {
@@ -137,11 +147,11 @@ define([
                 require([
                     '../util/store',
                     '../services/edge'
-                ], function(store, edge) {
+                ], function(legacyStore, edge) {
                     edge.exists([data.edgeId])
                         .then(function(r) {
                             if (!r.exists[data.edgeId]) {
-                                store.removeObject(publicData.currentWorkspaceId, 'edge', data.edgeId);
+                                legacyStore.removeObject(publicData.currentWorkspaceId, 'edge', data.edgeId);
                                 dispatchMain('rebroadcastEvent', {
                                     eventName: 'edgesDeleted',
                                     data: data

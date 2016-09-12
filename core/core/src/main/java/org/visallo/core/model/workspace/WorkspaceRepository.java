@@ -992,7 +992,9 @@ public abstract class WorkspaceRepository {
 
     public abstract String addOrUpdateProduct(String workspaceId, String productId, String title, String kind, JSONObject params, User user);
 
-    public abstract Product findProductById(String workspaceId, String productId, JSONObject params, User user);
+    public abstract void deleteProduct(String workspaceId, String productId, User user);
+
+    public abstract Product findProductById(String workspaceId, String productId, JSONObject params, boolean includeExtended, User user);
 
     protected VisibilityTranslator getVisibilityTranslator() {
         return visibilityTranslator;

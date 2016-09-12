@@ -24,7 +24,7 @@ define([
 
         // Which cannot both be active
         MUTALLY_EXCLUSIVE_SWITCHES = [
-            { names: ['dashboard', 'graph', 'map'], options: { allowCollapse: false } },
+            { names: ['dashboard', 'graph', 'map', 'products-full'], options: { allowCollapse: false } },
             { names: ['workspaces', 'search', 'admin', 'products'], options: { } }
         ],
 
@@ -250,21 +250,24 @@ define([
         this.onMenubarToggle = function(e, data) {
             var self = this,
                 icon = this.select(data.name + 'IconSelector'),
-                active = icon.hasClass('active');
+                name = data && (data.nameFull || data.name),
+                active = data.nameFull ?
+                    icon.hasClass('full-active') :
+                    icon.hasClass('active');
 
-            if (DISABLE_ACTIVE_SWITCH.indexOf(data.name) === -1) {
+            if (DISABLE_ACTIVE_SWITCH.indexOf(name) === -1) {
                 var isSwitch = false;
 
                 if (!active) {
                     MUTALLY_EXCLUSIVE_SWITCHES.forEach(function(exclusive, i) {
-                        if (exclusive.names.indexOf(data.name) !== -1) {
+                        if (exclusive.names.indexOf(name) !== -1) {
                             isSwitch = true;
-                                exclusive.names.forEach(function(name) {
-                                    if (name !== data.name) {
-                                        var otherIcon = self.select(name + 'IconSelector');
+                                exclusive.names.forEach(function(exclusiveName) {
+                                    if (exclusiveName !== name) {
+                                        var otherIcon = self.select(exclusiveName + 'IconSelector');
                                         if (otherIcon.hasClass('active')) {
                                             self.trigger(document, 'menubarToggleDisplay', {
-                                                name: name,
+                                                name: exclusiveName,
                                                 isSwitchButCollapse: true
                                             });
                                         }

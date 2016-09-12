@@ -25,12 +25,13 @@ public class ProductGet implements ParameterizedHandler {
     @Handle
     public ClientApiProduct handle(
             @Required(name = "productId") String productId,
+            @Optional(name = "includeExtended", defaultValue = "true") boolean includeExtended,
             @Optional(name = "params") String paramsStr,
             @ActiveWorkspaceId String workspaceId,
             User user
     ) throws Exception {
         JSONObject params = paramsStr == null ? new JSONObject() : new JSONObject(paramsStr);
-        Product product = workspaceRepository.findProductById(workspaceId, productId, params, user);
+        Product product = workspaceRepository.findProductById(workspaceId, productId, params, includeExtended, user);
         return ClientApiConverter.toClientApiProduct(product);
     }
 }

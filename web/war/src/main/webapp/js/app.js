@@ -573,36 +573,37 @@ define([
         this.toggleDisplay = function(e, data) {
             var self = this,
                 SLIDE_OUT = 'search workspaces products admin',
-                pane = this.select(data.name + 'Selector'),
+                name = data && (data.nameFull || data.name),
+                pane = this.select(name + 'Selector'),
                 deferred = $.Deferred(),
                 menubarExtensions = registry.extensionsForPoint('org.visallo.menubar'),
                 extension;
 
-            if (data && data.name) {
-                extension = _.findWhere(menubarExtensions, { identifier: data.name });
+            if (name) {
+                extension = _.findWhere(menubarExtensions, { identifier: name });
                 if (extension) {
                     data = extension;
-                    data.name = data.identifier;
+                    name = data.identifier;
                 }
             }
 
             if (data.action) {
-                pane = this.$node.find('.' + data.name + '-pane');
+                pane = this.$node.find('.' + name + '-pane');
 
                 if (data.action.type === 'pane') {
-                    SLIDE_OUT += (' ' + data.name);
+                    SLIDE_OUT += (' ' + name);
                 }
 
                 if (pane.length) {
                     deferred.resolve();
                 } else {
                     pane = $('<div>')
-                        .data('widthPreference', data.name)
+                        .data('widthPreference', name)
                         .addClass((data.action.type === 'full' ? 'fullscreen' : 'plugin') +
                                   '-pane ' +
-                                  data.name + '-pane')
+                                  name + '-pane')
                         .appendTo(this.$node)
-                        .data(DATA_MENUBAR_NAME, data.name);
+                        .data(DATA_MENUBAR_NAME, name);
 
                     if (data.action.type === 'pane') {
                         $('<div class="content">').appendTo(pane);
@@ -623,7 +624,7 @@ define([
                         });
                 }
             } else if (pane.length === 0) {
-                pane = this.$node.find('.' + data.name + '-pane');
+                pane = this.$node.find('.' + name + '-pane');
                 deferred.resolve();
             } else {
                 deferred.resolve();
@@ -632,19 +633,19 @@ define([
             deferred.done(function() {
                 var isVisible = pane.is('.visible');
 
-                if (data.name === 'logout') {
+                if (name === 'logout') {
                     return this.logout();
                 }
 
-                if (data.name === 'map' && !pane.hasClass('visible')) {
+                if (name === 'map' && !pane.hasClass('visible')) {
                     this.trigger(document, 'mapShow', (data && data.data) || {});
                 }
 
-                if (SLIDE_OUT.indexOf(data.name) >= 0) {
+                if (SLIDE_OUT.indexOf(name) >= 0) {
                     pane.one(TRANSITION_END, function() {
                         pane.off(TRANSITION_END);
                         if (!isVisible) {
-                            self.trigger(data.name + 'PaneVisible');
+                            self.trigger(name + 'PaneVisible');
                         }
                         self.triggerPaneResized(isVisible ? null : pane);
                     });
@@ -653,12 +654,12 @@ define([
                 // Can't toggleClass because if only one is visible we want to hide all
                 if (isVisible) {
                     pane.removeClass('visible');
-                } else if (data.name === 'graph') {
+                } else if (name === 'graph') {
                     pane.filter('.graph-pane-' + (this._graphDimensions || 2) + 'd').addClass('visible');
                 } else pane.addClass('visible');
 
                 this.trigger('didToggleDisplay', {
-                    name: data.name,
+                    name: name,
                     visible: !isVisible
                 })
             }.bind(this));

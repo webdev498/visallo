@@ -52,11 +52,13 @@ define([
             .then(function() {
                 return Promise.all([
                     self._component || Promise.require(self._path),
-                    cachedApiVersions || (cachedApiVersions = loadApiVersions())
+                    cachedApiVersions || (cachedApiVersions = loadApiVersions()),
+                    visalloData.storePromise
                 ]);
             })
-            .spread(function(Component, api) {
+            .spread(function(Component, api, store) {
                 params.visalloApi = api;
+                params.store = store
 
                 if (options && options.teardown) {
                     self.teardown();

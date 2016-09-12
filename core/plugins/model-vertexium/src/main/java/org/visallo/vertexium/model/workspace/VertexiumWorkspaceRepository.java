@@ -41,6 +41,7 @@ import org.visallo.core.user.User;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 import org.visallo.vertexium.model.user.VertexiumUserRepository;
+import org.visallo.web.clientapi.model.ClientApiWorkspace;
 import org.visallo.web.clientapi.model.ClientApiWorkspaceDiff;
 import org.visallo.web.clientapi.model.GraphPosition;
 import org.visallo.web.clientapi.model.WorkspaceAccess;
@@ -839,12 +840,8 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         String title = WorkspaceProperties.TITLE.getPropertyValue(productVertex);
         String kind = WorkspaceProperties.PRODUCT_KIND.getPropertyValue(productVertex);
         String data = WorkspaceProperties.PRODUCT_DATA.getPropertyValue(productVertex);
-        if (extendedData != null) {
-            JSONObject d = new JSONObject(data);
-            d.put("extended", extendedData);
-            data = d.toString();
-        }
-        return new VertexiumProduct(productVertex.getId(), workspaceId, title, kind, data);
+        String extendedDataStr = extendedData == null ? null : extendedData.toString();
+        return new VertexiumProduct(productVertex.getId(), workspaceId, title, kind, data, extendedDataStr);
     }
 
     @Override
@@ -975,7 +972,44 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
 
         graph.flush();
 
+        Workspace ws = findById(workspaceId, user);
+        ClientApiWorkspace userWorkspace = toClientApi(ws, user, false, authorizations);
+        getWorkQueueRepository().broadcastWorkProductChange(productVertex.getId(), userWorkspace);
+
         return productVertex.getId();
+    }
+
+    public void deleteProduct(String workspaceId, String productId, User user) {
+        LOGGER.debug("deleteProduct(productId: %s, userId: %s)", productId, user.getUserId());
+        if (!hasWritePermissions(workspaceId, user)) {
+            throw new VisalloAccessDeniedException(
+                    "user " + user.getUserId() + " does not have write access to workspace " + workspaceId,
+                    user,
+                    workspaceId
+            );
+        }
+        Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
+                user,
+                VISIBILITY_STRING,
+                workspaceId
+        );
+
+//        Vertex productVertex = getGraph().getVertex(productId, authorizations);
+//        Iterable<Vertex> dashboardItemVertices = productVertex.getEdges(
+//                Direction.OUT,
+//                WorkspaceProperties.DASHBOARD_TO_DASHBOARD_ITEM_RELATIONSHIP_IRI,
+//                authorizations
+//        );
+//        for (Vertex dashboardItemVertex : dashboardItemVertices) {
+//            getGraph().softDeleteVertex(dashboardItemVertex, authorizations);
+//        }
+        getGraph().softDeleteVertex(productId, authorizations);
+        getGraph().flush();
+
+        Workspace ws = findById(workspaceId, user);
+        ClientApiWorkspace userWorkspace = toClientApi(ws, user, false, authorizations);
+        getWorkQueueRepository().broadcastWorkProductDelete(productId, userWorkspace);
+
     }
 
     private WorkProduct getWorkProductByKind(String kind) {
@@ -1001,7 +1035,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
     }
 
     @Override
-    public Product findProductById(String workspaceId, String productId, JSONObject params, User user) {
+    public Product findProductById(String workspaceId, String productId, JSONObject params, boolean includeExtended, User user) {
         Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
                 user,
                 VISIBILITY_STRING,
@@ -1014,7 +1048,10 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
 
         String kind = WorkspaceProperties.PRODUCT_KIND.getPropertyValue(productVertex);
         WorkProduct workProduct = getWorkProductByKind(kind);
-        JSONObject extendedData = workProduct.get(params, getGraph(), getVertex(workspaceId, user), productVertex, user, authorizations);
+        JSONObject extendedData = null;
+        if (includeExtended) {
+            extendedData = workProduct.get(params, getGraph(), getVertex(workspaceId, user), productVertex, user, authorizations);
+        }
 
         return productVertexToProduct(workspaceId, productVertex, authorizations, extendedData);
     }

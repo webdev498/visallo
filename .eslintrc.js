@@ -96,7 +96,6 @@ module.exports = {
         "eqeqeq": "error",
         "new-parens": "error",
         "space-infix-ops": "error",
-        "strict": ["error", "function"],
         "use-isnan": "error",
         "valid-typeof": "error",
         "no-console": [

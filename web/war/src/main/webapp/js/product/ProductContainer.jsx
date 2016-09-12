@@ -7,13 +7,21 @@ define([
     'use strict';
 
     var requestProducts = _.once(function(dispatch) {
-        dispatch(productActions.list)
-    });
-
+            dispatch(productActions.list)
+        }),
+        openProductDetail = function() {
+            if (!$(document).find('.products-full-pane.visible').length) {
+                $(document).trigger('menubarToggleDisplay', {
+                    name: 'products',
+                    nameFull: 'products-full',
+                    action: { type: 'full', componentPath: 'product/ProductDetailContainer' }
+                })
+            }
+        };
 
     return redux.connect(
 
-        (state, props) => ({ product: state.product }),
+        (state, props) => ({ product: state.product, selected: state.product.selected }),
 
         (dispatch) => {
 
@@ -26,7 +34,9 @@ define([
             })
 
             return {
-                onCreateGraph: () => { dispatch(productActions.tempCreateGraph) }
+                onCreateGraph: () => { dispatch(productActions.tempCreateGraph) },
+                onDeleteProduct: (productId) => { dispatch(productActions.deleteProduct(productId)) },
+                onSelectProduct: (productId) => { openProductDetail(); dispatch(productActions.selectProduct(productId)) }
             }
         }
 
