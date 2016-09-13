@@ -3,7 +3,7 @@ define([
 ], function(React) {
     'use strict';
 
-    const ProductsPane = React.createClass({
+    const ProductPane = React.createClass({
         render() {
             const { items, loading, error, selected } = this.props.product;
 
@@ -32,5 +32,5 @@ define([
         }
     });
 
-    return ProductsPane;
+    return ProductPane;
 });

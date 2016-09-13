@@ -1,4 +1,4 @@
-package org.visallo.web.product;
+package org.visallo.web.product.graph;
 
 import com.google.common.collect.Lists;
 import org.json.JSONArray;

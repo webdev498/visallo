@@ -9,7 +9,7 @@ define(['../util/ajax', '../store', '../store/product/actions'], function(ajax, 
         createGraph() {
             return ajax('POST', '/product', {
                 title: 'My Created Graph: ' + new Date(),
-                kind: 'org.visallo.web.product.GraphWorkProduct'
+                kind: 'org.visallo.web.product.graph.GraphWorkProduct'
             })
         },
 
