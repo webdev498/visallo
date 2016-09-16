@@ -46,7 +46,7 @@ public class HelloWorldGraphPropertyWorker extends GraphPropertyWorker {
 
 This is the most barebones that a graph property worker can be.  In order to load it on the classpath, we need to modify the services file in the resources directory for java.  Go into the ```worker/src/main/resources/META-INF/services``` directory and add the HelloWorldGraphPropertyWorker line to the file ```org.visallo.core.ingest.graphProperty.GraphPropertyWorker```.  It should now look like this:
 
-```bash
+```
 com.visalloexample.helloworld.worker.ExampleGraphPropertyWorker
 com.visalloexample.helloworld.worker.HelloWorldGraphPropertyWorker
 ```

@@ -3,15 +3,19 @@
 After reviewing the required [devleopment dependencies](dependencies.md)
 there are just three steps to get Visallo running locally:
 
+1. Clone the open source repository from GitHub:
 ```bash
-# checkout the open source repository from GitHub
-git clone https://github.com/v5analytics/visallo.git
+        git clone https://github.com/v5analytics/visallo.git
+```
 
-# change into the new directory
-cd visallo
+1. Change into the new directory:
+```bash
+        cd visallo
+```
 
-# run the web application with embedded H2 and Elasticsearch datastores
-mvn -am -pl dev/jetty-server -P dev-jetty-run compile
+1. Run the web application with embedded H2 and Elasticsearch datastores:
+```bash
+        mvn -am -pl dev/jetty-server -P dev-jetty-run compile
 ```
 
 Browse to [https://localhost:8889](https://localhost:8889) and log in

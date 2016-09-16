@@ -10,9 +10,9 @@ After you have Visallo running you may want to review the
 [ontology](ontology/index.md) so you know how the different
 components of Visallo work together.
 
-We've developed several [tutorials](tutorials/index.md) to show you
-what you can do next as well as extensive documentation of
-[configuration settins](configuration.md),
+We have developed several [tutorials](tutorials/index.md) to show
+you what you can do next as well as extensive documentation about
+[configuration settings](configuration.md),
 [plugin interfaces](../plugin-interfaces/index.md), and
 [web extention points](../web-entension-points/index.md).
 

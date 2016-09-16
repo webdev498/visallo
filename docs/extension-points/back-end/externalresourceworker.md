@@ -20,7 +20,7 @@ External resource workers are run inside the web server when it is brought onlin
 
 If you do not want to run ExternalResourceWorkers inside of the server, add the following to your configuration.
 
-```bash
+```yaml
 #disable the External Resource Workers from running inside of the web server
 disable.org.visallo.web.initializers.ExternalResourceWorkersInitializer=true
 ```

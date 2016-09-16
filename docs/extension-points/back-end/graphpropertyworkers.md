@@ -57,14 +57,14 @@ public class PersonFraudScoreGPW extends GraphPropertyWorker {
 
 Graph Property Workers are deployed inside of the web server by default.  Having the Graph Property Workers inside of the web server works well for development and installations that do not need to scale up further than their web server.  On large installations, that may take too many resources from the web server so it may be required to move the Graph Property Workers out of the web server.  When each Graph Property Worker starts up, they are all started inside of their own threads and a GraphPropertyRunner coordinates each of them together.  It is possible to run more than one set of Graph Property Workers in the server which can be valuable if you are running on multi-core hardware.  To add more Graph Property Worker threads, ensure that the following is in your configuration:
 
-```bash
+```yaml
 #Set number of graph property worker threads to 4
 org.visallo.web.initializers.GraphPropertyWorkerRunnerInitializer.threadcount=4
 ```
 
 If you do not want the graph property workers running inside of the web server, add the following to your configuration.
 
-```bash
+```yaml
 #disable the graph property workers running inside of the web server
 disable.org.visallo.web.initializers.GraphPropertyWorkerRunnerInitializer=true
 
