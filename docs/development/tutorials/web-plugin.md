@@ -17,23 +17,10 @@ The minimal Visallo web plugin is simply a Java class that implements
 
 Create a new Java file as shown below.
 
-##### NEW `plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`
+##### NEW [`plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`](https://github.com/v5analytics/visallo-tutorial/blob/web-registration/plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java)
 
 ```java
-package com.visalloexample.helloworld.web;
-
-import com.v5analytics.webster.Handler;
-import org.visallo.core.model.Description;
-import org.visallo.core.model.Name;
-import org.visallo.web.WebApp;
-import org.visallo.web.WebAppPlugin;
-
-import javax.servlet.ServletContext;
-
-@Name("Tutorial Web App Plugin")
-@Description("http://docs.visallo.org/development/tutorials/web-plugin.html")
 public class TutorialWebAppPlugin implements WebAppPlugin {
-    @Override
     public void init(WebApp app, ServletContext servletContext, Handler handler) {
       // nothing here yet
     }
@@ -43,7 +30,7 @@ public class TutorialWebAppPlugin implements WebAppPlugin {
 Edit the existing service locator file as shown below. It will already include a
 line for the web plugin class created by the Maven archetype.
 
-##### EDIT `plugins/web/src/main/resources/META-INF/services/org.visallo.web.WebAppPlugin`
+##### EDIT [`plugins/web/src/main/resources/META-INF/services/org.visallo.web.WebAppPlugin`](https://github.com/v5analytics/visallo-tutorial/blob/web-registration/plugins/web/src/main/resources/META-INF/services/org.visallo.web.WebAppPlugin)
 
 ```
 com.visalloexample.helloworld.web.ExampleWebAppPlugin
@@ -76,7 +63,7 @@ edit our new Java class to instruct Visallo load the JavaScript file.
 
 Create the new JavaScript file as shown below.
 
-##### NEW `plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js`
+##### NEW [`plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js`](https://github.com/v5analytics/visallo-tutorial/blob/web-javascript/plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js)
 
 ```javascript
 require([
@@ -104,23 +91,10 @@ require([
 Edit the new Java file as show below, adding one line to register the
 new JavaScript file.
 
-##### EDIT `plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`
+##### EDIT [`plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`](https://github.com/v5analytics/visallo-tutorial/blob/web-javascript/plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java)
 
 ```java
-package com.visalloexample.helloworld.web;
-
-import com.v5analytics.webster.Handler;
-import org.visallo.core.model.Description;
-import org.visallo.core.model.Name;
-import org.visallo.web.WebApp;
-import org.visallo.web.WebAppPlugin;
-
-import javax.servlet.ServletContext;
-
-@Name("Tutorial Web App Plugin")
-@Description("http://docs.visallo.org/development/tutorials/web-plugin.html")
 public class TutorialWebAppPlugin implements WebAppPlugin {
-    @Override
     public void init(WebApp app, ServletContext servletContext, Handler handler) {
       app.registerJavaScript("/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js", true);
     }
@@ -159,17 +133,9 @@ Next we will add a Java server-side route and update our JavaScript extension to
 We need to create a new Java class that extends `com.v5analytics.webster.ParameterizedHandler`
 as shown below.
 
-##### NEW `plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialEventPost.java`
+##### NEW [`plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialEventPost.java`](https://github.com/v5analytics/visallo-tutorial/blob/web-route/plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialEventPost.java)
 
 ```java
-package com.visalloexample.helloworld.web;
-
-import com.v5analytics.webster.ParameterizedHandler;
-import com.v5analytics.webster.annotations.Handle;
-import com.v5analytics.webster.annotations.Required;
-import org.visallo.web.clientapi.model.ClientApiObject;
-import org.visallo.web.clientapi.model.ClientApiSuccess;
-
 public class TutorialEventPost implements ParameterizedHandler {
     @Handle
     public ClientApiObject handle(
@@ -187,7 +153,7 @@ wihout impacting user interface performance we use a web worker service.
 Create a new JavaScript file defining a `tutorialService` with a
 `tutorialEvent` function as follows.
 
-##### NEW `plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialServiceWebWorker.js`
+##### NEW [`plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialServiceWebWorker.js`](https://github.com/v5analytics/visallo-tutorial/blob/web-route/plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialServiceWebWorker.js)
 
 ```javascript
 define('data/web-worker/services/tutorialService', [
@@ -207,24 +173,10 @@ Edit the first Java file as show below, adding two lines.
 The first to register the new web worker JavaScript file.
 The second to register the new Java file to service HTTP `POST` requests to `/tutorialEvent`.
 
-##### EDIT `plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`
+##### EDIT [`plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java`](https://github.com/v5analytics/visallo-tutorial/blob/web-route/plugins/web/src/main/java/com/visalloexample/helloworld/web/TutorialWebAppPlugin.java)
 
 ```java
-package com.visalloexample.helloworld.web;
-
-import com.v5analytics.webster.Handler;
-import org.visallo.core.model.Description;
-import org.visallo.core.model.Name;
-import org.visallo.web.VisalloCsrfHandler;
-import org.visallo.web.WebApp;
-import org.visallo.web.WebAppPlugin;
-
-import javax.servlet.ServletContext;
-
-@Name("Tutorial Web App Plugin")
-@Description("http://docs.visallo.org/development/tutorials/web-plugin.html")
 public class TutorialWebAppPlugin implements WebAppPlugin {
-    @Override
     public void init(WebApp app, ServletContext servletContext, Handler handler) {
       app.registerJavaScript("/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js", true);
       app.registerWebWorkerJavaScript("/com/visalloexample/helloworld/web/tutorialServiceWebWorker.js");
@@ -236,7 +188,7 @@ public class TutorialWebAppPlugin implements WebAppPlugin {
 Edit the first JavaScript file to do more than log that the JavaScript
 event fired. Add code to use the new web worker service as shown below.
 
-##### EDIT `plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js`
+##### EDIT [`plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js`](https://github.com/v5analytics/visallo-tutorial/blob/web-route/plugins/web/src/main/resources/com/visalloexample/helloworld/web/tutorialVertexMenuEvent.js)
 
 ```javascript
 require([
