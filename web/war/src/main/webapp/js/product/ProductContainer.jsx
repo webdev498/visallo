@@ -34,9 +34,9 @@ define([
             })
 
             return {
-                onCreateGraph: () => { dispatch(productActions.tempCreateGraph) },
-                onDeleteProduct: (productId) => { dispatch(productActions.deleteProduct(productId)) },
-                onSelectProduct: (productId) => { openProductDetail(); dispatch(productActions.selectProduct(productId)) }
+                onCreateGraph: () => { dispatch(productActions.create('A new Empty Graph', 'org.visallo.web.product.graph.GraphWorkProduct')) },
+                onDeleteProduct: (productId) => { dispatch(productActions.delete(productId)) },
+                onSelectProduct: (productId) => { openProductDetail(); dispatch(productActions.select(productId)) }
             }
         }
 

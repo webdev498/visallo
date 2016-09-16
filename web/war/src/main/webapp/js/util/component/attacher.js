@@ -1,10 +1,12 @@
 define([
     'react-dom',
     'react',
+    'react-redux',
     'util/promise'
 ], function(
     ReactDOM,
     React,
+    { Provider },
     Promise) {
     'use strict';
 
@@ -58,7 +60,6 @@ define([
             })
             .spread(function(Component, api, store) {
                 params.visalloApi = api;
-                params.store = store
 
                 if (options && options.teardown) {
                     self.teardown();
@@ -68,8 +69,9 @@ define([
                 }
                 if (isReact(Component)) {
                     var reactElement = React.createElement(Component, _.extend(params, self._behavior));
-                    ReactDOM.render(reactElement, self._node);
-                    self._reactElement = reactElement;
+                    var provider = React.createElement(Provider, { store }, reactElement);
+                    ReactDOM.render(provider, self._node);
+                    self._reactElement = provider;
                 } else {
                     var addedEvents = addLegacyListeners(self._node, self._behavior, self._legacyMapping);
                     Component.attachTo(self._node, params);

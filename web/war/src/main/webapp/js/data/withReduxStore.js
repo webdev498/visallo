@@ -46,7 +46,6 @@ define([
                 case 'STATE_APPLY_DIFF': return applyDiff(state, payload);
             }
 
-            console.warn('Unknown action type: ' + type, 'action:', action)
             return state;
         }
     }

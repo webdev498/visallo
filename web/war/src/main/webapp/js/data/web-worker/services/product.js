@@ -1,4 +1,4 @@
-define(['../util/ajax', '../store', '../store/product/actions'], function(ajax, store, actions) {
+define(['../util/ajax', '../store'], function(ajax, store) {
     'use strict';
     return {
 
@@ -6,10 +6,10 @@ define(['../util/ajax', '../store', '../store/product/actions'], function(ajax, 
             return ajax('GET', '/product/all')
         },
 
-        createGraph() {
+        create(kind) {
             return ajax('POST', '/product', {
                 title: 'My Created Graph: ' + new Date(),
-                kind: 'org.visallo.web.product.graph.GraphWorkProduct'
+                kind
             })
         },
 
@@ -17,7 +17,7 @@ define(['../util/ajax', '../store', '../store/product/actions'], function(ajax, 
             return ajax('DELETE', '/product', { productId })
         },
 
-        getProduct(productId, includeExtended) {
+        get(productId, includeExtended) {
             return ajax('GET', '/product', { productId, includeExtended })
         }
     }

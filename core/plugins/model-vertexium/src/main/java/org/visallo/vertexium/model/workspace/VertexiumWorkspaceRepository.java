@@ -921,7 +921,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
     }
 
     @Override
-    public String addOrUpdateProduct(String workspaceId, String productId, String title, String kind, JSONObject params, User user) {
+    public Product addOrUpdateProduct(String workspaceId, String productId, String title, String kind, JSONObject params, User user) {
         LOGGER.debug(
                 "addOrUpdateProduct(workspaceId: %s, productId: %s, userId: %s)",
                 workspaceId,
@@ -976,7 +976,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         ClientApiWorkspace userWorkspace = toClientApi(ws, user, false, authorizations);
         getWorkQueueRepository().broadcastWorkProductChange(productVertex.getId(), userWorkspace);
 
-        return productVertex.getId();
+        return productVertexToProduct(workspaceId, productVertex, authorizations, null);
     }
 
     public void deleteProduct(String workspaceId, String productId, User user) {

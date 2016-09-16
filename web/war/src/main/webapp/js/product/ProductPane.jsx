@@ -7,15 +7,20 @@ define([
         render() {
             const { items, loading, error, selected } = this.props.product;
 
-            var itemElements = items.map(item => (
-                <div onClick={this.props.onSelectProduct.bind(null, item.id)} key={item.id}>
-                    <p>{item.title} {item.kind}</p>
-                    {selected === item.id ? 'selected' : ''}
-                    <pre>
-                        {JSON.stringify(item.data, null, 2)}
-                    </pre>
-                </div>
-            ))
+            var itemElements = items.map(item => {
+                var isSelected = selected === item.id;
+                var style = {
+                    padding: '0.5em',
+                    background: isSelected ? '#0088cc' : 'inherit',
+                    color: isSelected ? 'white' : 'inherit'
+                }
+                return (
+                    <div onClick={this.props.onSelectProduct.bind(null, item.id)} key={item.id}>
+                        <button style={{float: 'right', marginTop: '0.3em'}} onClick={this.props.onDeleteProduct.bind(null, item.id)}>DELETE</button>
+                        <p style={style}>{item.title}<br/><i>{item.id}</i></p>
+                    </div>
+                )
+            })
             var content =
                 loading ? (<p>Loading...</p>) :
                 itemElements.length ? itemElements :

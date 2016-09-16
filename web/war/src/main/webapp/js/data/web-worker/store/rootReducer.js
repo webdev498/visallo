@@ -7,7 +7,8 @@ define([
     './dashboard/reducer',
     './product/reducer',
     './workspace/reducer',
-    './user/reducer'
+    './user/reducer',
+    './selection/reducer'
 
     // Add reducers above, the name of the function will be used as the key
 ], function(registry, redux, ...reducers) {
@@ -22,8 +23,4 @@ define([
     );
 
     return reducerMap;
-    //function(state, action) {
-        //console.log(action.type)
-        //return reducerMap.apply(null, arguments);
-    //};
 });

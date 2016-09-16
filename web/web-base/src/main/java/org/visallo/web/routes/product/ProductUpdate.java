@@ -6,8 +6,10 @@ import com.v5analytics.webster.annotations.Handle;
 import com.v5analytics.webster.annotations.Optional;
 import org.json.JSONObject;
 import org.visallo.core.model.workspace.WorkspaceRepository;
+import org.visallo.core.model.workspace.product.Product;
 import org.visallo.core.user.User;
-import org.visallo.web.clientapi.model.ClientApiProductUpdateResponse;
+import org.visallo.core.util.ClientApiConverter;
+import org.visallo.web.clientapi.model.ClientApiProduct;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 
 public class ProductUpdate implements ParameterizedHandler {
@@ -19,7 +21,7 @@ public class ProductUpdate implements ParameterizedHandler {
     }
 
     @Handle
-    public ClientApiProductUpdateResponse handle(
+    public ClientApiProduct handle(
             @Optional(name = "productId") String productId,
             @Optional(name = "title") String title,
             @Optional(name = "kind") String kind,
@@ -33,7 +35,7 @@ public class ProductUpdate implements ParameterizedHandler {
         } else {
             params = new JSONObject(paramsStr);
         }
-        productId = workspaceRepository.addOrUpdateProduct(workspaceId, productId, title, kind, params, user);
-        return new ClientApiProductUpdateResponse(productId);
+        Product product = workspaceRepository.addOrUpdateProduct(workspaceId, productId, title, kind, params, user);
+        return ClientApiConverter.toClientApiProduct(product);
     }
 }

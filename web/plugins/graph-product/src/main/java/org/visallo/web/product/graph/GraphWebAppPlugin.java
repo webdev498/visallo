@@ -11,6 +11,8 @@ public class GraphWebAppPlugin implements WebAppPlugin {
     public void init(WebApp app, ServletContext servletContext, Handler authenticationHandler) {
 
         app.registerJavaScript("/org/visallo/web/product/graph/plugin.js");
+        app.registerJavaScriptComponent("/org/visallo/web/product/graph/GraphContainer.jsx");
         app.registerJavaScriptComponent("/org/visallo/web/product/graph/Graph.jsx");
+        app.registerJavaScriptComponent("/org/visallo/web/product/graph/Cytoscape.jsx");
     }
 }

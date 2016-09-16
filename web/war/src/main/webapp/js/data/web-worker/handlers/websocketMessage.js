@@ -31,13 +31,13 @@ define([
                 });
             },
             workProductChange: function(data) {
-                require(['../store/product/actions'], function(actions) {
-                    store.getStore().dispatch(actions.getProduct(data.id))
+                require(['../store/product/actions-impl'], function(actions) {
+                    store.getStore().dispatch(actions.get.bind(null, { productId: data.id, invalidate: true }))
                 })
             },
             workProductDelete: function(data) {
-                require(['../store/product/actions'], function(actions) {
-                    store.getStore().dispatch(actions.removeProduct(data.id))
+                require(['../store/product/actions-impl'], function(actions) {
+                    store.getStore().dispatch(actions.remove({ productId: data.id }))
                 })
             },
             sessionExpiration: function(data) {

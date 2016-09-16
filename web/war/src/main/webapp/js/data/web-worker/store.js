@@ -8,8 +8,11 @@
         './store/rootReducer',
 
         // Middleware
+        './store/middleware/actionRouter',
+        './store/middleware/thunk',
+        './store/middleware/promise',
         './store/middleware/dataRequest',
-        './store/middleware/promise'
+        './store/middleware/logger'
     ], function(registry, jsonpatch, redux, rootReducer, ...middleware) {
         var store;
 

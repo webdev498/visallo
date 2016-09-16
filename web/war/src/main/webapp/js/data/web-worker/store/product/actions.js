@@ -1,45 +1,14 @@
-define([], {
-    list: {
-        type: 'dataRequest',
-        payload: {
-            service: 'product',
-            name: 'list'
+define(['../actions'], function(actions) {
+    actions.protectFromWorker();
+
+    return actions.createActions({
+        workerImpl: 'data/web-worker/store/product/actions-impl',
+        actions: {
+            list: null,
+            get: (productId) => ({ productId }),
+            create: (title, kind, params) => ({ title, kind, params }),
+            select: (productId) => ({ productId }),
+            delete: (productId) => ({ productId })
         }
-    },
-
-    tempCreateGraph: {
-        type: 'dataRequest',
-        payload: {
-            service: 'product',
-            name: 'createGraph'
-        }
-    },
-
-    deleteProduct: (productId) => ({
-        type: 'dataRequest',
-        payload: {
-            service: 'product',
-            name: 'deleteProduct',
-            params: [productId]
-        }
-    }),
-
-    removeProduct: (productId) => ({
-        type: 'removeProduct',
-        payload: { productId }
-    }),
-
-    getProduct: (productId, includeExtended) => ({
-        type: 'dataRequest',
-        payload: {
-            service: 'product',
-            name: 'getProduct',
-            params: [productId, includeExtended]
-        }
-    }),
-
-    selectProduct: (productId) => ({
-        type: 'selectProduct',
-        payload: { productId }
     })
 })

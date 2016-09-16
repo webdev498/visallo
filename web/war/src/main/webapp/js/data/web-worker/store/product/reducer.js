@@ -11,9 +11,10 @@ define([], function() {
 
             case 'product_getProduct_dataRequestSuccess': return { ...state, items: updateOrAddItem(state.items, payload.result) }
 
-            case 'removeProduct': return { ...state, items: removeItem(state.items, payload.productId) }
 
-            case 'selectProduct': return { ...state, selected: payload.productId }
+            case 'PRODUCT_SELECT': return { ...state, selected: payload.productId }
+            case 'PRODUCT_UPDATE': return { ...state, items: updateOrAddItem(state.items, payload.product) }
+            case 'PRODUCT_REMOVE': return { ...state, items: removeItem(state.items, payload.productId) }
         }
         return state;
     }
@@ -22,7 +23,15 @@ define([], function() {
         return _.sortBy(products, 'title')
     }
 
+    function hydrateExtendedData(item) {
+        if (item.extendedData && _.isString(item.extendedData)) {
+            return { ...item, extendedData: JSON.parse(item.extendedData) };
+        }
+        return item;
+    }
+
     function updateOrAddItem(list, item) {
+        item = hydrateExtendedData(item);
         var updated = false,
             items = list.map(i => {
                 if (i.id === item.id) {
