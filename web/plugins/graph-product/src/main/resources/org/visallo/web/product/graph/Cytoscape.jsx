@@ -7,62 +7,85 @@ define([
     cytoscape,
     jsonpatch) {
 
-    const events = {
+    const ANIMATION = { duration: 400, easing: 'spring(250, 20)' };
+    const EVENTS = {
         drag: 'onDrag',
+        free: 'onFree',
+        grab: 'onGrab',
+        position: 'onPosition',
         tap: 'onTap',
         pan: 'onPan',
+        zoom: 'onZoom',
         change: 'onChange',
         select: 'onSelect',
         unselect: 'onUnselect'
     };
 
+    const isEdge = data => (data.source !== undefined)
+    const isNode = _.negate(isEdge)
+
     const Cytoscape = React.createClass({
+
         getDefaultProps() {
-            const eventProps = _.mapObject(_.invert(events), () => () => {})
+            const eventProps = _.mapObject(_.invert(EVENTS), () => () => {})
             return {
                 ...eventProps,
                 onReady() {},
+                fit: false,
                 config: {},
                 elements: { nodes: [], edges: [] },
             }
         },
+
         componentDidMount() {
-            this.setState({ cy: this.createCy() })
+            const cy = cytoscape(this.prepareConfig());
+            const stop = _.debounce(() => { this.userIsChangingViewport = false }, 50);
+            cy.on('zoom pan', () => {
+                cy.stop(true);
+                this.userIsChangingViewport = true;
+                stop();
+            })
+            this.setState({ cy })
         },
+
         componentWillUnmount() {
             if (this.state.cy) {
                 this.state.cy.destroy();
             }
         },
+
         componentDidUpdate() {
             const { cy } = this.state;
             const newData = {elements: this.props.elements}
             const oldData = cy.json()
-
             const getAllData = nodes => nodes.map(({data, selected, position}) => ({
                 data,
                 selected,
                 position
             }))
-
             const getTypeData = elementType => [oldData, newData].map(n => getAllData(n.elements[elementType] || []) )
             const [oldNodes, newNodes] = getTypeData('nodes')
             const [oldEdges, newEdges] = getTypeData('edges')
+
+            if (this.previousConfig) {
+                this.updateConfiguration(this.previousConfig, this.props.config);
+            }
+            this.previousConfig = this.props.config
 
             cy.batch(() => {
                 this.makeChanges(oldNodes, newNodes)
                 this.makeChanges(oldEdges, newEdges)
             })
         },
+
         prepareConfig() {
             const defaults = {
                 container: this.refs.cytoscape,
                 boxSelectionEnabled: true,
                 ready: (event) => {
                     var { cy } = event,
-                        eventMap = _.mapObject(events, (name, key) => (e) => {
+                        eventMap = _.mapObject(EVENTS, (name, key) => (e) => {
                             if (this[key + 'Disabled'] !== true) {
-                                console.log(key, name)
                                 this.props[name](e)
                             }
                         });
@@ -72,14 +95,12 @@ define([
             }
             var { config } = this.props;
             if (config) {
+                console.log(config)
                 return { ...defaults, ...config }
             }
             return defaults;
         },
-        createCy() {
-            const config = this.prepareConfig()
-            return cytoscape(config)
-        },
+
         render() {
             return (
                 <div style={{height: '100%'}} ref="cytoscape"></div>
@@ -93,55 +114,30 @@ define([
             names.forEach(name => (this[name + 'Disabled'] = false))
         },
 
-        /*
-        cytoChange(older, newer, change) {
-            const cy = cytoscapeGraph;
-            const { op, path, value } = change;
-            const pathParts = _.compact(path.replace(/^\//, '').split('/'))
-            const actions = {
-                replace: () => {
-                    const index = parseInt(pathParts[0])
-                    const element = newer[index];
-                    const el = cy.getElementById(element.data.id);
-                    if (pathParts[1] === 'data') {
-                        if (pathParts[2] === 'id') {
-                            cy.remove(cy.getElementById(older[index].data.id))
-                        } else {
-                            el.removeData()
-                            el.data(element.data)
-                        }
-                    } else if (pathParts[1] === 'selected') {
-                        if (el.selected() !== element.selected) {
-                            this.disableEvent('select unselect', () => el[element.selected ? 'select' : 'unselect']());
-                        }
-                    } else if (pathParts[1] === 'position') {
-                        el.position(element.position);
-                    }
-                },
-                remove: () => {
-                    const index = parseInt(pathParts[0])
-                    const element = older[index];
-                    const el = cy.getElementById(element.data.id);
-                    if (el.length && !el.removed()) {
-                        cy.remove(el)
-                    }
-                },
-                add: () => {
-                    const { data, selected, position, id } = value
-                    if (isNode(data)) {
-                        cy.add({
-                            group:'nodes',
-                            data,
-                            selected,
-                            position
-                        })
-                    } else if (isEdge(data)) {
-                        cy.add({ group:'edges', data, selected })
-                    }
+        updateConfiguration(previous, { style, pan, zoom, ...other }) {
+            const { cy } = this.state
+            _.each(other, (val, key) => {
+                if (!(key in previous) || previous[key] !== val) {
+                    if (_.isFunction(cy[key])) {
+                        cy[key](val)
+                    } else console.warn('Unknown configuration key', key, val)
                 }
-            }[op]();
+            })
+
+            this.disableEvent('pan zoom', () => {
+                const eq = (a, b) => Math.abs(b - a) <= 0.001;
+                var { x, y } = previous.pan
+                if (!eq(x, pan.x) || !eq(y, pan.y) || !eq(previous.zoom, zoom)) {
+                    if (this.userIsChangingViewport) {
+                        console.log('setting', pan, zoom)
+                        cy.viewport(zoom, pan)
+                    } else {
+                        cy.stop(true);
+                        cy.animate({ pan, zoom }, { ...ANIMATION, queue: false })
+                    }
+                } else console.log('same viewport')
+            });
         },
-        */
 
         makeChanges(older, newer) {
             const cy = this.state.cy
@@ -162,8 +158,6 @@ define([
                 }
             })
 
-            console.log('add', add, 'remove', remove, 'modify', modify)
-
             modify.forEach(({ item, diffs }) => {
                 const topLevelChanges = _.indexBy(diffs, d => d.path.replace(/^\/([^\/]+).*$/, '$1'))
                 Object.keys(topLevelChanges).forEach(change => {
@@ -180,7 +174,7 @@ define([
                             }
                             break;
                         case 'position':
-                            cyNode.position(item.position)
+                            cyNode.animate({ position: item.position }, ANIMATION)
                             break;
                         default:
                             throw new Error('Change not handled: ' + change)
@@ -202,31 +196,8 @@ define([
                     cy.remove(cyNode)
                 }
             })
-
-
-            /*
-            if (diff) {
-                const byOperation = _.groupBy(diff, 'op');
-                const process = this.cytoChange.bind(this, older, newer)
-
-                cytoscapeGraph.batch(() => {
-                    if (byOperation.replace) {
-                        byOperation.replace.forEach(process)
-                    }
-                    if (byOperation.add) {
-                        byOperation.add.forEach(process)
-                    }
-                    if (byOperation.remove) {
-                        byOperation.remove.forEach(process)
-                    }
-                })
-            }
-            */
         }
     })
-
-    const isEdge = data => (data.source !== undefined)
-    const isNode = _.negate(isEdge)
 
     return Cytoscape;
 })

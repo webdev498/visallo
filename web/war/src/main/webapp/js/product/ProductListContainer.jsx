@@ -1,9 +1,9 @@
 define([
     'react',
     'react-redux',
-    './ProductPane',
+    './ProductList',
     'data/web-worker/store/product/actions'
-], function(React, redux, ProductPane, productActions) {
+], function(React, redux, ProductList, productActions) {
     'use strict';
 
     var requestProducts = _.once(function(dispatch) {
@@ -40,5 +40,5 @@ define([
             }
         }
 
-    )(ProductPane);
+    )(ProductList);
 });

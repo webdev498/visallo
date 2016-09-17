@@ -8,7 +8,9 @@ define(['../actions'], function(actions) {
             get: (productId) => ({ productId }),
             create: (title, kind, params) => ({ title, kind, params }),
             select: (productId) => ({ productId }),
-            delete: (productId) => ({ productId })
+            delete: (productId) => ({ productId }),
+            updatePositions: (productId, updateVertices) => ({ productId, updateVertices }),
+            updateViewport: (productId, { pan, zoom }) => ({ productId, pan, zoom })
         }
     })
 })

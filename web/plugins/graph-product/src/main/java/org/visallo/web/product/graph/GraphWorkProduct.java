@@ -11,51 +11,31 @@ import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 public class GraphWorkProduct implements WorkProduct {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(GraphWorkProduct.class);
     public static final String WORKSPACE_PRODUCT_TO_ENTITY_RELATIONSHIP_IRI = "http://visallo.org/workspace/product#toEntity";
     public static final String EDGE_POSITION = "http://visallo.org/workspace/product#entityPosition";
 
-
-    public GraphWorkProduct() {
-        LOGGER.info("Created graph work product");
-    }
-
     @Override
     public void update(JSONObject params, Graph graph, Vertex workspaceVertex, VertexBuilder vertexBuilder, User user, Visibility visibility, Authorizations authorizations) {
-        JSONArray addVertices = params.optJSONArray("addVertices");
-        if (addVertices != null) {
-            String productId = vertexBuilder.getVertexId();
-            JSONUtil.toList(addVertices).stream().forEach(vertexId ->  graph.addEdge(
-                productId + "_hasVertex_" + vertexId,
-                productId,
-                (String) vertexId,
-                WORKSPACE_PRODUCT_TO_ENTITY_RELATIONSHIP_IRI,
-                vertexBuilder.getVisibility(),
-                authorizations
-            ));
-        }
-
-        JSONArray updateVertices = params.optJSONArray("updateVertices");
+        JSONObject updateVertices = params.optJSONObject("updateVertices");
         if (updateVertices != null) {
             Vertex productVertex = graph.getVertex(vertexBuilder.getVertexId(), authorizations);
-            List<EdgeInfo> edgeInfos = Lists.newArrayList(
-                productVertex.getEdgeInfos(Direction.OUT, WORKSPACE_PRODUCT_TO_ENTITY_RELATIONSHIP_IRI, authorizations)
-            );
-            JSONUtil.toList(updateVertices).stream().forEach(update -> {
-                Map<String, Object> updateObj = (Map) update;
-                String id = (String) updateObj.get("id");
-                List<Integer> position = (List) updateObj.get("pos");
-                EdgeInfo found = edgeInfos.stream().filter(edgeInfo -> edgeInfo.getVertexId().equals(id)).findFirst().get();
-
-                EdgeBuilderByVertexId edgeBuilder = graph.prepareEdge(found.getEdgeId(), productVertex.getId(), found.getVertexId(), found.getLabel(), visibility);
+            List<String> vertexIds = Lists.newArrayList(updateVertices.keys());
+            for (String id : vertexIds) {
+                JSONObject position = updateVertices.getJSONObject(id);
+                String edgeId = getEdgeId(productVertex.getId(), id);
+                EdgeBuilderByVertexId edgeBuilder = graph.prepareEdge(edgeId, productVertex.getId(), id, WORKSPACE_PRODUCT_TO_ENTITY_RELATIONSHIP_IRI, visibility);
                 edgeBuilder.setProperty(EDGE_POSITION, position.toString(), visibility);
-
                 edgeBuilder.save(authorizations);
+            }
+        }
+        JSONArray removeVertices = params.optJSONArray("removeVertices");
+        if (removeVertices != null) {
+            JSONUtil.toList(removeVertices).stream().forEach(id -> {
+                graph.softDeleteEdge(getEdgeId(vertexBuilder.getVertexId(), (String) id), authorizations);
             });
-
         }
     }
 
@@ -80,11 +60,23 @@ public class GraphWorkProduct implements WorkProduct {
                     if (includeVertices) {
                         JSONObject vertex = new JSONObject();
                         vertex.put("id", other);
-                        String position = (String) propertyVertexEdge.getPropertyValue(EDGE_POSITION);
-                        if (position == null) {
-                            position = "[0,0]";
+                        String positionStr = (String) propertyVertexEdge.getPropertyValue(EDGE_POSITION);
+                        JSONObject position;
+                        if (positionStr == null) {
+                            position = new JSONObject();
+                            position.put("x", 0);
+                            position.put("y", 0);
+                        } else {
+                            if (positionStr.startsWith("[")) {
+                                JSONArray legacy = new JSONArray(positionStr);
+                                position = new JSONObject();
+                                position.put("x", legacy.get(0));
+                                position.put("y", legacy.get(1));
+                            } else {
+                                position = new JSONObject(positionStr);
+                            }
                         }
-                        vertex.put("pos", new JSONArray(position));
+                        vertex.put("pos", position);
                         vertices.put(vertex);
                     }
                 }
@@ -108,5 +100,9 @@ public class GraphWorkProduct implements WorkProduct {
         }
 
         return extendedData;
+    }
+
+    private String getEdgeId(String productId, String vertexId) {
+        return productId + "_hasVertex_" + vertexId;
     }
 }

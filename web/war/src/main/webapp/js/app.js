@@ -8,7 +8,7 @@ define([
     'workspaces/workspaces',
     'workspaces/overlay',
     'workspaces/timeline',
-    'product/ProductContainer',
+    'product/ProductListContainer',
     'admin/admin',
     'activity/activity',
     'graph/graph',
@@ -17,6 +17,7 @@ define([
     'help/help',
     'react',
     'react-dom',
+    'react-redux',
     'configuration/plugins/registry',
     'util/component/attacher',
     'util/mouseOverlay',
@@ -34,7 +35,7 @@ define([
     Workspaces,
     WorkspaceOverlay,
     WorkspaceTimeline,
-    ProductContainer,
+    ProductListContainer,
     Admin,
     Activity,
     Graph,
@@ -43,6 +44,7 @@ define([
     Help,
     React,
     ReactDom,
+    redux,
     registry,
     attacher,
     MouseOverlay,
@@ -228,7 +230,7 @@ define([
             Detail.attachTo(detailPane.find('.content'));
             Help.attachTo(helpDialog);
 
-            this.attachReactComponentWithStore(ProductContainer, productsPane.find('.content'));
+            this.attachReactComponentWithStore(ProductListContainer, {}, productsPane.find('.content'));
 
             this.$node.html(content);
 
@@ -295,10 +297,13 @@ define([
             this.trigger('loadCurrentWorkspace');
         };
 
-        this.attachReactComponentWithStore = function(Comp, div) {
+        this.attachReactComponentWithStore = function(Comp, props, div) {
             return visalloData.storePromise.then(function(store) {
-                var node = _.isFunction(div.get) ? div.get(0) : div;
-                ReactDom.render(React.createElement(Comp, { store: store }), node);
+                var component = React.createElement(Comp, props || {}),
+                    provider = React.createElement(redux.Provider, { store }, component),
+                    node = _.isFunction(div.get) ? div.get(0) : div;
+
+                ReactDom.render(provider, node);
             })
         };
 

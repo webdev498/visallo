@@ -2,7 +2,7 @@ define([], function() {
     'use strict';
 
     return function product(state, { type, payload }) {
-        if (!state) return { loading: false, items: [], error: null };
+        if (!state) return { loading: false, items: [], viewports: {}, error: null };
 
         switch (type) {
             case 'product_list_dataRequestLoading': return { ...state, loading: true }
@@ -15,6 +15,8 @@ define([], function() {
             case 'PRODUCT_SELECT': return { ...state, selected: payload.productId }
             case 'PRODUCT_UPDATE': return { ...state, items: updateOrAddItem(state.items, payload.product) }
             case 'PRODUCT_REMOVE': return { ...state, items: removeItem(state.items, payload.productId) }
+
+            case 'PRODUCT_UPDATE_VIEWPORT': return { ...state, viewports: updateItemViewport(state.viewports, payload) }
         }
         return state;
     }
@@ -47,5 +49,21 @@ define([], function() {
 
     function removeItem(list, id) {
         return _.reject(list, (item) => item.id === id)
+    }
+
+    function updateItemViewport(viewports, { productId, ...viewport }) {
+        var existingViewport = viewports[productId];
+
+        if (existingViewport) {
+            const eq = (a, b) => Math.abs(b - a) <= 0.001;
+            const { x, y } = existingViewport
+            if (eq(x, viewport.x) && eq(y, viewport.y)) {
+                return viewports
+            }
+        }
+
+        var newV = { ...viewports, [productId]: viewport };
+        console.log('updated', newV);
+        return newV
     }
 });

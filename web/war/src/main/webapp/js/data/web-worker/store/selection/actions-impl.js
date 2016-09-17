@@ -2,14 +2,14 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
     actions.protectFromMain();
 
     return {
-        add: ({ ids }) => ({
+        add: ({ selection }) => ({
             type: 'SELECTION_ADD',
-            payload: { ids }
+            payload: { selection }
         }),
 
-        remove: ({ ids }) => ({
+        remove: ({ selection }) => ({
             type: 'SELECTION_REMOVE',
-            payload: { ids }
+            payload: { selection }
         }),
 
         clear: () => ({ type: 'SELECTION_CLEAR' })

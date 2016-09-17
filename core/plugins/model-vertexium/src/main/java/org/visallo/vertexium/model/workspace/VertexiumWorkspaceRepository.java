@@ -935,6 +935,9 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
                     workspaceId
             );
         }
+        if (kind == null) {
+            throw new VisalloException("Work product kind must not be null");
+        }
         Vertex workspaceVertex = getVertex(workspaceId, user);
         Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
                 user,
@@ -949,8 +952,12 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
                 WorkspaceProperties.PRODUCT_CONCEPT_IRI,
                 getVisibilityTranslator().getDefaultVisibility()
         );
-        WorkspaceProperties.TITLE.setProperty(productVertexBuilder, title == null ? "" : title, visibility);
-        WorkspaceProperties.PRODUCT_KIND.setProperty(productVertexBuilder, kind == null ? "" : kind, visibility);
+        if (productId == null || title != null) {
+            WorkspaceProperties.TITLE.setProperty(productVertexBuilder, title == null ? "" : title, visibility);
+        }
+        if (productId == null) {
+            WorkspaceProperties.PRODUCT_KIND.setProperty(productVertexBuilder, kind, visibility);
+        }
 
         WorkProduct workProduct = getWorkProductByKind(kind);
         if (params == null) {

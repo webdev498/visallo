@@ -7,8 +7,9 @@
  */
 define(['../actions'], function(actions) {
     return ({ getState }) => (next) => (action) => {
-        var { type, payload, meta } = action;
+        if (_.isFunction(action)) return next(action);
 
+        var { type, payload, meta } = action;
         if (type === 'ROUTE_TO_WORKER_ACTION' && meta) {
 
             var { workerImpl, name } = meta;
@@ -18,7 +19,7 @@ define(['../actions'], function(actions) {
                     if (name in worker) {
                         var impl = worker[name];
                         if (_.isFunction(impl)) {
-                            var result = impl(payload, getState);
+                            var result = impl(payload);
                             if (result) {
                                 next(result)
                             }

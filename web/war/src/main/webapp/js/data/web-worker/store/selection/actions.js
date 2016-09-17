@@ -4,8 +4,8 @@ define(['../actions'], function(actions) {
     return actions.createActions({
         workerImpl: 'data/web-worker/store/selection/actions-impl',
         actions: {
-            add: (ids) => Array.isArray(ids) ? { ids } : { ids: [ids] },
-            remove: (ids) => Array.isArray(ids) ? { ids } : { ids: [ids] },
+            add: (selection) => ({ selection }),
+            remove: (selection) => ({ selection }),
             clear: null
         }
     })

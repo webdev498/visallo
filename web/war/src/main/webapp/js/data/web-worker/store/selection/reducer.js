@@ -2,35 +2,59 @@ define([], function() {
     'use strict';
 
     return function selection(state, { type, payload }) {
-        if (!state) return { ids: [] };
+        if (!state) return { idsByType: { vertices: [], edges: [] } };
 
         switch (type) {
-            case 'SELECTION_ADD': return { ...state, ids: add(state.ids, payload) };
-            case 'SELECTION_REMOVE': return { ...state, ids: remove(state.ids, payload) };
-
-            case 'SELECTION_CLEAR': return { ...state, ids: clear(state.ids) }
+            case 'SELECTION_ADD': return { ...state, idsByType: add(state.idsByType, payload) };
+            case 'SELECTION_REMOVE': return { ...state, idsByType: remove(state.idsByType, payload) };
+            case 'SELECTION_CLEAR': return { ...state, idsByType: clear(state.idsByType) }
         }
 
         return state
     }
 
 
-    function add(list, { ids }) {
-        if (_.any(ids, id => !list.includes(id))) {
-            return _.unique(list.concat(ids)).sort()
-        }
-        return list;
+    function add(previous, { selection }) {
+        return _update(previous, selection,
+            (previousIds) => id => !previousIds.includes(id),
+            (previousIds, list) => _.unique([...list, ...previousIds]).sort()
+        );
     }
 
-    function remove(list, { ids }) {
-        if (_.any(ids, id => list.includes(id))) {
-            return _.without(list, ...ids)
-        }
-        return list;
+    function remove(previous, { selection }) {
+        return _update(previous, selection,
+            (previousIds) => id => previousIds.includes(id),
+            (previousIds, list) => _.without(previousIds, ...list)
+        );
     }
 
-    function clear(list) {
-        return list.length === 0 ? list : [];
+    function _update(previous, selection, predicate, action) {
+        console.log('update', selection)
+        var changed = false,
+            updated = _.mapObject(previous, function(previousIds, type) {
+                var list = selection[type];
+                if (list && _.any(list, predicate(previousIds))) {
+                    changed = true
+                    return action(previousIds, list)
+                }
+                return previousIds
+            })
+
+        console.log('changed?', changed, updated, previous)
+        return changed ? updated : previous
+    }
+
+    function clear(previous) {
+        var changed = false,
+            updated = _.mapObject(previous, function(ids, type) {
+                if (ids.length) {
+                    changed = true
+                    return [];
+                }
+                return ids
+            })
+
+        return changed ? updated : previous
     }
 
 })
