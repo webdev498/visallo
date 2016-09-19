@@ -1,3 +1,5 @@
+(function() {
+    'use strict';
 define([
     'react-dom',
     'react',
@@ -8,7 +10,6 @@ define([
     React,
     { Provider },
     Promise) {
-    'use strict';
 
     var API_VERSIONS = ['v1'],
         cachedApiVersions = null;
@@ -143,4 +144,4 @@ define([
         }
     }
 });
-
+})();
