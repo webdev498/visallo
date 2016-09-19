@@ -13,7 +13,6 @@ define([
             var viewport = state.product.viewports[props.product.id] || { zoom: 1, pan: {x: 0, y: 0 }},
                 selection = state.selection.idsByType;
 
-            console.log(props.product.title, props.product.id, viewport)
             return { ...props, selection, viewport }
         },
 

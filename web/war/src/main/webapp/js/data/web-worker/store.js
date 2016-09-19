@@ -32,21 +32,22 @@
         // Send worker state changes to main thread as JSON-patches
         function stateChanged(initialState) {
             var previousState = initialState;
-            return () => {
-                var newState = store.getState(),
-                    diff = jsonpatch.compare(previousState, newState);
-
-                previousState = newState;
-                if (diff) {
-                    dispatchMain('reduxStoreAction', {
-                        action: {
-                            type: 'STATE_APPLY_DIFF',
-                            payload: diff,
-                            meta: {
-                                originator: 'webworker'
+            return function storeSubscription() {
+                var newState = store.getState();
+                if (newState !== previousState) {
+                    var diff = jsonpatch.compare(previousState, newState);
+                    if (diff && diff.length) {
+                        previousState = newState;
+                        dispatchMain('reduxStoreAction', {
+                            action: {
+                                type: 'STATE_APPLY_DIFF',
+                                payload: diff,
+                                meta: {
+                                    originator: 'webworker'
+                                }
                             }
-                        }
-                    })
+                        })
+                    }
                 }
             }
         }

@@ -32,6 +32,7 @@ define([
                 ...eventProps,
                 onReady() {},
                 fit: false,
+                animate: true,
                 config: {},
                 elements: { nodes: [], edges: [] },
             }
@@ -40,10 +41,12 @@ define([
         componentDidMount() {
             const cy = cytoscape(this.prepareConfig());
             const stop = _.debounce(() => { this.userIsChangingViewport = false }, 50);
-            cy.on('zoom pan', () => {
-                cy.stop(true);
-                this.userIsChangingViewport = true;
-                stop();
+            cy.on('zoom pan', (event) => {
+                if (!this.zoomDisabled && !this.panDisabled) {
+                    cy.stop(true);
+                    this.userIsChangingViewport = true;
+                    stop();
+                }
             })
             this.setState({ cy })
         },
@@ -58,10 +61,11 @@ define([
             const { cy } = this.state;
             const newData = {elements: this.props.elements}
             const oldData = cy.json()
+            // Create copies of objects because cytoscape mutates :(
             const getAllData = nodes => nodes.map(({data, selected, position}) => ({
-                data,
+                data: {...data},
                 selected,
-                position
+                position: {...position}
             }))
             const getTypeData = elementType => [oldData, newData].map(n => getAllData(n.elements[elementType] || []) )
             const [oldNodes, newNodes] = getTypeData('nodes')
@@ -86,7 +90,9 @@ define([
                     var { cy } = event,
                         eventMap = _.mapObject(EVENTS, (name, key) => (e) => {
                             if (this[key + 'Disabled'] !== true) {
-                                this.props[name](e)
+                                if ((key !== 'pan' && key !== 'zoom') || !this.userIsChangingViewport) {
+                                    this.props[name](e)
+                                }
                             }
                         });
                     cy.on(eventMap)
@@ -95,7 +101,6 @@ define([
             }
             var { config } = this.props;
             if (config) {
-                console.log(config)
                 return { ...defaults, ...config }
             }
             return defaults;
@@ -124,19 +129,27 @@ define([
                 }
             })
 
-            this.disableEvent('pan zoom', () => {
-                const eq = (a, b) => Math.abs(b - a) <= 0.001;
-                var { x, y } = previous.pan
-                if (!eq(x, pan.x) || !eq(y, pan.y) || !eq(previous.zoom, zoom)) {
-                    if (this.userIsChangingViewport) {
-                        console.log('setting', pan, zoom)
-                        cy.viewport(zoom, pan)
+            const eq = (a, b) => Math.abs(b - a) <= 0.001;
+            var { x, y } = previous.pan
+            if (!eq(x, pan.x) || !eq(y, pan.y) || !eq(previous.zoom, zoom)) {
+                var newViewport = { zoom, pan: {...pan} };
+
+                if (!this.userIsChangingViewport) {
+                    if (this.props.animate) {
+                        this.panDisabled = this.zoomDisabled = true;
+                        cy.stop().animate(newViewport, {
+                            ...ANIMATION,
+                            queue: false,
+                            complete: () => {
+                                this.panDisabled = this.zoomDisabled = false;
+                            }
+                        })
+                        return true
                     } else {
-                        cy.stop(true);
-                        cy.animate({ pan, zoom }, { ...ANIMATION, queue: false })
+                        this.disableEvent('pan zoom', () => cy.viewport(newViewport));
                     }
-                } else console.log('same viewport')
-            });
+                }
+            }
         },
 
         makeChanges(older, newer) {
@@ -174,7 +187,14 @@ define([
                             }
                             break;
                         case 'position':
-                            cyNode.animate({ position: item.position }, ANIMATION)
+                            if (this.props.animate) {
+                                this.positionDisabled = true;
+                                cyNode.stop().animate({ position: item.position }, { ...ANIMATION, complete: () => {
+                                    this.positionDisabled = false;
+                                }})
+                            } else {
+                                this.disableEvent('position', () => cyNode.position(item.position))
+                            }
                             break;
                         default:
                             throw new Error('Change not handled: ' + change)

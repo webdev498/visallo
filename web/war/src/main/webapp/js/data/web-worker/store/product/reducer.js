@@ -2,7 +2,7 @@ define([], function() {
     'use strict';
 
     return function product(state, { type, payload }) {
-        if (!state) return { loading: false, items: [], viewports: {}, error: null };
+        if (!state) return { loading: false, selected: null, items: [], viewports: {}, error: null };
 
         switch (type) {
             case 'product_list_dataRequestLoading': return { ...state, loading: true }
@@ -18,6 +18,7 @@ define([], function() {
 
             case 'PRODUCT_UPDATE_VIEWPORT': return { ...state, viewports: updateItemViewport(state.viewports, payload) }
         }
+
         return state;
     }
 
@@ -62,8 +63,6 @@ define([], function() {
             }
         }
 
-        var newV = { ...viewports, [productId]: viewport };
-        console.log('updated', newV);
-        return newV
+        return { ...viewports, [productId]: viewport };
     }
 });

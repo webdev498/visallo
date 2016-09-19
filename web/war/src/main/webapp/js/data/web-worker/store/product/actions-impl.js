@@ -73,30 +73,7 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
         select: (payload) => ({
             type: 'PRODUCT_SELECT',
             payload
-        }),
-
-        deleteProduct: (productId) => ({
-            type: 'dataRequest',
-            payload: {
-                service: 'product',
-                name: 'deleteProduct',
-                params: [productId]
-            }
-        }),
-
-        removeProduct: (productId) => ({
-            type: 'removeProduct',
-            payload: { productId }
-        }),
-
-        getProduct: (productId, includeExtended) => ({
-            type: 'dataRequest',
-            payload: {
-                service: 'product',
-                name: 'getProduct',
-                params: [productId, includeExtended]
-            }
-        }),
+        })
 
     }
 

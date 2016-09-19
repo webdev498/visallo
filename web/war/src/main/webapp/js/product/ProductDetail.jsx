@@ -17,6 +17,7 @@ define([
         requestComponent(props) {
             props.onGetProduct(props.product.id)
             if (props.extension.componentPath !== this.props.extension.componentPath || !this.state.Component) {
+                this.setState({ Component: null })
                 Promise.require(props.extension.componentPath).then((C) => this.setState({ Component: C }))
             }
         },
