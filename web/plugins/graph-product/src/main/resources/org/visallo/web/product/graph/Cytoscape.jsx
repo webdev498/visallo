@@ -39,15 +39,8 @@ define([
         },
 
         componentDidMount() {
-            const cy = cytoscape(this.prepareConfig());
-            const stop = _.debounce(() => { this.userIsChangingViewport = false }, 50);
-            cy.on('zoom pan', (event) => {
-                if (!this.zoomDisabled && !this.panDisabled) {
-                    cy.stop(true);
-                    this.userIsChangingViewport = true;
-                    stop();
-                }
-            })
+            this.previousConfig = this.prepareConfig();
+            const cy = cytoscape(this.previousConfig);
             this.setState({ cy })
         },
 
@@ -61,6 +54,7 @@ define([
             const { cy } = this.state;
             const newData = {elements: this.props.elements}
             const oldData = cy.json()
+
             // Create copies of objects because cytoscape mutates :(
             const getAllData = nodes => nodes.map(({data, selected, position}) => ({
                 data: {...data},
@@ -71,11 +65,7 @@ define([
             const [oldNodes, newNodes] = getTypeData('nodes')
             const [oldEdges, newEdges] = getTypeData('edges')
 
-            if (this.previousConfig) {
-                this.updateConfiguration(this.previousConfig, this.props.config);
-            }
-            this.previousConfig = this.props.config
-
+            this.updateConfiguration(this.previousConfig, this.props.config);
             cy.batch(() => {
                 this.makeChanges(oldNodes, newNodes)
                 this.makeChanges(oldEdges, newEdges)
@@ -90,9 +80,7 @@ define([
                     var { cy } = event,
                         eventMap = _.mapObject(EVENTS, (name, key) => (e) => {
                             if (this[key + 'Disabled'] !== true) {
-                                if ((key !== 'pan' && key !== 'zoom') || !this.userIsChangingViewport) {
-                                    this.props[name](e)
-                                }
+                                this.props[name](e)
                             }
                         });
                     cy.on(eventMap)
@@ -119,22 +107,21 @@ define([
             names.forEach(name => (this[name + 'Disabled'] = false))
         },
 
-        updateConfiguration(previous, { style, pan, zoom, ...other }) {
-            const { cy } = this.state
-            _.each(other, (val, key) => {
-                if (!(key in previous) || previous[key] !== val) {
-                    if (_.isFunction(cy[key])) {
-                        cy[key](val)
-                    } else console.warn('Unknown configuration key', key, val)
-                }
-            })
+        updateConfiguration(previous, nextConfig) {
+            const { cy } = this.state;
+            if (previous) {
+                let { style, pan, zoom, ...other } = nextConfig
+                _.each(other, (val, key) => {
+                    if (!(key in previous) || previous[key] !== val) {
+                        if (_.isFunction(cy[key])) {
+                            cy[key](val)
+                        } else console.warn('Unknown configuration key', key, val)
+                    }
+                })
 
-            const eq = (a, b) => Math.abs(b - a) <= 0.001;
-            var { x, y } = previous.pan
-            if (!eq(x, pan.x) || !eq(y, pan.y) || !eq(previous.zoom, zoom)) {
-                var newViewport = { zoom, pan: {...pan} };
-
-                if (!this.userIsChangingViewport) {
+                // Set viewport
+                if (pan || zoom) {
+                    var newViewport = { zoom, pan: {...pan} };
                     if (this.props.animate) {
                         this.panDisabled = this.zoomDisabled = true;
                         cy.stop().animate(newViewport, {
@@ -150,6 +137,8 @@ define([
                     }
                 }
             }
+
+            this.previousConfig = nextConfig
         },
 
         makeChanges(older, newer) {
@@ -178,14 +167,15 @@ define([
 
                     switch (change) {
                         case 'data':
-                            cyNode.removeData()
-                            cyNode.data(item.data)
+                            this.disableEvent('data', () => cyNode.removeData().data(item.data))
                             break;
+
                         case 'selected':
                             if (cyNode.selected() !== item.selected) {
                                 this.disableEvent('select unselect', () => cyNode[item.selected ? 'select' : 'unselect']());
                             }
                             break;
+
                         case 'position':
                             if (this.props.animate) {
                                 this.positionDisabled = true;
@@ -196,6 +186,7 @@ define([
                                 this.disableEvent('position', () => cyNode.position(item.position))
                             }
                             break;
+
                         default:
                             throw new Error('Change not handled: ' + change)
                     }

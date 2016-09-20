@@ -5,54 +5,35 @@ define([
     'use strict';
 
     const PropTypes = React.PropTypes;
-    const CONFIGURATION = {
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'height': 80,
-                    'width': 80,
-                    'background-fit': 'cover',
-                    'border-color': '#000',
-                    'border-width': 3,
-                    'border-opacity': 0.5,
-                    'content': 'data(name)',
-                    'text-valign': 'center',
-                }
-            },
-            {
-                selector: 'node:selected',
-                style: {
-                    'border-color': '#0088cc'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 6,
-                    'target-arrow-shape': 'triangle',
-                    'line-color': '#ffaaaa',
-                    'target-arrow-color': '#ffaaaa',
-                    'curve-style': 'bezier'
-                }
-            },
-            {
-                selector: 'edge:selected',
-                style: {
-                    'line-color': '#0088cc'
-                }
-            }
-        ]
-    };
     const Graph = React.createClass({
 
+        getInitialState() {
+            return { viewport: this.props.viewport || {} }
+        },
+
+        saveViewport(props) {
+            var productId = this.props.product.id;
+            if (this.currentViewport && productId in this.currentViewport) {
+                var viewport = this.currentViewport[productId];
+                props.onUpdateViewport(productId, viewport);
+            }
+        },
+
         componentWillReceiveProps(nextProps) {
-            //console.log('will receive: ', nextProps.product.id)
-            //this.changingProduct = nextProps.product.id !== this.props.product.id;
+            if (nextProps.product.id === this.props.product.id) {
+                this.setState({ viewport: {} })
+            } else {
+                this.saveViewport(nextProps)
+                this.setState({ viewport: nextProps.viewport || {} })
+            }
+        },
+
+        componentWillUnmount() {
+            this.saveViewport(this.props)
         },
 
         render() {
-            var { viewport } = this.props,
+            var { viewport } = this.state,
                 config = {...CONFIGURATION, ...viewport},
                 events = {
                     onSelect: this.onSelect,
@@ -105,12 +86,9 @@ define([
         },
 
         onViewport({ cy }) {
-            if (!this.viewportUpdated) {
-                this.viewportUpdated = _.debounce(viewport => {
-                    this.props.onUpdateViewport(this.props.product.id, viewport)
-                }, 100);
-            }
-            this.viewportUpdated({ zoom: cy.zoom(), pan: cy.pan() });
+            var zoom = cy.zoom(), pan = cy.pan();
+            if (!this.currentViewport) this.currentViewport = {};
+            this.currentViewport[this.props.product.id] = { zoom, pan: {...pan} };
         },
 
         mapPropsToElements() {
@@ -138,6 +116,46 @@ define([
             return elements;
         }
     });
+
+    const CONFIGURATION = {
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'height': 80,
+                    'width': 80,
+                    'background-fit': 'cover',
+                    'border-color': '#000',
+                    'border-width': 3,
+                    'border-opacity': 0.5,
+                    'content': 'data(name)',
+                    'text-valign': 'center',
+                }
+            },
+            {
+                selector: 'node:selected',
+                style: {
+                    'border-color': '#0088cc'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 6,
+                    'target-arrow-shape': 'triangle',
+                    'line-color': '#ffaaaa',
+                    'target-arrow-color': '#ffaaaa',
+                    'curve-style': 'bezier'
+                }
+            },
+            {
+                selector: 'edge:selected',
+                style: {
+                    'line-color': '#0088cc'
+                }
+            }
+        ]
+    };
 
     return Graph;
 });
