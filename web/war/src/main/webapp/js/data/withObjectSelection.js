@@ -1,4 +1,4 @@
-define([], function() {
+define(['data/web-worker/store/selection/actions'], function(selectionActions) {
     'use strict';
 
     return withObjectSelection;
@@ -28,8 +28,9 @@ define([], function() {
             var self = this;
             this.selectedObjectsStack = [];
 
+            this.subscribeForSelection();
+
             this.setPublicApi('selectedObjects', defaultNoObjectsOrData());
-            this.setPublicApi('graphSelectionThrottle', GRAPH_SELECTION_THROTTLE);
 
             // Guarantees that we aren't after a selectObjects call but before objectsSelected
             this.currentSelectObjectsPromise = Promise.resolve();
@@ -82,6 +83,25 @@ define([], function() {
             this.on('addRelatedItems', this.onAddRelatedItems);
             this.on('objectsSelected', this.onObjectsSelected);
         });
+
+        this.subscribeForSelection = function() {
+            const selectState = state => state.selection.idsByType;
+            let previousState = null;
+            visalloData.storePromise.then(store => store.subscribe(() => {
+                let newState = store.getState();
+                let prevSelection = previousState && selectState(previousState);
+                let newSelection = selectState(newState);
+
+                if (!prevSelection || prevSelection !== newSelection) {
+                    previousState = newState;
+                    this.trigger('selectObjects', {
+                        vertexIds: newSelection.vertices,
+                        edgeIds: newSelection.edges,
+                        dispatch: false
+                    });
+                }
+            }))
+        };
 
         this.displayInfo = function(i18nMessage) {
             this.trigger('displayInformation', {
@@ -222,6 +242,24 @@ define([], function() {
         };
 
         this.onSelectObjects = function(event, data) {
+            if (!data || data.dispatch !== false) {
+                visalloData.storePromise.then(store => {
+                    var action;
+                    if (data) {
+                        let payload = {
+                            vertices: data.vertexIds,
+                            edges: data.edgeIds
+                        };
+                        if (data.vertices) payload.vertices = _.pluck(data.vertices, 'id');
+                        if (data.edges) payload.edges = _.pluck(data.edges, 'id');
+                        action = selectionActions.set(payload);
+                    } else {
+                        action = selectionActions.clear;
+                    }
+                    store.dispatch(action);
+                })
+            }
+
             var self = this;
             this.currentSelectObjectsPromise = new Promise(function(f) {
                 var hasItems = data &&

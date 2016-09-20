@@ -6,6 +6,7 @@ define(['../actions'], function(actions) {
         actions: {
             add: (selection) => ({ selection }),
             remove: (selection) => ({ selection }),
+            set: (selection) => ({ selection }),
             clear: null
         }
     })

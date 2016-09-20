@@ -20,6 +20,7 @@ define([
             return {
                 onAddSelection: (selection) => dispatch(selectionActions.add(selection)),
                 onRemoveSelection: (selection) => dispatch(selectionActions.remove(selection)),
+                onClearSelection: () => dispatch(selectionActions.clear),
 
                 // TODO: these should be graphActions
                 onUpdatePositions: (id, positions) => dispatch(productActions.updatePositions(id, positions)),

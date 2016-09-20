@@ -12,6 +12,11 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
             payload: { selection }
         }),
 
-        clear: () => ({ type: 'SELECTION_CLEAR' })
+        clear: () => ({ type: 'SELECTION_CLEAR' }),
+
+        set: ({ selection }) => ({
+            type: 'SELECTION_SET',
+            payload: { selection }
+        })
     }
 })

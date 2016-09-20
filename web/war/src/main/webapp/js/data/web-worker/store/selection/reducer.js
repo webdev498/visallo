@@ -7,6 +7,7 @@ define([], function() {
         switch (type) {
             case 'SELECTION_ADD': return { ...state, idsByType: add(state.idsByType, payload) };
             case 'SELECTION_REMOVE': return { ...state, idsByType: remove(state.idsByType, payload) };
+            case 'SELECTION_SET': return { ...state, idsByType: set(state.idsByType, payload) };
             case 'SELECTION_CLEAR': return { ...state, idsByType: clear(state.idsByType) }
         }
 
@@ -28,8 +29,19 @@ define([], function() {
         );
     }
 
+    function set(previous, { selection }) {
+        if (selection) {
+            if (_.isEqual(previous, selection)) {
+                return previous;
+            }
+            return selection
+        } else if (previous.vertices.length === 0 && previous.edges.length === 0) {
+            return previous
+        }
+        return { vertices: [], edges: [] };
+    }
+
     function _update(previous, selection, predicate, action) {
-        console.log('update', selection)
         var changed = false,
             updated = _.mapObject(previous, function(previousIds, type) {
                 var list = selection[type];
@@ -40,7 +52,6 @@ define([], function() {
                 return previousIds
             })
 
-        console.log('changed?', changed, updated, previous)
         return changed ? updated : previous
     }
 

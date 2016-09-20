@@ -42,6 +42,7 @@ define([
                     onFree: this.onFree,
                     onPosition: this.onPosition,
                     onPan: this.onViewport,
+                    onTap: this.onTap,
                     onZoom: this.onViewport
                 };
             return (
@@ -50,6 +51,12 @@ define([
                     config={config}
                     elements={this.mapPropsToElements()}></Cytoscape>
             )
+        },
+
+        onTap({ cy, cyTarget }) {
+            if (cy === cyTarget) {
+                this.props.onClearSelection();
+            }
         },
 
         onSelect({ cy, cyTarget }) {
