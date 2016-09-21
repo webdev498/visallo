@@ -980,7 +980,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         graph.flush();
 
         Workspace ws = findById(workspaceId, user);
-        ClientApiWorkspace userWorkspace = toClientApi(ws, user, false, authorizations);
+        ClientApiWorkspace userWorkspace = toClientApi(ws, user, authorizations);
         getWorkQueueRepository().broadcastWorkProductChange(productVertex.getId(), userWorkspace);
 
         return productVertexToProduct(workspaceId, productVertex, authorizations, null);
@@ -1014,7 +1014,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         getGraph().flush();
 
         Workspace ws = findById(workspaceId, user);
-        ClientApiWorkspace userWorkspace = toClientApi(ws, user, false, authorizations);
+        ClientApiWorkspace userWorkspace = toClientApi(ws, user, authorizations);
         getWorkQueueRepository().broadcastWorkProductDelete(productId, userWorkspace);
 
     }

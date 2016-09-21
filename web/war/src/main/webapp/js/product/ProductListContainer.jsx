@@ -21,7 +21,15 @@ define([
 
     return redux.connect(
 
-        (state, props) => ({ product: state.product, selected: state.product.selected }),
+        (state, props) => {
+            const { items, ...rest } = state.product;
+            const workspaceId = state.workspace.currentId;
+
+            return {
+                ...rest,
+                products: _.where(items, { workspaceId })
+            }
+        },
 
         (dispatch) => {
 

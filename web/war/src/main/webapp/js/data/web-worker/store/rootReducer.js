@@ -4,7 +4,6 @@ define([
     'redux',
 
     // Reducers
-    './dashboard/reducer',
     './element/reducer',
     './product/reducer',
     './screen/reducer',

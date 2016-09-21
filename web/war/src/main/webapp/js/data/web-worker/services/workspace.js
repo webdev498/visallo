@@ -1,7 +1,7 @@
 
 define([
     '../util/ajax',
-    '../util/store',
+    '../store',
     '../util/queue'
 ], function(ajax, store, queue) {
     'use strict';
@@ -39,8 +39,6 @@ define([
         get: function(workspaceId) {
             return ajax('GET', '/workspace', {
                 workspaceId: workspaceId || publicData.currentWorkspaceId
-            }).then(function(workspace) {
-                return store.setWorkspace(workspace);
             });
         },
 
@@ -51,18 +49,8 @@ define([
         },
 
         current: function(workspaceId) {
-            var workspace = store.getObject(workspaceId || publicData.currentWorkspaceId, 'workspace');
-            return Promise.resolve(workspace);
-        },
-
-        store: function(workspaceId) {
-            var workspace = store.getObject(workspaceId || publicData.currentWorkspaceId, 'workspace');
-            return Promise.resolve(workspace && workspace.vertices || []);
-        },
-
-        storeEdges: function(workspaceId) {
-            var workspaceEdges = store.getObject(workspaceId || publicData.currentWorkspaceId, 'workspaceEdges');
-            return Promise.resolve(workspaceEdges || []);
+            var workspaces = store.getStore().getState().workspace;
+            return Promise.resolve(workspaces.byId[workspaceId || workspaces.currentId]);
         },
 
         histogramValues: function(workspaceId, property) {
@@ -71,7 +59,9 @@ define([
                 workspaceId = null;
             }
 
-            var workspace = store.getObject(workspaceId || publicData.currentWorkspaceId, 'workspace'),
+            throw new Error('needed?')
+            /*
+            var workspace = null;
                 edgeIds;
 
             return (property.title === 'ALL_DATES' ?
@@ -207,6 +197,7 @@ define([
 
                         return { values: values, foundOntologyProperties: foundOntologyProperties };
                     })
+            */
         },
 
         save: queue(function(workspaceId, changes) {
@@ -215,59 +206,21 @@ define([
                 workspaceId = publicData.currentWorkspaceId;
             }
 
-            var workspace = store.getObject(workspaceId, 'workspace');
-
-            if (_.isEmpty(changes)) {
-                console.warn('Workspace update called with no changes');
-                return Promise.resolve({ saved: false, workspace: workspace });
-            }
-
             var allChanges = _.extend({}, {
-                entityUpdates: [],
-                entityDeletes: [],
                 userUpdates: [],
                 userDeletes: []
             }, changes || {});
-
-            allChanges.entityUpdates.forEach(function(entityUpdate) {
-                var p = entityUpdate.graphPosition,
-                    layout = entityUpdate.graphLayoutJson;
-
-                if (p) {
-                    p.x = Math.round(p.x);
-                    p.y = Math.round(p.y);
-                }
-                if (layout) {
-                    entityUpdate.graphLayoutJson = JSON.stringify(layout);
-                } else if (!p) {
-                    console.error('Entity updates require either graphPosition or graphLayoutJson', entityUpdate);
-                }
-            })
-
-            allChanges.entityUpdates = _.filter(allChanges.entityUpdates, function(update) {
-                var inWorkspace = update.vertexId in workspace.vertices,
-                    hasGraphPosition = 'graphPosition' in update;
-
-                return !inWorkspace || hasGraphPosition;
-            });
-
-            if (!store.workspaceShouldSave(workspace, allChanges)) {
-                return Promise.resolve({ saved: false, workspace: workspace });
-            }
 
             return ajax('POST', '/workspace/update', {
                 workspaceId: workspaceId,
                 data: JSON.stringify(allChanges)
             }).then(function() {
-                return { saved: true, workspace: store.updateWorkspace(workspaceId, allChanges) };
+                const workspaces = store.getStore().getState().workspace;
+                const workspace = workspaces.byId[workspaceId];
+                // TODO: FIXME
+                return { saved: true, workspace: {...workspace, title: changes.title } }
             });
         }),
-
-        vertices: function(workspaceId) {
-            return ajax('GET', '/workspace/vertices', {
-                workspaceId: workspaceId || publicData.currentWorkspaceId
-            });
-        },
 
         publish: function(changes) {
             return ajax('POST', '/workspace/publish', {
@@ -279,19 +232,6 @@ define([
             return ajax('POST', '/workspace/undo', {
                 undoData: JSON.stringify(changes)
             });
-        },
-
-        edges: function(workspaceId, additionalVertices) {
-            var params = {
-                workspaceId: workspaceId || publicData.currentWorkspaceId
-            };
-            if (additionalVertices && additionalVertices.length) {
-                params.ids = additionalVertices
-            }
-
-            return ajax('GET', '/workspace/edges', params).then(function(result) {
-                return result.edges;
-            })
         },
 
         create: function(options) {

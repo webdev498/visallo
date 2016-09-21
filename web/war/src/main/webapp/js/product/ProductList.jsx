@@ -9,9 +9,9 @@ define([
             this.props.onDeleteProduct(itemId);
         },
         render() {
-            const { items, loading, error, selected } = this.props.product;
+            const { products, loading, error, selected } = this.props;
 
-            var itemElements = items.map(item => {
+            var itemElements = products.map(item => {
                     var isSelected = selected === item.id;
                     var style = {
                         padding: '0.5em',

@@ -260,7 +260,6 @@ public abstract class WorkspaceRepository {
     public ClientApiWorkspace toClientApi(
             Workspace workspace,
             User user,
-            boolean includeVertices,
             Authorizations authorizations
     ) {
         checkNotNull(workspace, "workspace cannot be null");
@@ -287,47 +286,6 @@ public abstract class WorkspaceRepository {
                 workspaceUser.setUserId(userId);
                 workspaceUser.setAccess(u.getWorkspaceAccess());
                 workspaceClientApi.addUser(workspaceUser);
-            }
-
-            if (includeVertices) {
-                List<WorkspaceEntity> workspaceEntities = findEntities(workspace, user);
-                Iterable<String> workspaceEntityIds = workspaceEntities.stream()
-                        .map(workspaceEntity -> workspaceEntity.getEntityVertexId())
-                        .collect(Collectors.toList());
-                Map<String, Boolean> viewableVertices = getGraph().doVerticesExist(workspaceEntityIds, authorizations);
-                for (WorkspaceEntity workspaceEntity : workspaceEntities) {
-                    if (!workspaceEntity.isVisible()) {
-                        continue;
-                    }
-                    if (!viewableVertices.get(workspaceEntity.getEntityVertexId())) {
-                        continue;
-                    }
-
-                    ClientApiWorkspace.Vertex v = new ClientApiWorkspace.Vertex();
-                    v.setVertexId(workspaceEntity.getEntityVertexId());
-                    v.setVisible(workspaceEntity.isVisible());
-
-                    Integer graphPositionX = workspaceEntity.getGraphPositionX();
-                    Integer graphPositionY = workspaceEntity.getGraphPositionY();
-                    if (graphPositionX != null && graphPositionY != null) {
-                        GraphPosition graphPosition = new GraphPosition(graphPositionX, graphPositionY);
-                        v.setGraphPosition(graphPosition);
-                        v.setGraphLayoutJson(null);
-                    } else {
-                        v.setGraphPosition(null);
-
-                        String graphLayoutJson = workspaceEntity.getGraphLayoutJson();
-                        if (graphLayoutJson != null) {
-                            v.setGraphLayoutJson(graphLayoutJson);
-                        } else {
-                            v.setGraphLayoutJson("{}");
-                        }
-                    }
-
-                    workspaceClientApi.addVertex(v);
-                }
-            } else {
-                workspaceClientApi.removeVertices();
             }
 
             return workspaceClientApi;

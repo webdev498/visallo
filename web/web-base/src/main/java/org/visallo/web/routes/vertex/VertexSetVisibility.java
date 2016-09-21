@@ -93,7 +93,7 @@ public class VertexSetVisibility implements ParameterizedHandler {
         );
 
         Workspace workspace = workspaceRepository.findById(workspaceId, user);
-        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, true, authorizations);
+        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, authorizations);
         workQueueRepository.pushWorkspaceChange(clientApiWorkspace, clientApiWorkspace.getUsers(), user.getUserId(), sourceGuid);
 
         return ClientApiConverter.toClientApi(graphVertex, workspaceId, authorizations);

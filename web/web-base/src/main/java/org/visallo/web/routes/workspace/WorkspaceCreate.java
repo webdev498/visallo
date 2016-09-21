@@ -44,7 +44,7 @@ public class WorkspaceCreate implements ParameterizedHandler {
         workspace = workspaceRepository.add(title, user);
 
         LOGGER.info("Created workspace: %s, title: %s", workspace.getWorkspaceId(), workspace.getDisplayTitle());
-        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, true, authorizations);
+        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, authorizations);
 
         workQueueRepository.pushWorkspaceChange(clientApiWorkspace, new ArrayList<ClientApiWorkspace.User>(), user.getUserId(), null);
 

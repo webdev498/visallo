@@ -63,9 +63,6 @@ public class WorkspaceUpdate implements ParameterizedHandler {
             setTitle(workspace, updateData.getTitle(), user);
         }
 
-        updateEntities(workspace, updateData.getEntityUpdates(), user);
-
-        deleteEntities(workspace, updateData.getEntityDeletes(), user);
 
         updateUsers(workspace, updateData.getUserUpdates(), resourceBundle, user);
 
@@ -73,13 +70,12 @@ public class WorkspaceUpdate implements ParameterizedHandler {
         ClientApiWorkspace clientApiWorkspaceAfterUpdateButBeforeDelete = workspaceRepository.toClientApi(
                 workspace,
                 user,
-                true,
                 authorizations
         );
         List<ClientApiWorkspace.User> previousUsers = clientApiWorkspaceAfterUpdateButBeforeDelete.getUsers();
         deleteUsers(workspace, updateData.getUserDeletes(), user);
 
-        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, true, authorizations);
+        ClientApiWorkspace clientApiWorkspace = workspaceRepository.toClientApi(workspace, user, authorizations);
 
         workQueueRepository.pushWorkspaceChange(clientApiWorkspace, previousUsers, user.getUserId(), sourceGuid);
 

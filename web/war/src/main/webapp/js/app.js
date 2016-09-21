@@ -11,7 +11,6 @@ define([
     'product/ProductListContainer',
     'admin/admin',
     'activity/activity',
-    'graph/graph',
     'detail/detail',
     'map/map',
     'help/help',
@@ -38,7 +37,6 @@ define([
     ProductListContainer,
     Admin,
     Activity,
-    Graph,
     Detail,
     Map,
     Help,
@@ -82,7 +80,6 @@ define([
             adminSelector: '.admin-pane',
             helpDialogSelector: '.help-dialog',
             activitySelector: '.activity-pane',
-            graphSelector: '.graph-pane',
             mapSelector: '.map-pane',
             detailPaneSelector: '.detail-pane'
         });
@@ -97,7 +94,6 @@ define([
                 Search,
                 Workspaces,
                 Admin,
-                Graph,
                 Map,
                 Detail,
                 Help
@@ -200,7 +196,6 @@ define([
                 productsPane = content.filter('.products-pane').data(DATA_MENUBAR_NAME, 'products'),
                 adminPane = content.filter('.admin-pane').data(DATA_MENUBAR_NAME, 'admin'),
                 activityPane = content.filter('.activity-pane').data(DATA_MENUBAR_NAME, 'activity'),
-                graphPane = content.filter('.graph-pane').data(DATA_MENUBAR_NAME, 'graph'),
                 detailPane = content.filter('.detail-pane').data(DATA_MENUBAR_NAME, 'detail'),
                 mapPane = content.filter('.map-pane').data(DATA_MENUBAR_NAME, 'map'),
                 helpDialog = content.filter('.help-dialog');
@@ -225,7 +220,6 @@ define([
             Workspaces.attachTo(workspacesPane.find('.content'));
             Admin.attachTo(adminPane.find('.content'));
             Activity.attachTo(activityPane.find('.content'));
-            Graph.attachTo(graphPane.filter('.graph-pane-2d'));
             Map.attachTo(mapPane);
             Detail.attachTo(detailPane.find('.content'));
             Help.attachTo(helpDialog);
@@ -659,8 +653,6 @@ define([
                 // Can't toggleClass because if only one is visible we want to hide all
                 if (isVisible) {
                     pane.removeClass('visible');
-                } else if (name === 'graph') {
-                    pane.filter('.graph-pane-' + (this._graphDimensions || 2) + 'd').addClass('visible');
                 } else pane.addClass('visible');
 
                 this.trigger('didToggleDisplay', {

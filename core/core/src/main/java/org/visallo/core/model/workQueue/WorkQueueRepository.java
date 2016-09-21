@@ -761,7 +761,7 @@ public abstract class WorkQueueRepository {
 
             // No need to regenerate client api if changing user
             try {
-                ClientApiWorkspace userWorkspace = isChangingUser ? workspace : getWorkspaceRepository().toClientApi(ws, user, true, authorizations);
+                ClientApiWorkspace userWorkspace = isChangingUser ? workspace : getWorkspaceRepository().toClientApi(ws, user, authorizations);
                 JSONObject json = new JSONObject();
                 json.put("type", "workspaceChange");
                 json.put("modifiedBy", changedByUserId);

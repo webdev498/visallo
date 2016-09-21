@@ -109,25 +109,9 @@ define([
             },
 
             updateWorkspace: function(workspaceId, changes) {
+                throw new Error('Removing')
+                /*
                 var workspace = JSON.parse(JSON.stringify(api.getObject(workspaceId, 'workspace')));
-                changes.entityUpdates.forEach(function(entityUpdate) {
-                    var workspaceVertex = _.findWhere(workspace.vertices, { vertexId: entityUpdate.vertexId });
-                    if (workspaceVertex) {
-                        if ('graphPosition' in entityUpdate) {
-                            workspaceVertex.graphPosition = entityUpdate.graphPosition;
-                        } else {
-                            delete workspaceVertex.graphPosition;
-                        }
-                        if ('graphLayoutJson' in entityUpdate) {
-                            workspaceVertex.graphLayoutJson = entityUpdate.graphLayoutJson;
-                        } else {
-                            delete workspaceVertex.graphLayoutJson;
-                        }
-                    } else {
-                        workspace.vertices[entityUpdate.vertexId] =
-                            _.pick(entityUpdate, 'vertexId', 'graphPosition', 'graphLayoutJson');
-                    }
-                });
                 workspace.vertices = _.omit(workspace.vertices, changes.entityDeletes);
                 if (changes.title) {
                     workspace.title = changes.title
@@ -146,6 +130,7 @@ define([
 
                 api.workspaceWasChangedRemotely(workspace);
                 return workspace;
+                */
             },
 
             removeWorkspace: function(workspaceId) {
@@ -207,16 +192,6 @@ define([
 
                 willChange = willChange || changes.userDeletes.length;
                 willChange = willChange || changes.userUpdates.length;
-
-                willChange = willChange || changes.entityDeletes.length;
-                willChange = willChange || _.any(changes.entityUpdates, function(entityUpdate) {
-                    var workspaceVertex = workspace.vertices[entityUpdate.vertexId];
-                    if (workspaceVertex) {
-                        return !_.isEqual(workspaceVertex, entityUpdate);
-                    } else {
-                        return true;
-                    }
-                });
 
                 return willChange;
             },

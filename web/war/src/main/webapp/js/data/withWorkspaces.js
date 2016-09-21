@@ -4,7 +4,7 @@ define(['util/undoManager'], function(UndoManager) {
     return withWorkspaces;
 
     function withWorkspaces() {
-        var lastReloadedState,
+        var workspace,
             undoManagersPerWorkspace = {};
 
         this.after('initialize', function() {
@@ -14,49 +14,33 @@ define(['util/undoManager'], function(UndoManager) {
 
             this.on('loadCurrentWorkspace', this.onLoadCurrentWorkspace);
             this.on('switchWorkspace', this.onSwitchWorkspace);
-            this.on('reloadWorkspace', this.onReloadWorkspace);
             this.on('updateWorkspace', this.onUpdateWorkspace);
-            this.on('loadEdges', this.onLoadEdges);
-            this.on('textUpdated', this.onTextUpdated);
 
-            this.on(window, 'keydown', function(event) {
-                var character = String.fromCharCode(event.which).toUpperCase();
+            visalloData.storePromise.then(store => {
+                let previous = store.getState();
+                const select = (s) => s.workspace.currentId;
+                store.subscribe(() => {
+                    const state = store.getState()
+                    const previousWorkspaceId = select(previous);
+                    const newWorkspaceId = select(state);
+                    const newWorkspace = state.workspace.byId[newWorkspaceId];
+                    const idChanged = !previousWorkspaceId || previousWorkspaceId !== newWorkspaceId;
 
-                if ($(event.target).hasClass('clipboardManager')) {
-                    if (_isUndo(character, event)) {
-                        perform('performUndo');
-                        event.preventDefault();
+                    if (idChanged && newWorkspace) {
+                        workspace = {...newWorkspace};
+                        this.setPublicApi('currentWorkspaceId', workspace.workspaceId);
+                        this.setPublicApi('currentWorkspaceName', workspace.title);
+                        this.setPublicApi('currentWorkspaceEditable', workspace.editable);
+                        this.setPublicApi('currentWorkspaceCommentable', workspace.commentable);
+                        this.trigger('workspaceLoaded', workspace);
+                        this.trigger('selectObjects');
+                        this.fireApplicationReadyOnce();
+                        if ($('.dashboard-pane.visible').length === 0) {
+                            this.trigger('menubarToggleDisplay', { name: 'dashboard' });
+                        }
+                        previous = state;
                     }
-
-                    if (_isRedo(character, event)) {
-                        perform('performRedo');
-                        event.preventDefault();
-                    }
-                }
-
-                function perform(type) {
-                    var undoManager = undoManagersPerWorkspace[self.visalloData.currentWorkspaceId];
-                    if (undoManager) {
-                        undoManager[type]();
-                    }
-                }
-
-                function _isUndo(character, event) {
-                    return (
-                        // Windows
-                        (character === 'Z' && event.ctrlKey) ||
-                        // Mac
-                        (character === 'Z' && event.metaKey && !event.shiftKey)
-                    );
-                }
-                function _isRedo(character, event) {
-                    return (
-                        // Windows
-                        (character === 'Y' && event.ctrlKey) ||
-                        // Mac
-                        (character === 'Z' && event.metaKey && event.shiftKey)
-                    );
-                }
+                })
             })
         });
 
@@ -65,40 +49,13 @@ define(['util/undoManager'], function(UndoManager) {
             this.trigger('switchWorkspace', { workspaceId: currentWorkspaceId });
         };
 
-        this.onReloadWorkspace = function() {
-            if (lastReloadedState) {
-                this.workspaceLoaded(lastReloadedState);
-                this.edgesLoaded(lastReloadedState.edges);
-            }
-        };
-
-        this.onTextUpdated = function(event, data) {
-            var workspace = lastReloadedState && lastReloadedState.workspace,
-                workspaceVertices = workspace && workspace.vertices;
-            if (workspaceVertices && data.vertexId in workspaceVertices) {
-                this.trigger('loadEdges');
-            }
-        };
-
-        this.onLoadEdges = function(event, data) {
-            var self = this;
-            this.dataRequestPromise.done(function(dataRequest) {
-                dataRequest('workspace', 'edges', data && data.workspaceId, data && data.vertexIds)
-                    .done(function(edges) {
-                        self.edgesLoaded({ edges: edges });
-                    })
-            });
-        };
-
         this.onSwitchWorkspace = function(event, data) {
-            lastReloadedState = {};
             this.setPublicApi('currentWorkspaceId', data.workspaceId);
-            this.setPublicApi('currentWorkspaceName', data.title);
-            this.setPublicApi('currentWorkspaceEditable', data.editable);
-            this.setPublicApi('currentWorkspaceCommentable', data.commentable);
-            this.worker.postMessage({
-                type: 'workspaceSwitch',
-                workspaceId: data.workspaceId
+            Promise.all([
+                visalloData.storePromise,
+                Promise.require('data/web-worker/store/workspace/actions')
+            ]).spread(function(store, workspaceActions) {
+                store.dispatch(workspaceActions.setCurrent(data.workspaceId))
             });
         };
 
@@ -107,26 +64,15 @@ define(['util/undoManager'], function(UndoManager) {
                 triggered = false,
                 buffer = _.delay(function() {
                     triggered = true;
-                    self.trigger('workspaceSaving', lastReloadedState.workspace);
-                }, 250);
-
-            if (!data.ignoreUndoManager && (!_.isEmpty(data.entityUpdates) || !_.isEmpty(data.entityDeletes))) {
-                var invertData = inverse(data, lastReloadedState.workspace.vertices),
-                    undoManager = undoManagerForWorkspace(lastReloadedState.workspace.workspaceId);
-                undoManager.performedAction('Workspace Update', {
-                    undo: function() {
-                        self.trigger('updateWorkspace', $.extend({}, invertData, { ignoreUndoManager: true }));
-                    },
-                    redo: function() {
-                        self.trigger('updateWorkspace', $.extend({}, data, { ignoreUndoManager: true }));
-                    }
-                })
-            }
+                    self.trigger('workspaceSaving', workspace);
+                }, 250),
+                result;
 
             this.dataRequestPromise.done(function(dataRequest) {
                 dataRequest('workspace', 'save', data)
                     .then(function(data) {
                         clearTimeout(buffer);
+                        result = data;
                         if (data.saved) {
                             triggered = true;
                         }
@@ -135,78 +81,13 @@ define(['util/undoManager'], function(UndoManager) {
                         console.error(e);
                     })
                     .then(function() {
+                        console.log(result)
                         if (triggered) {
-                            self.trigger('workspaceSaved', lastReloadedState.workspace);
+                            self.trigger('workspaceSaved', result);
                         }
                     })
             });
         };
-
-        // Worker Handlers
-
-        this.edgesLoaded = function(message) {
-            var self = this,
-                edgeIds = _.pluck(message.edges, 'edgeId');
-
-            lastReloadedState.edges = message;
-            this.trigger('edgesLoaded', message);
-            this.loadFullEdges(edgeIds);
-        };
-
-        this.workspaceUpdated = function(message) {
-            if (lastReloadedState &&
-                lastReloadedState.workspace &&
-                lastReloadedState.workspace.workspaceId === message.workspace.workspaceId) {
-                lastReloadedState.workspace = message.workspace;
-            }
-            this.trigger('workspaceUpdated', message);
-            this.setPublicApi('currentWorkspaceName', message.workspace.title);
-            this.setPublicApi('currentWorkspaceEditable', message.workspace.editable);
-            this.setPublicApi('currentWorkspaceCommentable', message.workspace.commentable);
-            if (message.newVertices.length) {
-                this.trigger('loadEdges', {
-                    workspaceId: message.workspace.workspaceId,
-                    vertexIds: _.pluck(message.newVertices, 'id')
-                });
-            }
-        };
-
-        this.workspaceLoaded = function(message) {
-            lastReloadedState = message;
-            var workspace = message.workspace;
-            workspace.data = {
-                vertices: message.vertices
-            };
-            this.setPublicApi('currentWorkspaceId', workspace.workspaceId);
-            this.setPublicApi('currentWorkspaceName', workspace.title);
-            this.setPublicApi('currentWorkspaceEditable', workspace.editable);
-            this.setPublicApi('currentWorkspaceCommentable', workspace.commentable);
-            this.trigger('workspaceLoaded', workspace);
-            this.trigger('selectObjects');
-            this.fireApplicationReadyOnce();
-        };
-
-        this.loadFullEdges = function(edgeIds) {
-            var self = this;
-            return this.dataRequestPromise.then(function(dataRequest) {
-                if (edgeIds.length) {
-                    return dataRequest('edge', 'multiple', { edgeIds: edgeIds })
-                }
-                return null;
-            }).then(function(data) {
-                if (data) {
-                    self.trigger('edgesLoaded', data);
-                }
-            });
-        };
-
-        function undoManagerForWorkspace(workspaceId) {
-            var undoManager = undoManagersPerWorkspace[workspaceId];
-            if (!undoManager) {
-                undoManager = undoManagersPerWorkspace[workspaceId] = new UndoManager();
-            }
-            return undoManager;
-        }
 
         function padWorkspaceUpdate(workspaceUpdates) {
             'entityUpdates entityDeletes userUpdates userDeletes'.split(' ').forEach(function(k) {
@@ -215,26 +96,6 @@ define(['util/undoManager'], function(UndoManager) {
                 }
             });
             return workspaceUpdates;
-        }
-
-        function inverse(workspaceUpdates, workspaceVertices) {
-            var inverted = {
-                entityUpdates: [],
-                entityDeletes: []
-            };
-
-            if (workspaceUpdates.entityUpdates) {
-                workspaceUpdates.entityUpdates.forEach(function(update) {
-                    inverted.entityDeletes.push(update.vertexId);
-                })
-            }
-            if (workspaceUpdates.entityDeletes) {
-                workspaceUpdates.entityDeletes.forEach(function(update) {
-                    inverted.entityUpdates.push($.extend(true, {}, workspaceVertices[update]));
-                })
-            }
-
-            return inverted;
         }
     }
 });
