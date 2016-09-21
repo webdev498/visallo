@@ -1,4 +1,4 @@
-define(['../actions', '../../util/ajax'], function(actions, ajax) {
+define(['../actions', '../../util/ajax', '../element/actions-impl'], function(actions, ajax, elementActions) {
     actions.protectFromMain();
 
     const api = {
@@ -16,12 +16,12 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
                     }
                 })
                     .then(function(product) {
-                        dispatch({
-                            type: 'PRODUCT_UPDATE',
-                            payload: {
-                                product
-                            }
-                        })
+                        dispatch(api.update(product))
+
+                        const { vertices, edges } = JSON.parse(product.extendedData)
+                        const vertexIds = _.pluck(vertices, 'id');
+                        const edgeIds = _.pluck(edges, 'id');
+                        dispatch(elementActions.get({ vertexIds, edgeIds }));
                     })
             }
         },
@@ -32,6 +32,13 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
             // is current  ? is it selected ? get : load list
             dispatch(api.get({ productId, invalidate: true }));
         },
+
+        update: (product) => ({
+            type: 'PRODUCT_UPDATE',
+            payload: {
+                product
+            }
+        }),
 
         updatePositions: ({ productId, updateVertices }) => (dispatch, getState) => {
             var params = { updateVertices },
@@ -58,7 +65,7 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
 
         create: ({title, kind}) => {
             return ajax('POST', '/product', { title, kind })
-                .then((product) => ({ type: 'PRODUCT_UPDATE', payload: { product } }))
+                .then(product => api.update(product))
         },
 
         delete: ({ productId }) => {

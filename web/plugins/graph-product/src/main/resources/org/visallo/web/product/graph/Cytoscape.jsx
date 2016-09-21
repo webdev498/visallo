@@ -56,9 +56,10 @@ define([
             const oldData = cy.json()
 
             // Create copies of objects because cytoscape mutates :(
-            const getAllData = nodes => nodes.map(({data, selected, position}) => ({
+            const getAllData = nodes => nodes.map(({data, selected, position, classes}) => ({
                 data: {...data},
                 selected,
+                classes,
                 position: {...position}
             }))
             const getTypeData = elementType => [oldData, newData].map(n => getAllData(n.elements[elementType] || []) )
@@ -173,6 +174,14 @@ define([
                         case 'selected':
                             if (cyNode.selected() !== item.selected) {
                                 this.disableEvent('select unselect', () => cyNode[item.selected ? 'select' : 'unselect']());
+                            }
+                            break;
+
+                        case 'classes':
+                            if (item.classes) {
+                                cyNode.classes(item.classes)
+                            } else if (!_.isEmpty(cyNode._private.classes)) {
+                                cyNode.classes();
                             }
                             break;
 

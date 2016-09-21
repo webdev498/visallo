@@ -16,15 +16,16 @@ define([
 
         this.reduxStoreInit = function(message) {
             var initialState = message.state,
+                devTools = _.isFunction(window.devToolsExtension) ? window.devToolsExtension() : null,
                 store = redux.createStore(
                     rootReducer(initialState),
-                    redux.compose(
-                        redux.applyMiddleware(webworkerMiddleware(this.worker)),
-                        window.devToolsExtension && window.devToolsExtension()
-                    )
+                    devTools ?
+                        redux.compose(redux.applyMiddleware(webworkerMiddleware(this.worker)), devTools) :
+                        redux.applyMiddleware(webworkerMiddleware(this.worker))
                 );
 
             this._reduxStore = store;
+            this.setupInitialStoreState();
             this.storeReady(store);
         };
 
@@ -32,6 +33,15 @@ define([
             // TODO: check flux standard action
             this._reduxStore.dispatch(message.action);
         };
+
+        this.setupInitialStoreState = function() {
+            require(['util/retina', 'data/web-worker/store/screen/actions'], (retina, screenActions) => {
+                $(document).on('devicePixelRatioChanged', (event, { devicePixelRatio }) => {
+                    this._reduxStore.dispatch(screenActions.setPixelRatio(devicePixelRatio))
+                });
+                this._reduxStore.dispatch(screenActions.setPixelRatio(retina.devicePixelRatio))
+            })
+        }
     }
 
     function rootReducer(initialState) {

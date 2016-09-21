@@ -1,4 +1,4 @@
-define(['../actions', '../../util/ajax'], function(actions, ajax) {
+define(['../actions'], function(actions) {
     actions.protectFromMain();
 
     return {
