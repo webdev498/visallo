@@ -2,10 +2,10 @@ define([], function() {
     'use strict';
 
     return function element(state, { type, payload }) {
-        if (!state) return { vertices: {}, edges: {} }
+        if (!state) return { }
 
         switch (type) {
-            case 'ELEMENT_UPDATE': return { ...state, ...(update(state, payload)) };
+            case 'ELEMENT_UPDATE': return { ...state, [payload.workspaceId]: update(state, payload) };
         }
 
         return state;

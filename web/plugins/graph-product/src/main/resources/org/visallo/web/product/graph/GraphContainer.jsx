@@ -12,6 +12,7 @@ define([
         (state, props) => {
             var viewport = state.product.viewports[props.product.id] || { zoom: 1, pan: {x: 0, y: 0 }},
                 selection = state.selection.idsByType,
+                workspaceId = state.workspace.currentId,
                 pixelRatio = state.screen.pixelRatio;
 
             return {
@@ -20,8 +21,8 @@ define([
                 viewport,
                 pixelRatio,
                 elements: {
-                    vertices: _.pick(state.element.vertices, _.pluck(props.product.extendedData.vertices, 'id')),
-                    edges: _.pick(state.element.edges, _.pluck(props.product.extendedData.edges, 'id'))
+                    vertices: _.pick(state.element[workspaceId].vertices, _.pluck(props.product.extendedData.vertices, 'id')),
+                    edges: _.pick(state.element[workspaceId].edges, _.pluck(props.product.extendedData.edges, 'id'))
                 }
             }
         },
