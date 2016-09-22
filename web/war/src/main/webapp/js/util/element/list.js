@@ -51,8 +51,7 @@ define([
             var $a = $item.children('a'),
                 vertexId = $a.data('vertexId'),
                 edgeId = $a.data('edgeId'),
-                inWorkspace = (vertexId && vertexId in this.workspaceVertices) ||
-                              (edgeId && edgeId in this.workspaceEdges),
+                inWorkspace = false, // TODO: somehow get all vertices in products
                 inMap = false;
 
             if (vertexId && inWorkspace) {
@@ -75,7 +74,7 @@ define([
             // deprecated vertex/list and edge/list components
             this.attr.items = this.attr.items || this.attr.edges || this.attr.vertices;
 
-            this.workspaceEdges = _.indexBy(visalloData.workspaceEdges, 'edgeId');
+            //this.workspaceEdges = _.indexBy(visalloData.workspaceEdges, 'edgeId');
             this.renderers = registry.extensionsForPoint(EXTENSION_POINT_NAME).concat([
                 { canHandle: function(item, usageContext) {
                         return usageContext === 'detail/relationships' &&
@@ -96,10 +95,7 @@ define([
                     return Promise.resolve();
                 });
 
-            Promise.all(
-                    [this.dataRequest('workspace', 'store')].concat(rendererPromises)
-                ).done(function(promiseResults) {
-                    self.workspaceVertices = promiseResults[0];
+            Promise.all(rendererPromises).done(function(promiseResults) {
                     self.$node
                         .addClass('element-list')
                         .html(template({

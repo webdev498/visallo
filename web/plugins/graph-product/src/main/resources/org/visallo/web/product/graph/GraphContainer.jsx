@@ -7,6 +7,11 @@ define([
 ], function(React, redux, selectionActions, productActions, Graph) {
     'use strict';
 
+    const Log = () => {
+        console.info(new Date());
+        return null;
+    };
+
     return redux.connect(
 
         (state, props) => {
@@ -14,17 +19,14 @@ define([
                 selection = state.selection.idsByType,
                 workspaceId = state.workspace.currentId,
                 pixelRatio = state.screen.pixelRatio,
-                workspaceElements = state.element[workspaceId] || {};
+                elements = state.element[workspaceId] || {};
 
             return {
                 ...props,
                 selection,
                 viewport,
                 pixelRatio,
-                elements: {
-                    vertices: _.pick(workspaceElements.vertices, _.pluck(props.product.extendedData.vertices, 'id')),
-                    edges: _.pick(workspaceElements.edges, _.pluck(props.product.extendedData.edges, 'id'))
-                }
+                elements
             }
         },
 

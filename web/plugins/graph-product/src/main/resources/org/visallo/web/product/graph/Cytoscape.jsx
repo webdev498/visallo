@@ -56,11 +56,12 @@ define([
             const oldData = cy.json()
 
             // Create copies of objects because cytoscape mutates :(
-            const getAllData = nodes => nodes.map(({data, selected, position, classes}) => ({
+            const getAllData = nodes => nodes.map(({data, selected, position, renderedPosition, classes}) => ({
                 data: {...data},
                 selected,
                 classes,
-                position: {...position}
+                position: position && {...position},
+                renderedPosition: renderedPosition && {...renderedPosition}
             }))
             const getTypeData = elementType => [oldData, newData].map(n => getAllData(n.elements[elementType] || []) )
             const [oldNodes, newNodes] = getTypeData('nodes')
@@ -196,6 +197,10 @@ define([
                             }
                             break;
 
+                        case 'renderedPosition':
+                            this.disableEvent('position', () => cyNode.renderedPosition(item.renderedPosition))
+                            break;
+
                         default:
                             throw new Error('Change not handled: ' + change)
                     }
@@ -207,7 +212,7 @@ define([
                 if (isNode(data)) {
                     cy.add({ ...item, group: 'nodes' })
                 } else if (isEdge(data)) {
-                    cy.add({ ...item, group:'edges' })
+                    cy.add({ ...item, group: 'edges' })
                 }
             })
             remove.forEach(item => {

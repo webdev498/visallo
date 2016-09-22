@@ -100,15 +100,17 @@ define([
         },
 
         mapPropsToElements() {
-            var { selection, elements } = this.props,
+            var { selection, product, elements } = this.props,
+                elementVertices = _.pick(elements.vertices, _.pluck(product.extendedData.vertices, 'id')),
+                elementEdges = _.pick(elements.edges, _.pluck(product.extendedData.edges, 'id')),
                 verticesSelectedById = _.indexBy(selection.vertices),
                 edgesSelectedById = _.indexBy(selection.edges),
                 data = this.props.product.extendedData,
                 { vertices, edges } = data,
                 cyElements = {
                     nodes: vertices.map(({ id, pos }) => ({
-                        data: mapVertexToData(id, elements.vertices),
-                        classes: mapVertexToClasses(id, elements.vertices),
+                        data: mapVertexToData(id, elementVertices),
+                        classes: mapVertexToClasses(id, elementVertices),
                         position: pos,
                         selected: (id in verticesSelectedById)
                     })),
@@ -121,6 +123,17 @@ define([
                         selected: (edgeId in edgesSelectedById)
                     }))
                 };
+
+            if (elements.dragging) {
+                cyElements.nodes = cyElements.nodes.concat(elements.dragging.ids.vertexIds.map((id) => {
+                    return {
+                        data: mapVertexToData(id, elementVertices),
+                        selected: false,
+                        classes: '', //mapVertexToClasses(id, elementVertices),
+                        renderedPosition: elements.dragging.position
+                    }
+                }))
+            }
 
             return cyElements;
         }

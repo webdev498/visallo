@@ -46,9 +46,7 @@ define([], function() {
                         over: function(event, ui) {
                             var draggable = ui.draggable,
                                 start = true,
-                                graphVisible = $('.graph-pane-2d').is('.visible'),
-                                dashboardVisible = $('.dashboard-pane').is('.visible'),
-                                vertices,
+                                ids,
                                 started = false,
                                 wrapper = $('.draggable-wrapper');
 
@@ -60,21 +58,11 @@ define([], function() {
 
                             draggable.off('drag.droppable-tracking');
                             draggable.on('drag.droppable-tracking', function handler(event, draggableUI) {
-                                if (!vertices) {
-                                    if (!started) {
-                                        started = true;
-                                        // TODO: for non-cached vertices we need
-                                        // some ui feedback that it's loading
-                                        verticesFromDraggable(draggable, self.dataRequestPromise)
-                                            .done(function(v) {
-                                                if (!v.length) return;
-                                                vertices = v;
-                                                handler(event, draggableUI);
-                                            })
-                                    }
-                                    return;
+                                if (!ids) {
+                                    ids = elementIdsFromDraggable(ui.draggable)
                                 }
 
+                                /*
                                 if (graphVisible) {
                                     ui.helper.toggleClass('draggable-invisible', enabled);
                                 } else if (dashboardVisible) {
@@ -93,19 +81,29 @@ define([], function() {
                                     self.trigger('menubarToggleDisplay', { name: 'graph' });
                                     return;
                                 }
+                                */
 
                                 self.trigger('toggleWorkspaceFilter', { enabled: !enabled });
-                                if (graphVisible) {
-                                    if (enabled) {
-                                        self.trigger('verticesHovering', {
-                                            vertices: vertices,
-                                            start: start,
-                                            position: { x: event.pageX, y: event.pageY }
-                                        });
-                                        start = false;
-                                    } else {
-                                        self.trigger('verticesHoveringEnded', { vertices: vertices });
-                                    }
+                                if (enabled) {
+                                    //const position = { x: event.pageX, y: event.pageY }
+                                    //visalloData.storePromise.then(store => {
+                                        //store.dispatch({
+                                            //type: 'ELEMENT_DRAG',
+                                            //payload: {
+                                                //workspaceId: store.getState().workspace.currentId,
+                                                //position,
+                                                //...ids
+                                            //}
+                                        //})
+                                    //})
+                                    //self.trigger('verticesHovering', {
+                                        //vertices: vertices,
+                                        //start: start,
+                                        //position: { x: event.pageX, y: event.pageY }
+                                    //});
+                                    start = false;
+                                } else {
+                                    //self.trigger('verticesHoveringEnded', { vertices: vertices });
                                 }
                             });
                         },
@@ -115,24 +113,30 @@ define([], function() {
                             // Early exit if should leave to a different droppable
                             if (!enabled) return;
 
-                            verticesFromDraggable(ui.draggable, self.dataRequestPromise)
-                                .done(function(vertices) {
-                                    var graphVisible = $('.graph-pane-2d').is('.visible');
-
-                                    if (visalloData.currentWorkspaceEditable && vertices.length) {
-                                        self.trigger('clearWorkspaceFilter');
-                                        self.trigger('verticesDropped', {
-                                            vertices: vertices,
-                                            dropPosition: { x: event.clientX, y: event.clientY }
-                                        });
-                                    }
+                            const position = { x: event.pageX, y: event.pageY }
+                            const ids = elementIdsFromDraggable(ui.draggable)
+                            visalloData.storePromise.then(store => {
+                                require(['data/web-worker/store/element/actions'], function({ dragEnd }) {
+                                    store.dispatch(dragEnd({
+                                        workspaceId: store.getState().workspace.currentId,
+                                        position, ids
+                                    }))
                                 })
+                            });
+                            //const ids = elementIdsFromDraggable(ui.draggable)
+                            //if (visalloData.currentWorkspaceEditable && ids.length) {
+                                //self.trigger('clearWorkspaceFilter');
+                                //self.trigger('verticesDropped', {
+                                    //vertices: vertices,
+                                    //dropPosition: { x: event.clientX, y: event.clientY }
+                                //});
+                            //}
                         }
                     });
                 });
             }));
 
-            function verticesFromDraggable(draggable, dataRequestPromise) {
+            function elementIdsFromDraggable(draggable) {
                 var draggableData = draggable.data('ui-draggable');
                 if (!draggableData) return Promise.resolve([]);
 
@@ -145,12 +149,18 @@ define([], function() {
                     }));
                 }
 
-                var vertexIds = _.compact(anchors.map(function(i, a) {
+                var ids = { vertexIds: [], edgeIds: [] };
+                anchors.each(function(i, a) {
                     a = $(a);
-                    var vertexId = a.data('vertexId') || a.closest('li').data('vertexId');
+                    var vertexId = a.data('vertexId');
+                    var edgeId = a.data('edgeId');
+                    if (!vertexId && !edgeId) {
+                        vertexId = a.closest('li').data('vertexId');
+                        if (!vertexId) edgeId = a.closest('li').data('vertexId');
+                    }
                     if (a.is('.facebox')) return;
 
-                    if (!vertexId) {
+                    if (!vertexId && !edgeId) {
 
                         // Highlighted entities (legacy info)
                         var info = a.data('info') || a.closest('li').data('info');
@@ -162,17 +172,13 @@ define([], function() {
                             self.updateCacheWithVertex(info.entityVertex);
                             vertexId = info.entityVertex.id;
                         }
-
-                        if (!vertexId) {
-                            return;
-                        }
                     }
-                    return vertexId;
-                }).toArray());
 
-                return dataRequestPromise.then(function(dataRequest) {
-                    return dataRequest('vertex', 'store', { vertexIds: vertexIds });
+                    if (vertexId) ids.vertexIds.push(vertexId);
+                    if (edgeId) ids.edgeIds.push(edgeId);
                 });
+
+                return ids;
             }
         })
     }

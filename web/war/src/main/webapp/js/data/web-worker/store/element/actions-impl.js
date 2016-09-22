@@ -17,7 +17,11 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
         update: ({ vertices, edges, workspaceId }) => ({
             type: 'ELEMENT_UPDATE',
             payload: { vertices, edges, workspaceId }
-        })
+        }),
+
+        dragEnd: (payload) => (dispatch, getState) => {
+            dispatch({ type: 'ELEMENT_DRAGEND', payload })
+        }
     }
 
     return api;
