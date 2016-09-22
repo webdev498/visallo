@@ -46,7 +46,7 @@ define([
             this.triggerChange = _.debounce(this.triggerChange.bind(this), 500);
             this.onGraphPaddingUpdated = _.debounce(this.onGraphPaddingUpdated.bind(this), 500);
             this.on(document, 'graphPaddingUpdated', this.onGraphPaddingUpdated);
-            this.on(document, 'workspaceUpdated', this.onWorkspaceUpdated);
+            //this.on(document, 'workspaceUpdated', this.onWorkspaceUpdated);
             this.on(document, 'workspaceLoaded', this.onWorkspaceLoaded);
             this.on(document, 'objectsSelected', this.onObjectsSelected);
             this.on(document, 'verticesUpdated', this.onVerticesUpdated);
@@ -111,23 +111,23 @@ define([
             });
         };
 
-        this.onWorkspaceUpdated = function(event, data) {
-            if (data.newVertices.length) {
-                var self = this;
-                this.renderChart().then(function() {
-                    self.updateBarSelection(self.currentSelected);
-                });
-            }
-            if (data.entityDeletes.length) {
-                this.currentSelected.vertexIds = _.without(this.currentSelected.vertexIds || [], data.entityDeletes);
-                this.values = _.reject(this.values, function(v) {
-                    return _.contains(data.entityDeletes, v.vertexId);
-                });
-                this.data = this.binValues();
-                this.createBars(this.data);
-                this.updateBarSelection(this.currentSelected);
-            }
-        };
+        //this.onWorkspaceUpdated = function(event, data) {
+            //if (data.newVertices.length) {
+                //var self = this;
+                //this.renderChart().then(function() {
+                    //self.updateBarSelection(self.currentSelected);
+                //});
+            //}
+            //if (data.entityDeletes.length) {
+                //this.currentSelected.vertexIds = _.without(this.currentSelected.vertexIds || [], data.entityDeletes);
+                //this.values = _.reject(this.values, function(v) {
+                    //return _.contains(data.entityDeletes, v.vertexId);
+                //});
+                //this.data = this.binValues();
+                //this.createBars(this.data);
+                //this.updateBarSelection(this.currentSelected);
+            //}
+        //};
 
         this.onWorkspaceLoaded = function() {
             this.renderChart();

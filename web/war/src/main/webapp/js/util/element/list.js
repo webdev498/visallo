@@ -125,7 +125,7 @@ define([
                     self.on('downUp', self.move);
                     self.on('upUp', self.move);
                     self.on('contextmenu', self.onContextMenu);
-                    self.on(document, 'workspaceUpdated', self.onWorkspaceUpdated);
+                    //self.on(document, 'workspaceUpdated', self.onWorkspaceUpdated);
                     self.trigger('renderFinished');
 
                     _.defer(function() {
@@ -135,28 +135,28 @@ define([
             });
         });
 
-        this.onWorkspaceUpdated = function(event, data) {
-            var self = this;
-            this.dataRequest('workspace', 'store')
-                .done(function(workspaceVertices) {
-                    self.workspaceVertices = workspaceVertices;
+        //this.onWorkspaceUpdated = function(event, data) {
+            //var self = this;
+            //this.dataRequest('workspace', 'store')
+                //.done(function(workspaceVertices) {
+                    //self.workspaceVertices = workspaceVertices;
 
-                    var addedVertices = _.indexBy(data.newVertices, 'id'),
-                        removedVertices = _.indexBy(data.entityDeletes);
+                    //var addedVertices = _.indexBy(data.newVertices, 'id'),
+                        //removedVertices = _.indexBy(data.entityDeletes);
 
-                    self.select('itemSelector').each(function(idx, item) {
-                        var $item = $(item),
-                            vertexId = $item.children('a').data('vertexId');
-                        if (vertexId in addedVertices) {
-                            self.stateForItem($item).then(function(itemState) {
-                                $item.addClass('graph-displayed').toggleClass('map-displayed', itemState.inMap);
-                            });
-                        } else if (vertexId in removedVertices) {
-                            $item.removeClass('graph-displayed map-displayed');
-                        }
-                    });
-                });
-        };
+                    //self.select('itemSelector').each(function(idx, item) {
+                        //var $item = $(item),
+                            //vertexId = $item.children('a').data('vertexId');
+                        //if (vertexId in addedVertices) {
+                            //self.stateForItem($item).then(function(itemState) {
+                                //$item.addClass('graph-displayed').toggleClass('map-displayed', itemState.inMap);
+                            //});
+                        //} else if (vertexId in removedVertices) {
+                            //$item.removeClass('graph-displayed map-displayed');
+                        //}
+                    //});
+                //});
+        //};
 
         this.onContextMenu = function(evt) {
             evt.preventDefault();

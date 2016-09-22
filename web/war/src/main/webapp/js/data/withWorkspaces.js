@@ -39,6 +39,13 @@ define(['util/undoManager'], function(UndoManager) {
                             this.trigger('menubarToggleDisplay', { name: 'dashboard' });
                         }
                         previous = state;
+                    } else if (!idChanged) {
+                        _.each(state.workspace.byId, (workspace, id) => {
+                            const workspaceChanged = previous.workspace.byId[id] !== workspace;
+                            if (workspaceChanged) {
+                                this.trigger('workspaceUpdated', { workspace })
+                            }
+                        });
                     }
                 })
             })
@@ -68,11 +75,10 @@ define(['util/undoManager'], function(UndoManager) {
                 }, 250),
                 result;
 
-            this.dataRequestPromise.done(function(dataRequest) {
+            this.dataRequestPromise.then(function(dataRequest) {
                 dataRequest('workspace', 'save', data)
                     .then(function(data) {
                         clearTimeout(buffer);
-                        result = data;
                         if (data.saved) {
                             triggered = true;
                         }
@@ -81,21 +87,11 @@ define(['util/undoManager'], function(UndoManager) {
                         console.error(e);
                     })
                     .then(function() {
-                        console.log(result)
                         if (triggered) {
                             self.trigger('workspaceSaved', result);
                         }
                     })
             });
         };
-
-        function padWorkspaceUpdate(workspaceUpdates) {
-            'entityUpdates entityDeletes userUpdates userDeletes'.split(' ').forEach(function(k) {
-                if (!(k in workspaceUpdates)) {
-                    workspaceUpdates[k] = [];
-                }
-            });
-            return workspaceUpdates;
-        }
     }
 });

@@ -49,12 +49,13 @@ define([
                     var len = vertexIds.length;
 
                     if (len) {
-                        self.trigger('updateWorkspace', {
-                            entityDeletes: vertexIds
-                        });
-                        self.trigger('displayInformation', {
-                            message: formatVertexAction('Cut', vertexIds)
-                        });
+                        // FIXME
+                        //self.trigger('updateWorkspace', {
+                            //entityDeletes: vertexIds
+                        //});
+                        //self.trigger('displayInformation', {
+                            //message: formatVertexAction('Cut', vertexIds)
+                        //});
                     }
                 });
         };

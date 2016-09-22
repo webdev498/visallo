@@ -2,8 +2,9 @@
 define([
     '../util/ajax',
     '../store',
+    '../store/workspace/actions-impl',
     '../util/queue'
-], function(ajax, store, queue) {
+], function(ajax, store, workspaceActions, queue) {
     'use strict';
 
     var api = {
@@ -214,11 +215,9 @@ define([
             return ajax('POST', '/workspace/update', {
                 workspaceId: workspaceId,
                 data: JSON.stringify(allChanges)
-            }).then(function() {
-                const workspaces = store.getStore().getState().workspace;
-                const workspace = workspaces.byId[workspaceId];
-                // TODO: FIXME
-                return { saved: true, workspace: {...workspace, title: changes.title } }
+            }).then(function(workspace) {
+                store.getStore().dispatch(workspaceActions.update({ workspace }))
+                return { saved: true, workspace };
             });
         }),
 

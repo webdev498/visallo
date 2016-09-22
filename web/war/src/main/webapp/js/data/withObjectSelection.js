@@ -69,11 +69,6 @@ define(['data/web-worker/store/selection/actions'], function(selectionActions) {
                 }
                 this.removeFromStack(data.vertexIds);
             });
-            this.on('workspaceUpdated', function(event, data) {
-                if (data.entityDeletes.length) {
-                    this.removeFromStack(data.entityDeletes);
-                }
-            });
             this.on('switchWorkspace', function() {
                 this.selectedObjectsStack = [];
                 this.setPublicApi('selectedObjectsStack');
@@ -228,17 +223,18 @@ define(['data/web-worker/store/selection/actions'], function(selectionActions) {
                 return;
             }
 
-            if (data && data.vertexId) {
-                self.trigger('updateWorkspace', {
-                    entityDeletes: [data.vertexId]
-                });
-            } else if (selectedObjects) {
-                if (selectedObjects.vertices.length) {
-                    self.trigger('updateWorkspace', {
-                        entityDeletes: _.pluck(selectedObjects.vertices, 'id')
-                    });
-                }
-            }
+            // FIXME
+            //if (data && data.vertexId) {
+                //self.trigger('updateWorkspace', {
+                    //entityDeletes: [data.vertexId]
+                //});
+            //} else if (selectedObjects) {
+                //if (selectedObjects.vertices.length) {
+                    //self.trigger('updateWorkspace', {
+                        //entityDeletes: _.pluck(selectedObjects.vertices, 'id')
+                    //});
+                //}
+            //}
         };
 
         this.onSelectObjects = function(event, data) {

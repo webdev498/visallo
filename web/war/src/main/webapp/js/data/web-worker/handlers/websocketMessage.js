@@ -11,8 +11,8 @@ define([
         },
         socketHandlers = {
             workspaceChange: function(data, json) {
-                require(['../util/store'], function(legacyStore) {
-                    legacyStore.workspaceWasChangedRemotely(data);
+                require(['../store/workspace/actions-impl'], function(actions) {
+                    store.getStore().dispatch(actions.update({ workspace: data }))
                 })
             },
             workspaceDelete: function(data) {

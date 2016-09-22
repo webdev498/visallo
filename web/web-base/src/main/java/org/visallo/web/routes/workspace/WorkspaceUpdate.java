@@ -18,8 +18,10 @@ import org.visallo.core.model.workspace.WorkspaceRepository;
 import org.visallo.core.user.User;
 import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
-import org.visallo.web.VisalloResponse;
-import org.visallo.web.clientapi.model.*;
+import org.visallo.web.clientapi.model.ClientApiWorkspace;
+import org.visallo.web.clientapi.model.ClientApiWorkspaceUpdateData;
+import org.visallo.web.clientapi.model.GraphPosition;
+import org.visallo.web.clientapi.model.WorkspaceAccess;
 import org.visallo.web.parameterProviders.ActiveWorkspaceId;
 import org.visallo.web.parameterProviders.SourceGuid;
 
@@ -46,7 +48,7 @@ public class WorkspaceUpdate implements ParameterizedHandler {
     }
 
     @Handle
-    public ClientApiSuccess handle(
+    public ClientApiWorkspace handle(
             @Required(name = "data") ClientApiWorkspaceUpdateData updateData,
             @ActiveWorkspaceId String workspaceId,
             @SourceGuid String sourceGuid,
@@ -79,7 +81,7 @@ public class WorkspaceUpdate implements ParameterizedHandler {
 
         workQueueRepository.pushWorkspaceChange(clientApiWorkspace, previousUsers, user.getUserId(), sourceGuid);
 
-        return VisalloResponse.SUCCESS;
+        return workspaceRepository.toClientApi(workspace, user, authorizations);
     }
 
     private void setTitle(Workspace workspace, String title, User authUser) {
