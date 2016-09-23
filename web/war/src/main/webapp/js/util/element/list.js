@@ -137,10 +137,53 @@ define([
         });
 
         this.onClick = function(event) {
+            event.preventDefault();
+
+            const {vertexIds, edgeIds} = visalloData.selectedObjects;
+            const $target = $(event.target).parents('li');
+            const pushData = (data) => {
+                if (data.vertexId) selectVertexIds.push(data.vertexId)
+                if (data.edgeId) selectEdgeIds.push(data.edgeId)
+            };
+
             var data = $(event.target).closest('a[draggable]').data();
+            var [selectVertexIds, selectEdgeIds] = [[], []];
+
+            if (!this.attr.singleSelection) {
+                const targetIndex = $target.index();
+
+                if (event.shiftKey) {
+                    const index = this.lastClickedIndex || 0;
+                    const min = Math.min(index, targetIndex);
+                    const max = Math.max(index, targetIndex);
+                    const $items = $target.parent().children();
+                    for (let i = min; i <= max; i++) {
+                        pushData($items.eq(i).find('a[draggable]').data());
+                    }
+                } else if (event.metaKey || event.ctrlKey) {
+                    selectVertexIds = Object.keys(vertexIds);
+                    selectEdgeIds = Object.keys(edgeIds);
+                } else {
+                    if (data.vertexId && data.vertexId in vertexIds &&
+                        Object.keys(vertexIds).length === 1) {
+                        data = {};
+                    }
+                    if (data.edgeId && data.edgeId in edgeIds &&
+                        Object.keys(edgeIds).length === 1) {
+                        data = {};
+                    }
+                }
+
+                if (!event.shiftKey) {
+                    this.lastClickedIndex = targetIndex;
+                }
+            }
+
+            pushData(data);
+
             this.trigger('selectObjects', {
-                vertexIds: data.vertexId ? [data.vertexId] : null,
-                edgeIds: data.edgeId ? [data.edgeId] : null
+                vertexIds: selectVertexIds,
+                edgeIds: selectEdgeIds
             })
         };
 
@@ -184,6 +227,7 @@ define([
         };
 
         this.move = function(e, data) {
+            // FIXME: not working
             var previousSelected = this.select('itemSelector').filter('.active')[e.type === 'upUp' ? 'first' : 'last'](),
                 moveTo = previousSelected[e.type === 'upUp' ? 'prev' : 'next']('.element-item');
 
@@ -304,12 +348,14 @@ define([
                 if (itemState.inMap) el.addClass('map-displayed');
             });
 
-            this.applyDraggable(el.children('a.draggable'), item);
+            this.applyDraggable(el.children('a.draggable'));
 
             return el;
         };
 
         this.addItems = function(items) {
+            this._items = { ...(this._items || {}), ...(_.indexBy(items, 'id')) };
+
             var self = this,
                 loading = this.$node.find('.infinite-loading'),
                 added = _.reduce(items, function(selection, item) {
@@ -363,36 +409,34 @@ define([
             lisVisible.children('a').trigger('loadPreview');
         };
 
-        this.applyDraggable = function(el, item) {
+        this.applyDraggable = function(el) {
             var self = this;
 
             el[0].addEventListener('dragstart', function(e) {
+                const elements = { vertexIds: [], edgeIds: [] };
+                const $target = $(e.target).closest('li');
+                const items = [];
+
+                $target.siblings('.active').andSelf().each(function() {
+                    var data = $(this).find('a[draggable]').data();
+                    if (data.vertexId) {
+                        elements.vertexIds.push(data.vertexId);
+                        items.push(self._items[data.vertexId])
+                    }
+                    if (data.edgeId) {
+                        elements.edgeIds.push(data.edgeId);
+                        items.push(self._items[data.edgeId])
+                    }
+                })
                 const dt = e.dataTransfer;
-                const url = F.vertexUrl.url([item], visalloData.currentWorkspaceId);
 
                 dt.effectAllowed = 'all';
-                dt.setData('text/uri-list', url);
-                dt.setData('text/plain', `${F.vertex.title(item)}\n${url}`);
-                dt.setData(VISALLO_MIMETYPES.ELEMENTS, JSON.stringify({ elements: [item] }));
-            });
-
-            //el.draggable({
-                //helper: 'clone',
-                //appendTo: 'body',
-                //revert: 'invalid',
-                //revertDuration: 250,
-                //scroll: false,
-                //zIndex: 100,
-                //distance: 10,
-                //multi: true,
-                //limitSelectionToSingle: this.attr.singleSelection === true,
-                //start: function(ev, ui) {
-                    //$(ui.helper).addClass('vertex-dragging');
-                //},
-                //selection: function(ev, ui) {
-                    //self.selectItems(ui.selected);
-                //}
-            //});
+                dt.setData('text/uri-list', F.vertexUrl.url(items, visalloData.currentWorkspaceId));
+                dt.setData('text/plain', items.map(item => [
+                    F.vertex.title(item), F.vertexUrl.url([item], visalloData.currentWorkspaceId)
+                ].join('\n')).join('\n\n'));
+                dt.setData(VISALLO_MIMETYPES.ELEMENTS, JSON.stringify({ elements }));
+            }, false)
         };
 
         this.selectItems = function(items) {

@@ -58,10 +58,7 @@ define([
                 }
                 this.props.onDrop(
                     this.props.product.id,
-                    _.chain(data.elements)
-                        .groupBy(element => map[element.type])
-                        .mapObject(els => _.pluck(els, 'id'))
-                        .value(),
+                    data.elements,
                     this.refs.graph.renderedPositionToPosition(position)
                 );
             }

@@ -75,7 +75,10 @@ define([
                                 })) :
                                 Promise.resolve();
 
-                        if (VISALLO_MIMETYPES._DataTransferHasVisallo(dt)) return;
+                        if (VISALLO_MIMETYPES._DataTransferHasVisallo(dt)) {
+                            dt.dropEffect = 'none';
+                            return
+                        }
 
                         folderCheck
                             .then(function() {
