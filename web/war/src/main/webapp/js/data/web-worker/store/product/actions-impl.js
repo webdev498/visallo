@@ -55,6 +55,13 @@ define(['../actions', '../../util/ajax', '../element/actions-impl'], function(ac
             payload: { productId, pan, zoom }
         }),
 
+        dropElements: ({ productId, elements, position }) => (dispatch, getState) => {
+            dispatch(api.updatePositions({
+                productId,
+                updateVertices: _.object(elements.vertexIds.map(id => [id, position]))
+            }))
+        },
+
         list: {
             type: 'dataRequest',
             payload: {

@@ -18,7 +18,6 @@
 @import "util/users/userSelect";
 @import "util/ontology/ontology";
 @import "util/instructions";
-@import "util/jquery-ui-draggable-multiselect";
 @import "util/context-menu";
 @import "util/selection";
 @import "util/offlineOverlay";
@@ -278,6 +277,7 @@ html.fullscreenDetails {
 }
 
 @import "comments/comments";
+@import "products/full";
 
 .detail-pane {
   @import "detail/detail";
@@ -356,6 +356,27 @@ textarea, input[type="text"], input[type="password"], input[type="datetime"], in
     top: 0;
     right: 0;
     bottom: 0;
+}
+
+@keyframes draggable-fade-in {
+  to { opacity: 1; }
+}
+.accepts-draggable {
+  &:before {
+    background: fade(white, 75%) url(../img/drop-items@2x.png) center/auto 30% no-repeat;
+    content: '';
+    display: block;
+    left: 0; right: 0; bottom: 0; top: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+    opacity: 0;
+    animation-name: draggable-fade-in;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+    animation-play-state: running;
+  }
 }
 
 .alert {

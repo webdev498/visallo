@@ -43,6 +43,7 @@ define([
 
         this.defaultAttrs({
             itemSelector: 'ul > li.element-item',
+            draggableSelector: '.element-item a[draggable]',
             infiniteScrolling: false,
             usageContext: 'search'
         });
@@ -85,6 +86,10 @@ define([
                 { canHandle: function(item) { return F.vertex.isEdge(item); }, component: EdgeItem },
                 { canHandle: function(item) { return F.vertex.isVertex(item); }, component: VertexItem }
             ])
+
+            this.on('click', {
+                draggableSelector: this.onClick
+            });
 
             var rendererPromises = _.map(this.renderers, function(extension) {
                     if (extension.componentPath && !extension.component) {
@@ -130,6 +135,14 @@ define([
                     self.trigger('listRendered');
             });
         });
+
+        this.onClick = function(event) {
+            var data = $(event.target).closest('a[draggable]').data();
+            this.trigger('selectObjects', {
+                vertexIds: data.vertexId ? [data.vertexId] : null,
+                edgeIds: data.edgeId ? [data.edgeId] : null
+            })
+        };
 
         //this.onWorkspaceUpdated = function(event, data) {
             //var self = this;
@@ -284,14 +297,14 @@ define([
 
             el.children('a').teardownAllComponents();
             el.empty();
-            itemRenderer.attachTo($('<a class="draggable" />').appendTo(el), { item: item, usageContext: usageContext });
+            itemRenderer.attachTo($('<a class="draggable" draggable="true" />').appendTo(el), { item: item, usageContext: usageContext });
 
             this.stateForItem(el).then(function(itemState) {
                 if (itemState.inGraph) el.addClass('graph-displayed');
                 if (itemState.inMap) el.addClass('map-displayed');
             });
 
-            this.applyDraggable(el.children('a.draggable'));
+            this.applyDraggable(el.children('a.draggable'), item);
 
             return el;
         };
@@ -350,26 +363,36 @@ define([
             lisVisible.children('a').trigger('loadPreview');
         };
 
-        this.applyDraggable = function(el) {
+        this.applyDraggable = function(el, item) {
             var self = this;
 
-            el.draggable({
-                helper: 'clone',
-                appendTo: 'body',
-                revert: 'invalid',
-                revertDuration: 250,
-                scroll: false,
-                zIndex: 100,
-                distance: 10,
-                multi: true,
-                limitSelectionToSingle: this.attr.singleSelection === true,
-                start: function(ev, ui) {
-                    $(ui.helper).addClass('vertex-dragging');
-                },
-                selection: function(ev, ui) {
-                    self.selectItems(ui.selected);
-                }
+            el[0].addEventListener('dragstart', function(e) {
+                const dt = e.dataTransfer;
+                const url = F.vertexUrl.url([item], visalloData.currentWorkspaceId);
+
+                dt.effectAllowed = 'all';
+                dt.setData('text/uri-list', url);
+                dt.setData('text/plain', `${F.vertex.title(item)}\n${url}`);
+                dt.setData(VISALLO_MIMETYPES.ELEMENTS, JSON.stringify({ elements: [item] }));
             });
+
+            //el.draggable({
+                //helper: 'clone',
+                //appendTo: 'body',
+                //revert: 'invalid',
+                //revertDuration: 250,
+                //scroll: false,
+                //zIndex: 100,
+                //distance: 10,
+                //multi: true,
+                //limitSelectionToSingle: this.attr.singleSelection === true,
+                //start: function(ev, ui) {
+                    //$(ui.helper).addClass('vertex-dragging');
+                //},
+                //selection: function(ev, ui) {
+                    //self.selectItems(ui.selected);
+                //}
+            //});
         };
 
         this.selectItems = function(items) {

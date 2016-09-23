@@ -121,6 +121,10 @@ define([
                     }
                 })
 
+                if (!_.isEqual(previous.style, style)) {
+                    cy.style(style)
+                }
+
                 // Set viewport
                 if (pan || zoom) {
                     var newViewport = { zoom, pan: {...pan} };

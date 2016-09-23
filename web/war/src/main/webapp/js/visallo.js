@@ -45,6 +45,23 @@ function(jQuery,
         );
     window.TRANSITION_END = 'transitionend webkitTransitionEnd MSTransitionEnd oTransitionEnd otransitionend';
     window.ANIMATION_END = 'animationend webkitAnimationEnd MSAnimationEnd oAnimationEnd oanimationend';
+    window.VISALLO_MIMETYPES = _.mapObject({
+        _PREFIX: 'application/x-visallo.',
+        _FORMAT: '+json',
+        _DataTransferHasVisallo: (dataTransfer, specificType) => {
+            return _.any(dataTransfer.types, (type) => {
+                if (specificType) return type === specificType
+                return type.indexOf(VISALLO_MIMETYPES._PREFIX) === 0;
+            })
+        },
+
+        ELEMENTS: 'elements'
+    }, (str, key, obj) => {
+        if (key.substring(0, 1) !== '_') {
+            return obj._PREFIX + str + obj._FORMAT;
+        }
+        return str;
+    })
 
     var progress = 0,
         progressBar = null,

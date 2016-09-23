@@ -10,7 +10,8 @@ define(['../actions'], function(actions) {
             select: (productId) => ({ productId }),
             delete: (productId) => ({ productId }),
             updatePositions: (productId, updateVertices) => ({ productId, updateVertices }),
-            updateViewport: (productId, { pan, zoom }) => ({ productId, pan, zoom })
+            updateViewport: (productId, { pan, zoom }) => ({ productId, pan, zoom }),
+            dropElements: (productId, elements, position) => ({ productId, elements, position })
         }
     })
 })

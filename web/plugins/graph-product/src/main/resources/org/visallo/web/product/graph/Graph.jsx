@@ -35,7 +35,7 @@ define([
 
         render() {
             var { viewport } = this.state,
-                config = {...CONFIGURATION(this.props.pixelRatio), ...viewport},
+                config = {...CONFIGURATION(this.props), ...viewport},
                 events = {
                     onSelect: this.onSelect,
                     onUnselect: this.onUnselect,
@@ -48,10 +48,21 @@ define([
                 };
             return (
                 <Cytoscape
+                    ref="cytoscape"
                     {...events}
                     config={config}
                     elements={this.mapPropsToElements()}></Cytoscape>
             )
+        },
+
+        renderedPositionToPosition(rpos) {
+            const cy = this.refs.cytoscape.state.cy;
+            const pan = cy.pan();
+            const zoom = cy.zoom();
+            return {
+                x: (rpos.x - pan.x) / zoom,
+                y: (rpos.y - pan.y) / zoom
+            };
         },
 
         onTap({ cy, cyTarget }) {
@@ -164,8 +175,9 @@ define([
     const CUSTOM_IMAGE_SIZE = 50;
     const IMAGE_ASPECT_RATIO = 4 / 3;
     const VIDEO_ASPECT_RATIO = 19 / 9;
-    const CONFIGURATION = (pixelRatio) => ({
-        style: [
+    const CONFIGURATION = (props) => {
+        const { pixelRatio } = props;
+        return { style: [
             {
                 selector: 'core',
                 css: {
@@ -388,8 +400,8 @@ define([
                     'target-arrow-color': '#0088cc'
                 }
             }
-        ]
-    });
+        ]}
+    };
 
     return Graph;
 });

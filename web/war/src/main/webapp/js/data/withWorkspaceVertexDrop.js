@@ -37,13 +37,14 @@ define([], function() {
                     }
                 });
 
+                /*
                 require(['jquery-ui'], function() {
                     droppable.droppable({
                         tolerance: 'pointer',
                         accept: function(item) {
                             return true;
                         },
-                        over: function(event, ui) {
+                        over: function(overEvent, ui) {
                             var draggable = ui.draggable,
                                 start = true,
                                 ids,
@@ -57,33 +58,39 @@ define([], function() {
                             }
 
                             draggable.off('drag.droppable-tracking');
-                            draggable.on('drag.droppable-tracking', function handler(event, draggableUI) {
+                            draggable.on('drag.droppable-tracking', function handler(dragEvent, draggableUI) {
                                 if (!ids) {
                                     ids = elementIdsFromDraggable(ui.draggable)
                                 }
 
-                                /*
-                                if (graphVisible) {
-                                    ui.helper.toggleClass('draggable-invisible', enabled);
-                                } else if (dashboardVisible) {
-                                    $(event.target).closest('.dialog-popover').data('preventTeardown', true);
+                                console.log('dispatching', overEvent.target, ui, draggableUI);
+                                overEvent.target.dispatchEvent(new CustomEvent('elementsDragging', { ids, enabled }));
+                                //self.trigger('verticesHovering', {
+                                //vertices: vertices,
+                                //start: start,
+                                //position: { x: event.pageX, y: event.pageY }
+                                //});
 
-                                    var count = 0;
-                                    self.on(document, 'didToggleDisplay', function didToggle(event, data) {
-                                        count++;
-                                        if (count >= 2) {
-                                            self.off(document, 'didToggleDisplay', didToggle);
-                                            dashboardVisible = false;
-                                            graphVisible = true;
-                                            handler(event, draggableUI);
-                                        }
-                                    })
-                                    self.trigger('menubarToggleDisplay', { name: 'graph' });
-                                    return;
-                                }
-                                */
+                                //if (graphVisible) {
+                                    //ui.helper.toggleClass('draggable-invisible', enabled);
+                                //} else if (dashboardVisible) {
+                                    //$(event.target).closest('.dialog-popover').data('preventTeardown', true);
 
-                                self.trigger('toggleWorkspaceFilter', { enabled: !enabled });
+                                    //var count = 0;
+                                    //self.on(document, 'didToggleDisplay', function didToggle(event, data) {
+                                        //count++;
+                                        //if (count >= 2) {
+                                            //self.off(document, 'didToggleDisplay', didToggle);
+                                            //dashboardVisible = false;
+                                            //graphVisible = true;
+                                            //handler(event, draggableUI);
+                                        //}
+                                    //})
+                                    //self.trigger('menubarToggleDisplay', { name: 'graph' });
+                                    //return;
+                                //}
+
+                                //self.trigger('toggleWorkspaceFilter', { enabled: !enabled });
                                 if (enabled) {
                                     //const position = { x: event.pageX, y: event.pageY }
                                     //visalloData.storePromise.then(store => {
@@ -134,6 +141,7 @@ define([], function() {
                         }
                     });
                 });
+                */
             }));
 
             function elementIdsFromDraggable(draggable) {

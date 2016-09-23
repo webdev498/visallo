@@ -75,6 +75,8 @@ define([
                                 })) :
                                 Promise.resolve();
 
+                        if (VISALLO_MIMETYPES._DataTransferHasVisallo(dt)) return;
+
                         folderCheck
                             .then(function() {
                                 if (files.length) {

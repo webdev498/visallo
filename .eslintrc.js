@@ -13,6 +13,7 @@ module.exports = {
         "visalloPluginResources": false,
         "TRANSITION_END": false,
         "ANIMATION_END": false,
+        "VISALLO_MIMETYPES": false,
         "i18n": false,
         "_": false
     },
