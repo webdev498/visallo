@@ -30,9 +30,7 @@ define([
             const { dataTransfer } = event;
             if (VISALLO_MIMETYPES._DataTransferHasVisallo(dataTransfer, VISALLO_MIMETYPES.ELEMENTS)) {
                 event.preventDefault();
-                dataTransfer.dropEffect = 'copy';
             }
-            dataTransfer.dropEffect = 'none';
         },
         dragenter(event) {
             if (VISALLO_MIMETYPES._DataTransferHasVisallo(event.dataTransfer, VISALLO_MIMETYPES.ELEMENTS)) {
