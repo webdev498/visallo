@@ -23,5 +23,6 @@
         <module>change-email</module>
         <module>change-password</module>
         <module>graph-product</module>
+        <module>map-product</module>
     </modules>
 </project>

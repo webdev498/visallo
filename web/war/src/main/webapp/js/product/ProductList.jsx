@@ -21,7 +21,7 @@ define([
                     return (
                         <div onClick={this.props.onSelectProduct.bind(null, item.id)} key={item.id}>
                             <button style={{float: 'right', marginTop: '0.3em'}} onClick={this.onDelete.bind(null, item.id)}>DELETE</button>
-                            <p style={style}>{item.title}<br/><i>{item.id}</i></p>
+                            <p style={style}>{item.title}<br/>{item.kind}<br/><i>{item.id}</i></p>
                         </div>
                     )
                 }),
@@ -33,7 +33,11 @@ define([
             return (
                 <div>
                     <h1>Products</h1>
-                    <button onClick={this.props.onCreateGraph}>Create Graph</button>
+                    {this.props.types.map(type => {
+                        return (
+                            <button onClick={this.props.onCreate.bind(this, type)} key={type}>{i18n(type + '.name')}</button>
+                        )
+                    })}
                     {content}
                 </div>
             );

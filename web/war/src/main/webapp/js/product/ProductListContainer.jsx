@@ -42,7 +42,7 @@ define([
             })
 
             return {
-                onCreateGraph: () => { dispatch(productActions.create('A new Empty Graph', 'org.visallo.web.product.graph.GraphWorkProduct')) },
+                onCreate: (type) => { dispatch(productActions.create('Untitled', type)) },
                 onDeleteProduct: (productId) => { dispatch(productActions.delete(productId)) },
                 onSelectProduct: (productId) => { openProductDetail(); dispatch(productActions.select(productId)) }
             }

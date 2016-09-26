@@ -1,16 +1,15 @@
-define([], function() {
+define(['updeep'], function(updeep) {
     'use strict';
 
     return function product(state, { type, payload }) {
-        if (!state) return { loading: false, selected: null, items: [], viewports: {}, error: null };
+        if (!state) return { loading: false, selected: null, types: [], items: [], viewports: {}, error: null };
 
         switch (type) {
-            case 'product_list_dataRequestLoading': return { ...state, loading: true }
-            case 'product_list_dataRequestSuccess': return { ...state, loading: false, items: sort(payload.result.products) }
-            case 'product_list_dataRequestFailure': return { ...state, loading: false, items: [], error: payload.error }
-
             case 'product_getProduct_dataRequestSuccess': return { ...state, items: updateOrAddItem(state.items, payload.result) }
 
+
+            case 'PRODUCT_LIST': return updateList(state, payload)
+            case 'PRODUCT_UPDATE_TYPES': return { ...state, types: payload.types }
 
             case 'PRODUCT_SELECT': return { ...state, selected: payload.productId }
             case 'PRODUCT_UPDATE': return { ...state, items: updateOrAddItem(state.items, payload.product) }
@@ -20,6 +19,11 @@ define([], function() {
         }
 
         return state;
+    }
+
+    function updateList(state, { loading, items }) {
+        const sortedItems = sort(items);
+        return updeep({ items: sortedItems, loading }, state)
     }
 
     function sort(products) {

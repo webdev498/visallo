@@ -14,5 +14,7 @@ public class GraphWebAppPlugin implements WebAppPlugin {
         app.registerJavaScriptComponent("/org/visallo/web/product/graph/GraphContainer.jsx");
         app.registerJavaScriptComponent("/org/visallo/web/product/graph/Graph.jsx");
         app.registerJavaScriptComponent("/org/visallo/web/product/graph/Cytoscape.jsx");
+
+        app.registerResourceBundle("/org/visallo/web/product/graph/messages.properties");
     }
 }

@@ -366,8 +366,9 @@ public class ClientApiConverter extends org.visallo.web.clientapi.util.ClientApi
         return result;
     }
 
-    public static ClientApiProducts toClientApiProducts(Collection<Product> products) {
+    public static ClientApiProducts toClientApiProducts(List<String> types, Collection<Product> products) {
         ClientApiProducts productsResponse = new ClientApiProducts();
+        productsResponse.getTypes().addAll(types);
         productsResponse.getProducts().addAll(products.stream().map(ClientApiConverter::toClientApiProduct).collect(Collectors.toList()));
         return productsResponse;
     }

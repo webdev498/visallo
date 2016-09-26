@@ -61,7 +61,7 @@ define(['../actions', '../../util/ajax',
         dropElements: ({ productId, elements, position }) => (dispatch, getState) => {
             dispatch(api.updatePositions({
                 productId,
-                updateVertices: _.object(elements.vertexIds.map(id => [id, position]))
+                updateVertices: _.object(elements.vertexIds.map(id => [id, position || {}]))
             }))
         },
 
@@ -81,12 +81,12 @@ define(['../actions', '../../util/ajax',
             }
         },
 
-        list: {
-            type: 'dataRequest',
-            payload: {
-                service: 'product',
-                name: 'list'
-            }
+        list: () => (dispatch, getState) => {
+            dispatch({type: 'PRODUCT_LIST', payload: { loading: true }})
+            ajax('GET', '/product/all').then(({types, products}) => {
+                dispatch({type: 'PRODUCT_UPDATE_TYPES', payload: { types }})
+                dispatch({type: 'PRODUCT_LIST', payload: { loading: false, items: products }})
+            })
         },
 
         create: ({title, kind}) => {
