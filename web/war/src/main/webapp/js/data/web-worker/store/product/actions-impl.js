@@ -1,4 +1,7 @@
-define(['../actions', '../../util/ajax', '../element/actions-impl'], function(actions, ajax, elementActions) {
+define(['../actions', '../../util/ajax',
+    '../element/actions-impl',
+    '../selection/actions-impl'
+], function(actions, ajax, elementActions, selectionActions) {
     actions.protectFromMain();
 
     const api = {
@@ -60,6 +63,22 @@ define(['../actions', '../../util/ajax', '../element/actions-impl'], function(ac
                 productId,
                 updateVertices: _.object(elements.vertexIds.map(id => [id, position]))
             }))
+        },
+
+        removeElements: ({ productId, elements }) => (dispatch, getState) => {
+            var params = { removeVertices: elements },
+                state = getState(),
+                product = _.findWhere(state.product.items, { id: productId }),
+                workspace = state.workspace.byId[state.workspace.currentId],
+                { kind } = product;
+
+            // TODO: combine with updatePositions
+            if (workspace.editable && !_.isEmpty(params.removeVertices)) {
+                ajax('POST', '/product', { productId, kind, params })
+                    .then(function() {
+                        dispatch(selectionActions.clear())
+                    })
+            }
         },
 
         list: {

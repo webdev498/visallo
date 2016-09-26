@@ -1,4 +1,7 @@
-define(['data/web-worker/store/selection/actions'], function(selectionActions) {
+define([
+    'data/web-worker/store/selection/actions',
+    'data/web-worker/store/product/actions'
+], function(selectionActions, productActions) {
     'use strict';
 
     return withObjectSelection;
@@ -219,22 +222,20 @@ define(['data/web-worker/store/selection/actions'], function(selectionActions) {
         this.onDeleteSelected = function(event, data) {
             var self = this;
 
-            if (!visalloData.currentWorkspaceEditable) {
-                return;
-            }
+            visalloData.storePromise.then(store => {
+                var vertexIds = [],
+                    productId = store.getState().product.selected;
 
-            // FIXME
-            //if (data && data.vertexId) {
-                //self.trigger('updateWorkspace', {
-                    //entityDeletes: [data.vertexId]
-                //});
-            //} else if (selectedObjects) {
-                //if (selectedObjects.vertices.length) {
-                    //self.trigger('updateWorkspace', {
-                        //entityDeletes: _.pluck(selectedObjects.vertices, 'id')
-                    //});
-                //}
-            //}
+                if (productId) {
+                    if (data && data.vertexId) {
+                        vertexIds = [data.vertexId]
+                    } else if (selectedObjects && selectedObjects.vertices.length) {
+                        vertexIds = _.pluck(selectedObjects.vertices, 'id')
+                    }
+
+                    store.dispatch(productActions.removeElements(productId, vertexIds))
+                }
+            })
         };
 
         this.onSelectObjects = function(event, data) {
