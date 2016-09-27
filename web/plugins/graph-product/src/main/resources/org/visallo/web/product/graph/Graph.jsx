@@ -55,7 +55,7 @@ define([
             )
         },
 
-        renderedPositionToPosition(rpos) {
+        droppableTransformPosition(rpos) {
             const cy = this.refs.cytoscape.state.cy;
             const pan = cy.pan();
             const zoom = cy.zoom();
