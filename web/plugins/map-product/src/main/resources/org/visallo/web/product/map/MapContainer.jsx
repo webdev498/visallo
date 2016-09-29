@@ -17,16 +17,24 @@ define([
             var //viewport = state.product.viewports[props.product.id] || { zoom: 1, pan: {x: 0, y: 0 }},
                 selection = state.selection.idsByType,
                 workspaceId = state.workspace.currentId,
-                //pixelRatio = state.screen.pixelRatio,
+                ontologyProperties = state.ontology.properties,
+                configProperties = state.configuration.properties,
+                pixelRatio = state.screen.pixelRatio,
                 elements = state.element[workspaceId] || {};
+
+
+            // FIXME: don't re-render if elements not in product change
 
             return {
                 ...props,
                 selection,
+                configProperties,
+                ontologyProperties,
                 //viewport,
-                //pixelRatio,
+                pixelRatio,
                 elements,
-                mimeTypes
+                mimeTypes,
+                style: { height: '100%' }
             }
         },
 

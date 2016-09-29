@@ -1,11 +1,11 @@
 
 define([
     '../util/ajax',
-    '../util/memoize'
-], function(ajax, memoize) {
+    '../store'
+], function(ajax, store) {
     'use strict';
 
-    var getConfiguration = memoize(function(locale) {
+    /*
             var data = {};
             if (locale) {
                 if (locale.language) {
@@ -18,17 +18,15 @@ define([
                     data.localeVariant = locale.variant;
                 }
             }
-            return ajax('GET', '/configuration', data);
-        }),
-        api = {
-            properties: memoize(function(locale) {
-                return getConfiguration(locale).then(_.property('properties'));
-            }),
+    */
 
-            messages: memoize(function(locale) {
-                return getConfiguration(locale).then(_.property('messages'));
-            })
-        };
+    const api = {
+        // FIXME: use locale { language, country, variant } => camelcase
+        // with locale to send to /configuration
+        properties: (locale) => store.getOrWaitForNestedState(s => s.configuration.properties),
+        messages: (locale) => store.getOrWaitForNestedState(s => s.configuration.messages)
+    };
 
     return api;
+
 });

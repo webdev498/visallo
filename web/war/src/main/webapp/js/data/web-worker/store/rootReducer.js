@@ -4,7 +4,9 @@ define([
     'redux',
 
     // Reducers
+    './configuration/reducer',
     './element/reducer',
+    './ontology/reducer',
     './product/reducer',
     './screen/reducer',
     './selection/reducer',

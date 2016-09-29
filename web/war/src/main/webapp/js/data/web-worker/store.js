@@ -17,7 +17,7 @@
         var store;
 
         return {
-            getStore: function() {
+            getStore() {
                 if (!store) {
                     store = redux.createStore(
                         rootReducer,
@@ -26,6 +26,32 @@
                     store.subscribe(stateChanged(store.getState()))
                 }
                 return store;
+            },
+
+            getOrWaitForNestedState(getterFn, waitForConditionFn) {
+                const check = waitForConditionFn ||
+                    (s => {
+                        const v = getterFn(s);
+                        return !_.isUndefined(v) && !_.isEmpty(v)
+                    });
+
+                return Promise.try(function() {
+                    var state = store.getState();
+                    if (check(state)) {
+                        return getterFn(state)
+                    } else {
+                        return new Promise(done => {
+                            const unsubscribe = store.subscribe(() => {
+                                const state = store.getState();
+                                if (check(state)) {
+                                    const newValue = getterFn(store.getState())
+                                    unsubscribe();
+                                    done(newValue);
+                                }
+                            })
+                        })
+                    }
+                })
             }
         };
 

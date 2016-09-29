@@ -803,7 +803,7 @@ define([
                     self.handleContextMenu(evt);
                 }
             });
-            map.on('click', function() {
+            map.on('click', function(event) {
                 self.closeMenu();
                 self.onMapClicked(event, map);
             })
@@ -845,10 +845,10 @@ define([
             if (provider === 'google' || provider === 'osm') {
                 // Legacy configs accepted csv urls, warn and pick first
                 var osmURL = config['map.provider.osm.url'];
-                if (osmURL && osmURL.indexOf(',')) {
+                if (osmURL && osmURL.indexOf(',') >= 0) {
                     console.warn('Comma-separated Urls not supported, using first url. Use urls with {a-c} for multiple CDNS');
-                    console.warn('For Example: https://{a-c}.tile.openstreetmap.org/${z}/${x}/${y}.png');
-                    config['map.provider.osm.url'] = osmURL.split(',')[0].trim()
+                    console.warn('For Example: https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+                    config['map.provider.osm.url'] = osmURL.split(',')[0].trim().replace(/[$][{]/g, '{');
                 }
                 baseLayerSource = new ol.source.OSM(getOptions('osm'))
 

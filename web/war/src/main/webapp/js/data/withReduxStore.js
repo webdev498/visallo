@@ -35,12 +35,38 @@ define([
         };
 
         this.setupInitialStoreState = function() {
-            require(['util/retina', 'data/web-worker/store/screen/actions'], (retina, screenActions) => {
-                $(document).on('devicePixelRatioChanged', (event, { devicePixelRatio }) => {
-                    this._reduxStore.dispatch(screenActions.setPixelRatio(devicePixelRatio))
+            var self = this;
+
+            loadOntology();
+            loadPixeRatio();
+            loadConfiguration();
+
+            function loadPixeRatio() {
+                require(['util/retina', 'data/web-worker/store/screen/actions'], (retina, screenActions) => {
+                    $(document).on('devicePixelRatioChanged', (event, { devicePixelRatio }) => {
+                        self._reduxStore.dispatch(screenActions.setPixelRatio(devicePixelRatio))
+                    });
+                    self._reduxStore.dispatch(screenActions.setPixelRatio(retina.devicePixelRatio))
+                })
+            }
+            function loadConfiguration() {
+                require(['data/web-worker/store/configuration/actions'], configActions => {
+                    self._reduxStore.dispatch(configActions.get())
                 });
-                this._reduxStore.dispatch(screenActions.setPixelRatio(retina.devicePixelRatio))
-            })
+            }
+            function loadOntology() {
+                // TODO: move user checking to ontology action
+                if (!visalloData.currentUser) {
+                    self.on(document, 'currentUserVisalloDataUpdated', function handler() {
+                        self.off(document, 'currentUserVisalloDataUpdated', handler);
+                        loadOntology();
+                    });
+                    return;
+                }
+                require(['data/web-worker/store/ontology/actions'], ontologyActions => {
+                    self._reduxStore.dispatch(ontologyActions.get())
+                });
+            }
         }
     }
 
