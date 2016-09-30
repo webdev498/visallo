@@ -40,9 +40,7 @@ define([
 
         (dispatch, props) => {
             return {
-                onAddSelection: (selection) => dispatch(selectionActions.add(selection)),
-                onRemoveSelection: (selection) => dispatch(selectionActions.remove(selection)),
-                onClearSelection: () => dispatch(selectionActions.clear),
+                onSelectElements: (selection) => dispatch(selectionActions.set(selection)),
 
                 // TODO: these should be mapActions
                 onUpdateViewport: (id, { pan, zoom }) => dispatch(productActions.updateViewport(id, { pan, zoom })),

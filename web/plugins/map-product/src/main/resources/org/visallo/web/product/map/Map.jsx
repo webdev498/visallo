@@ -8,12 +8,17 @@ define([
     const PropTypes = React.PropTypes;
     const Map = React.createClass({
         propTypes: {
-            configProperties: PropTypes.object.isRequired
+            configProperties: PropTypes.object.isRequired,
+            onSelectElements: PropTypes.func.isRequired
         },
 
         render() {
             return (
-                <OpenLayers features={this.mapElementsToFeatures()} {...this.getTilePropsFromConfiguration()}/>
+                <OpenLayers
+                    features={this.mapElementsToFeatures()}
+                    onSelectElements={this.props.onSelectElements}
+                    {...this.getTilePropsFromConfiguration()}
+                />
             )
         },
 
@@ -46,14 +51,16 @@ define([
                     selected = el.id in elementsSelectedById,
                     iconUrl = 'map/marker/image?' + $.param({
                         type: conceptType,
-                        scale: this.props.pixelRatio > 1 ? '2' : '1'
-                    }) + (selected ? '&selected' : '');
+                        scale: this.props.pixelRatio > 1 ? '2' : '1',
+                    }),
+                    iconUrlSelected = `${iconUrl}&selected=true`;
 
                 return {
                     id: el.id,
                     element: el,
                     selected,
                     iconUrl,
+                    iconUrlSelected,
                     iconSize: [22, 40].map(v => v * this.props.pixelRatio),
                     iconAnchor: [0.5, 1.0],
                     pixelRatio: this.props.pixelRatio,

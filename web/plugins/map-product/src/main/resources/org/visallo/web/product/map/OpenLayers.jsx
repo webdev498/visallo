@@ -11,6 +11,7 @@ define([
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
+
     const MODE_NORMAL = 0,
         FEATURE_SIZE = [22, 40],
         FEATURE_HEIGHT = 40,
@@ -25,35 +26,65 @@ define([
     const OpenLayers = React.createClass({
         propTypes: {
             source: PropTypes.string.isRequired,
-            sourceOptions: PropTypes.object
+            sourceOptions: PropTypes.object,
+            onSelectElements: PropTypes.func.isRequired
         },
 
         componentDidUpdate() {
             if (this.state.cluster) {
-                const maybeRemove = _.indexBy(this.state.cluster.source.getFeatures(), f => f.getId());
-                this.state.cluster.source.addFeatures(this.props.features.map(data => {
+                const existingFeatures = _.indexBy(this.state.cluster.source.getFeatures(), f => f.getId());
+                const newFeatures = [];
+                const { source } = this.state.cluster;
+                this.props.features.forEach(data => {
                     const { id, geoLocations, element, ...rest } = data;
-                    var feature = new ol.Feature({
+                    const featureValues = {
                         ...rest,
                         element,
+                        geoLocations,
                         geometry: new ol.geom.MultiPoint(geoLocations.map(function(geo) {
                             return ol.proj.fromLonLat(geo);
-                        })),
-                    })
-                    feature.setId(data.id);
-                    maybeRemove[data.id] = false;
-                    return feature;
-                }))
+                        }))
+                    };
 
-                _.forEach(maybeRemove, feature => {
-                    if (feature !== false) this.state.cluster.source.removeFeature(feature);
-                });
+                    if (id in existingFeatures) {
+                        const existingFeature = existingFeatures[id];
+                        const existingValues = _.omit(data, 'geometry', 'element')
+                        const newValues = _.omit(featureValues, 'geometry', 'element')
+                        if (!_.isEqual(existingValues, newValues)) {
+                            existingFeature.setProperties(featureValues)
+                        }
+                        delete existingFeatures[id];
+                    } else {
+                        var feature = new ol.Feature(featureValues);
+                        feature.setId(data.id);
+                        newFeatures.push(feature);
+                    }
+                })
+
+                if (newFeatures.length) {
+                    source.addFeatures(newFeatures);
+                }
+                if (!_.isEmpty(existingFeatures)) {
+                    _.forEach(existingFeatures, feature => source.removeFeature(feature));
+                }
             }
         },
 
         componentDidMount() {
+            this.olEvents = [];
+            this.domEvents = [];
             const { map, cluster } = this.configureMap();
             this.setState({ map, cluster })
+        },
+
+        componentWillUnmount() {
+            if (this.state.cluster) {
+                this.olEvents.forEach(key => ol.Observable.unByKey(key));
+                this.olEvents = null;
+
+                this.domEvents.forEach(fn => fn());
+                this.domEvents = null;
+            }
         },
 
         render() {
@@ -72,6 +103,8 @@ define([
                 layers: [],
                 target: this.refs.map
             });
+
+            this.configureEvents({ map, cluster });
 
             var baseLayerSource;
 
@@ -95,33 +128,32 @@ define([
 
         configureCluster() {
             const source = new ol.source.Vector({ features: [] });
-            const cluster = new MultiPointCluster({
+            const clusterSource = new MultiPointCluster({
                 distance: Math.max(FEATURE_CLUSTER_HEIGHT, FEATURE_HEIGHT),
                 source
             });
             const layer = new ol.layer.Vector({
                 id: 'elementsLayer',
                 style: cluster => this.clusterStyle(cluster),
-                source: cluster
+                source: clusterSource
             });
 
-            return { source, cluster, layer }
+            return { source, clusterSource, layer }
         },
 
         clusterStyle() {
             if (!this._clusterStyleWithCache) {
                 this._clusterStyleWithCache = _.memoize(
                     this._clusterStyle,
-                    function clusterStateHash(cluster) {
+                    function clusterStateHash(cluster, options = { selected: false }) {
                         var count = cluster.get('count'),
                             selectionState = cluster.get('selectionState') || 'none',
-                            key = [count, selectionState];
+                            key = [count, selectionState, JSON.stringify(options)];
 
                         if (count === 1) {
-                            // TODO
-                            //var vertex = cluster.get('features')[0].get('vertex'),
-                                //conceptType = F.vertex.prop(vertex, 'conceptType');
-                            //key.push('type=' + conceptType);
+                            const feature = cluster.get('features')[0];
+                            const { geoLocations, geometry, element, ...compare } = feature.getProperties();
+                            key.push(JSON.stringify(compare, null, 0))
                         }
                         return key.join('')
                     }
@@ -131,28 +163,18 @@ define([
             return this._clusterStyleWithCache.apply(this, arguments);
         },
 
-        _clusterStyle(cluster) {
+        _clusterStyle(cluster, options = { selected: false }) {
             var count = cluster.get('count'),
                 selectionState = cluster.get('selectionState') || 'none',
-                selected = selectionState !== 'none';
+                selected = options.selected || selectionState !== 'none';
 
-            //return [new ol.style.Style({
-                //image: new ol.style.Circle({
-                    //radius: count * 25,
-                    //stroke: new ol.style.Stroke({
-                        //color: 'red',
-                        //width: 2
-                    //}),
-                    //fill: new ol.style.Fill({
-                        //color: 'blue'
-                    //})
-                //})
-            //})]
             if (count === 1) {
-                var feature = cluster.get('features')[0];
+                const feature = cluster.get('features')[0];
+                const isSelected = options.selected || feature.get('selected');
+
                 return [new ol.style.Style({
                     image: new ol.style.Icon({
-                        src: feature.get('iconUrl'),
+                        src: feature.get(isSelected ? 'iconUrlSelected' : 'iconUrl'),
                         imgSize: feature.get('iconSize'),
                         scale: 1 / feature.get('pixelRatio'),
                         anchor: feature.get('iconAnchor')
@@ -198,6 +220,91 @@ define([
                     })
                 })];
             }
+        },
+
+        configureEvents({ map, cluster }) {
+            var self = this;
+
+            // Feature Selection
+            const selectInteraction = new ol.interaction.Select({
+                condition: ol.events.condition.click,
+                layers: [cluster.layer],
+                style: cluster => this.clusterStyle(cluster, { selected: true })
+            });
+
+            this.olEvents.push(selectInteraction.on('select', function(e) {
+                var clusters = e.target.getFeatures().getArray(),
+                    elements = { vertices: [], edges: [] };
+
+                clusters.forEach(cluster => {
+                    cluster.get('features').forEach(feature => {
+                        const el = feature.get('element');
+                        const key = el.type === 'vertex' ? 'vertices' : 'edges';
+                        elements[key].push(el.id);
+                    })
+                })
+                self.props.onSelectElements(elements);
+            }));
+
+            this.olEvents.push(map.on('click', function(event) {
+                // TODO:
+                //self.closeMenu();
+                //self.onMapClicked(event, map);
+            }));
+
+            this.olEvents.push(cluster.clusterSource.on(ol.events.EventType.CHANGE, _.debounce(function() {
+                var selected = selectInteraction.getFeatures(),
+                    clusters = this.getFeatures(),
+                    newSelection = [],
+                    isSelected = feature => feature.get('selected');
+
+                clusters.forEach(cluster => {
+                    var innerFeatures = cluster.get('features');
+                    if (_.any(innerFeatures, isSelected)) {
+                        newSelection.push(cluster);
+                        if (_.all(innerFeatures, isSelected)) {
+                            cluster.set('selectionState', 'all');
+                        } else {
+                            cluster.set('selectionState', 'some');
+                        }
+                    } else {
+                        cluster.unset('selectionState');
+                    }
+                })
+
+                selected.clear()
+                if (newSelection.length) {
+                    selected.extend(newSelection)
+                }
+            }, 100)));
+
+            map.addInteraction(selectInteraction);
+
+            const viewport = map.getViewport();
+            this.domEvent(viewport, 'contextmenu', function(event) {
+                event.preventDefault();
+            })
+            this.domEvent(viewport, 'mouseup', function(event) {
+                event.preventDefault();
+                if (event.button === 2 || event.ctrlKey) {
+                    // TODO
+                    //self.handleContextMenu(event);
+                }
+            });
+            this.domEvent(viewport, 'mousemove', function(event) {
+                const pixel = map.getEventPixel(event);
+                const hit = map.forEachFeatureAtPixel(pixel, () => true);
+                if (hit) {
+                    map.getTarget().style.cursor = 'pointer';
+                } else {
+                    map.getTarget().style.cursor = '';
+                }
+            });
+        },
+
+        domEvent(el, type, handler) {
+            this.domEvents.push(() => el.removeEventListener(type, handler));
+            el.addEventListener(type, handler, false);
         }
     })
 
