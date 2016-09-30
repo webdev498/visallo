@@ -1,11 +1,13 @@
 define([
     'react',
     'cytoscape',
-    'fast-json-patch'
+    'fast-json-patch',
+    'components/NavigationControls'
 ], function(
     React,
     cytoscape,
-    jsonpatch) {
+    jsonpatch,
+    NavigationControls) {
 
     const ANIMATION = { duration: 400, easing: 'spring(250, 20)' };
     const EVENTS = {
@@ -20,6 +22,8 @@ define([
         select: 'onSelect',
         unselect: 'onUnselect'
     };
+    const zoomAcceleration = 5.0;
+    const zoomDamping = 0.8;
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
@@ -98,8 +102,48 @@ define([
 
         render() {
             return (
-                <div style={{height: '100%'}} ref="cytoscape"></div>
+                <div style={{height: '100%'}}>
+                    <div style={{height: '100%'}} ref="cytoscape"></div>
+                    <NavigationControls
+                        onZoom={this.onControlsZoom}
+                        onPan={this.onControlsPan} />
+                </div>
             )
+
+        },
+
+        _zoom(factor, dt) {
+            const { cy } = this.state;
+
+            var zoom = cy._private.zoom,
+                { width, height } = cy.renderer().containerBB,
+                pos = cy.renderer().projectIntoViewport(width / 2, height / 2);
+
+            cy.zoom({
+                level: zoom + factor * dt,
+                position: { x: pos[0], y: pos[1] }
+            })
+        },
+
+        onControlsZoom(dir) {
+            const timeStamp = new Date().getTime();
+            var dt = timeStamp - (this.lastTimeStamp || 0);
+            var zoomFactor = this.zoomFactor || 0;
+
+            if (dt < 30) {
+                dt /= 1000;
+                zoomFactor += zoomAcceleration * dt * zoomDamping;
+            } else {
+                dt = 1;
+                zoomFactor = 0.01;
+            }
+            this.zoomFactor = zoomFactor;
+            this.lastTimeStamp = timeStamp;
+            this._zoom(zoomFactor * (dir === 'out' ? -1 : 1), dt);
+        },
+
+        onControlsPan(pan, options) {
+            this.state.cy.panBy(pan);
         },
 
         disableEvent(name, fn) {

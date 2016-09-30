@@ -1,7 +1,7 @@
 define([
     'react',
     './Cytoscape',
-    'util/vertex/formatters'
+    'util/vertex/formatters',
 ], function(React, Cytoscape, F) {
     'use strict';
 
@@ -47,11 +47,13 @@ define([
                     onZoom: this.onViewport
                 };
             return (
-                <Cytoscape
-                    ref="cytoscape"
-                    {...events}
-                    config={config}
-                    elements={this.mapPropsToElements()}></Cytoscape>
+                <div style={{ height: '100%' }}>
+                    <Cytoscape
+                        ref="cytoscape"
+                        {...events}
+                        config={config}
+                        elements={this.mapPropsToElements()}></Cytoscape>
+                </div>
             )
         },
 
