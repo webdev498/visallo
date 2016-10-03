@@ -22,7 +22,8 @@ define([
             pan: PropTypes.bool,
             tools: PropTypes.bool,
             onZoom: PropTypes.func,
-            onPan: PropTypes.func
+            onPan: PropTypes.func,
+            onFit: PropTypes.func
         },
 
         getDefaultProps() {
@@ -32,7 +33,8 @@ define([
                 pan: true,
                 tools: false,
                 onZoom: noop,
-                onPan: noop
+                onPan: noop,
+                onFit: noop
             }
         },
 
@@ -83,7 +85,7 @@ define([
         },
 
         onFit(event) {
-            console.log('fit')
+            this.props.onFit();
         },
 
         onZoom(event) {

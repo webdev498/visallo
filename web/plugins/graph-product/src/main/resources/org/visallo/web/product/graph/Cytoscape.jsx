@@ -18,6 +18,7 @@ define([
         tap: 'onTap',
         pan: 'onPan',
         zoom: 'onZoom',
+        fit: 'onFit',
         change: 'onChange',
         select: 'onSelect',
         unselect: 'onUnselect'
@@ -105,6 +106,7 @@ define([
                 <div style={{height: '100%'}}>
                     <div style={{height: '100%'}} ref="cytoscape"></div>
                     <NavigationControls
+                        onFit={this.onControlsFit}
                         onZoom={this.onControlsZoom}
                         onPan={this.onControlsPan} />
                 </div>
@@ -144,6 +146,85 @@ define([
 
         onControlsPan(pan, options) {
             this.state.cy.panBy(pan);
+        },
+
+        onControlsFit() {
+            this.fit();
+        },
+
+        fit(nodes, options = {}) {
+            const { animate = true } = options;
+            const { cy } = this.state;
+            const cyNodes = nodes || cy.nodes();
+
+            if (cyNodes.size() === 0) {
+                cy.reset();
+            } else {
+                var $$ = cytoscape,
+                    bb = cyNodes.boundingBox({ includeLabels: true, includeNodes: true, includeEdges: false }),
+                    style = cy.style(),
+                    padding = { t: 0, b: 0, l: 0, r: 0 }, // TODO: graphpadding
+                    pixelScale = cy.renderer().options.pixelRatio,
+                    w = parseFloat(style.containerCss('width')),
+                    h = parseFloat(style.containerCss('height')),
+                    zoom;
+
+                if (!_.isObject(padding)) {
+                    if (!_.isNumber(padding)) padding = 0;
+                    padding = { t: padding, r: padding, b: padding, l: padding};
+                }
+                padding.t = (padding.t || 0);
+                padding.r = (padding.r || 0);
+                padding.b = (padding.b || 0);
+                padding.l = (padding.l || 0);
+
+                if (!isNaN(w) && !isNaN(h)) {
+                    zoom = Math.min(1, Math.min(
+                        (w - (padding.l + padding.r)) / bb.w,
+                        (h - (padding.t + padding.b)) / bb.h
+                    ));
+
+                    // Set min and max zoom to fit all items
+                    /* TODO: still needed?
+                    if (zoom < cy._private.minZoom) {
+                        cy._private.minZoom = zoom;
+                        cy._private.maxZoom = 1 / zoom;
+                    } else {
+                        cy._private.minZoom = cy._private.originalMinZoom;
+                        cy._private.maxZoom = cy._private.originalMaxZoom;
+                    }
+                    */
+
+                    if (zoom < cy._private.minZoom) zoom = cy._private.minZoom;
+                    if (zoom > cy._private.maxZoom) zoom = cy._private.maxZoom;
+
+                    var position = {
+                            x: (w + padding.l - padding.r - zoom * (bb.x1 + bb.x2)) / 2,
+                            y: (h + padding.t - padding.b - zoom * (bb.y1 + bb.y2)) / 2
+                        },
+                        _p = cy._private;
+
+                    if (animate) {
+                        return new Promise(function(f) {
+                            cy.animate({
+                                zoom: zoom,
+                                pan: position
+                            }, {
+                                ...ANIMATION,
+                                queue: false,
+                                complete: () => {
+                                    f();
+                                }
+                            });
+                        })
+                    } else {
+                        _p.zoom = zoom;
+                        _p.pan = position;
+                        cy.trigger('pan zoom viewport');
+                        cy.notify({ type: 'viewport' });
+                    }
+                }
+            }
         },
 
         disableEvent(name, fn) {
