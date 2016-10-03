@@ -50,13 +50,16 @@ define([
                         <div style="display:none" className="options-container"></div>
                     </div>
                 ) : '',
-                panningCls = 'panner' + (this.state.panning ? ' active' : '');
+                panningCls = 'panner' + (this.state.panning ? ' active' : ''),
+                panningStyle = this.state.panning && this.state.pan ? {
+                    background: `radial-gradient(circle at ${calculatePosition(this.state.pan)}, #575757, #929292 60%)`
+                } : {}
 
             return (
                 <div className="controls">
                     <div className="tools">{options}</div>
                     <button onClick={this.onFit}>{i18n('controls.fit')}</button>
-                    <div ref="panner" className={panningCls} onMouseDown={this.onPanMouseDown}><div className="arrow-bottom"/><div className="arrow-right"/><div className="arrow-top"/><div className="arrow-left"/></div>
+                    <div ref="panner" style={panningStyle} className={panningCls} onMouseDown={this.onPanMouseDown}><div className="arrow-bottom"/><div className="arrow-right"/><div className="arrow-top"/><div className="arrow-left"/></div>
                     <button
                         onMouseDown={this.onZoom}
                         onMouseUp={this.onZoom}
@@ -105,11 +108,13 @@ define([
 
             var pan = eventToPan(this._pannerClientBounds, event);
             if (isNaN(pan.x) || isNaN(pan.y)) {
+                this.setState({ pan: null })
                 return;
             }
 
             var self = this;
             this.panInterval = setInterval(() => {
+                this.setState({ pan })
                 this.props.onPan(pan, STATE_PANNING);
             }, PAN_SPEED);
         },
@@ -156,4 +161,14 @@ define([
 
         return vnorm;
     }
+
+    function calculatePosition({x, y}) {
+        const angle = Math.atan(y / x) + (x > 0 ? Math.PI : 0)
+        const cX = 0.5 * Math.cos(angle);
+        const cY = 0.5 * Math.sin(angle);
+        const toPercent = v => (v + 0.5) * 100;
+        const position = `${toPercent(cX)}% ${toPercent(cY)}%`
+        return position
+    }
+
 });
