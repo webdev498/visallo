@@ -2,12 +2,14 @@ define([
     'react',
     'openlayers',
     'fast-json-patch',
-    './multiPointCluster'
+    './multiPointCluster',
+    'components/NavigationControls'
 ], function(
     React,
     ol,
     jsonpatch,
-    MultiPointCluster) {
+    MultiPointCluster,
+    NavigationControls) {
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
@@ -17,6 +19,8 @@ define([
         FEATURE_HEIGHT = 40,
         FEATURE_CLUSTER_HEIGHT = 24,
         ANIMATION_DURATION = 200,
+        MIN_FIT_ZOOM_RESOLUTION = 3000,
+        MAX_FIT_ZOOM_RESOLUTION = 20000,
         MODE_REGION_SELECTION_MODE_POINT = 1,
         MODE_REGION_SELECTION_MODE_RADIUS = 2,
         MODE_REGION_SELECTION_MODE_LOADING = 3;
@@ -28,6 +32,10 @@ define([
             source: PropTypes.string.isRequired,
             sourceOptions: PropTypes.object,
             onSelectElements: PropTypes.func.isRequired
+        },
+
+        getInitialState() {
+            return { panning: false }
         },
 
         componentDidUpdate() {
@@ -88,9 +96,140 @@ define([
         },
 
         render() {
+            // Cover the map when panning/dragging to avoid sending events there
+            const moveWrapper = this.state.panning ? (<div className="draggable-wrapper"/>) : '';
             return (
-                <div style={{height: '100%'}} ref="map"></div>
+                <div style={{height: '100%'}}>
+                    <div style={{height: '100%'}} ref="map"></div>
+                    <NavigationControls
+                        onFit={this.onControlsFit}
+                        onZoom={this.onControlsZoom}
+                        onPan={this.onControlsPan} />
+                    {moveWrapper}
+                </div>
             )
+        },
+
+        onControlsFit() {
+            this.fit();
+        },
+
+        onControlsZoom(type) {
+            const { map } = this.state;
+            const view = map.getView();
+            const getResolutionForValueFunction = view.getResolutionForValueFunction();
+            const getValueForResolutionFunction = view.getValueForResolutionFunction();
+
+            if (!this._slowZoomIn) {
+                this._slowZoomIn = _.throttle(zoomByDelta(1), ANIMATION_DURATION, {trailing: false});
+                this._slowZoomOut = _.throttle(zoomByDelta(-1), ANIMATION_DURATION, {trailing: false});
+            }
+
+            if (type === 'in') {
+                this._slowZoomIn();
+            } else {
+                this._slowZoomOut();
+            }
+
+            function zoomByDelta(delta) {
+                return () => {
+                    var currentResolution = view.getResolution();
+                    if (currentResolution) {
+                        map.beforeRender(ol.animation.zoom({
+                            resolution: currentResolution,
+                            duration: ANIMATION_DURATION
+                        }));
+                        const newResolution = view.constrainResolution(currentResolution, delta);
+                        view.setResolution(newResolution);
+                    }
+                }
+            }
+        },
+
+        onControlsPan({ x, y }, { state }) {
+            if (state === 'panningStart') {
+                this.setState({ panning: true })
+            } else if (state === 'panningEnd') {
+                this.setState({ panning: false })
+            } else {
+                const { map } = this.state;
+                const view = map.getView();
+
+                var currentCenter = view.getCenter(),
+                    resolution = view.getResolution(),
+                    center = view.constrainCenter([
+                        currentCenter[0] - x * resolution,
+                        currentCenter[1] + y * resolution
+                    ]);
+
+                view.setCenter(center);
+            }
+        },
+
+        fit() {
+            const { map, cluster } = this.state;
+            const extent = cluster.clusterSource.getExtent();
+            const view = map.getView();
+
+            if (!ol.extent.isInfinite(extent) && !ol.extent.isEmpty(extent)) {
+                var resolution = view.getResolution(),
+                    extentWithPadding = extent, //ol.extent.createEmpty(),
+                    extentSize = ol.extent.getSize(extent),
+                    buffer = _.max(extentSize) * 1;//0.33
+
+                //ol.extent.buffer(extent, buffer, extentWithPadding);
+
+                // TODO: graphPadding
+                var padding = {
+                        l: 0,
+                        r: 0, // TODO: add controls?
+                        t: 0,
+                        b: 0
+                    },
+                    clientBox = this.refs.map.getBoundingClientRect(),
+                    viewportWidth = clientBox.width - padding.l - padding.r - 20 * 2,
+                    viewportHeight = clientBox.height - padding.t - padding.b - 20 * 2,
+                    extentWithPaddingSize = ol.extent.getSize(extentWithPadding),
+
+                    // Figure out ideal resolution based on available realestate
+                    idealResolution = Math.max(
+                        extentWithPaddingSize[0] / viewportWidth,
+                        extentWithPaddingSize[1] / viewportHeight
+                    );
+
+                map.beforeRender(ol.animation.pan({
+                    source: view.getCenter(),
+                    duration: ANIMATION_DURATION
+                }))
+                map.beforeRender(ol.animation.zoom({
+                    resolution: resolution,
+                    duration: ANIMATION_DURATION
+                }));
+
+                view.setResolution(view.constrainResolution(
+                    Math.min(MAX_FIT_ZOOM_RESOLUTION, Math.max(idealResolution, MIN_FIT_ZOOM_RESOLUTION)), -1
+                ));
+
+                var center = ol.extent.getCenter(extentWithPadding),
+                    offsetX = padding.l - padding.r,
+                    offsetY = padding.t - padding.b,
+                    lon = offsetX * view.getResolution() / 2,
+                    lat = offsetY * view.getResolution() / 2;
+
+                view.setCenter([center[0] - lon, center[1] - lat]);
+            } else {
+                map.beforeRender(ol.animation.zoom({
+                    resolution: view.getResolution(),
+                    duration: ANIMATION_DURATION
+                }));
+                map.beforeRender(ol.animation.pan({
+                    source: view.getCenter(),
+                    duration: ANIMATION_DURATION
+                }))
+                var params = this.getDefaultViewParameters();
+                view.setZoom(params.zoom);
+                view.setCenter(params.center);
+            }
         },
 
         configureMap() {
