@@ -11,8 +11,7 @@ define([
     'util/vertex/formatters',
     'util/withDataRequest',
     'util/popovers/withElementScrollingPositionUpdates',
-    'util/jquery.withinScrollable',
-    'util/jquery.ui.draggable.multiselect'
+    'util/jquery.withinScrollable'
 ], function(
     defineComponent,
     registry,

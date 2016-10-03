@@ -15,8 +15,7 @@ define([
     './withObjectsUpdated',
     './withClipboard',
     './withWorkspaces',
-    './withWorkspaceFiltering',
-    './withWorkspaceVertexDrop'
+    './withWorkspaceFiltering'
 ], function(
     defineComponent,
     ...mixins
