@@ -12,7 +12,6 @@ define([
     'admin/admin',
     'activity/activity',
     'detail/detail',
-    'map/map',
     'help/help',
     'react',
     'react-dom',
@@ -38,7 +37,6 @@ define([
     Admin,
     Activity,
     Detail,
-    Map,
     Help,
     React,
     ReactDom,
@@ -80,7 +78,6 @@ define([
             adminSelector: '.admin-pane',
             helpDialogSelector: '.help-dialog',
             activitySelector: '.activity-pane',
-            mapSelector: '.map-pane',
             detailPaneSelector: '.detail-pane'
         });
 
@@ -94,7 +91,6 @@ define([
                 Search,
                 Workspaces,
                 Admin,
-                Map,
                 Detail,
                 Help
             ], 'teardownAll');
@@ -197,7 +193,6 @@ define([
                 adminPane = content.filter('.admin-pane').data(DATA_MENUBAR_NAME, 'admin'),
                 activityPane = content.filter('.activity-pane').data(DATA_MENUBAR_NAME, 'activity'),
                 detailPane = content.filter('.detail-pane').data(DATA_MENUBAR_NAME, 'detail'),
-                mapPane = content.filter('.map-pane').data(DATA_MENUBAR_NAME, 'map'),
                 helpDialog = content.filter('.help-dialog');
 
             this.on('resizecreate', this.onResizeCreateLoad);
@@ -220,7 +215,6 @@ define([
             Workspaces.attachTo(workspacesPane.find('.content'));
             Admin.attachTo(adminPane.find('.content'));
             Activity.attachTo(activityPane.find('.content'));
-            Map.attachTo(mapPane);
             Detail.attachTo(detailPane.find('.content'));
             Help.attachTo(helpDialog);
 
