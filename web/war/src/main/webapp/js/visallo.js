@@ -55,7 +55,8 @@ function(jQuery,
             })
         },
 
-        ELEMENTS: 'elements'
+        ELEMENTS: 'elements',
+        RESOLVED_INFO: 'resolvedInfo'
     }, (str, key, obj) => {
         if (key.substring(0, 1) !== '_') {
             return obj._PREFIX + str + obj._FORMAT;
