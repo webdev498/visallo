@@ -24,7 +24,7 @@ define([
         !_.isEmpty(s.ontology.properties) &&
         !_.isEmpty(s.ontology.relationships);
 
-    const getOntology = () => store.getOrWaitForNestedState(s => s.ontology, ontologyReady);
+    const getOntology = () => store.getOrWaitForNestedState(s => JSON.parse(JSON.stringify(s.ontology)), ontologyReady);
     const extensions = registry.extensionsForPoint('org.visallo.ontology');
     const api = {
 
@@ -188,11 +188,9 @@ define([
                             .unique()
                             .value(),
                         findChildrenForNode = function(node) {
-                            node = {...node};
                             node.className = 'conceptId-' + (clsIndex++);
                             node.children = groupedByParent[node.id] || [];
-                            node.children.forEach(function(child) {
-                                child = {...child}
+                            node.children = node.children.map(function(child) {
                                 if (!child.glyphIconHref) {
                                     child.glyphIconHref = node.glyphIconHref;
                                 }
