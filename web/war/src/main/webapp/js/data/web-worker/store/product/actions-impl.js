@@ -59,10 +59,21 @@ define(['../actions', '../../util/ajax',
         }),
 
         dropElements: ({ productId, elements, position }) => (dispatch, getState) => {
-            dispatch(api.updatePositions({
-                productId,
-                updateVertices: _.object(elements.vertexIds.map(id => [id, position || {}]))
-            }))
+            const { vertexIds, edgeIds } = elements;
+            var edges = (edgeIds && edgeIds.length) ? (
+                ajax('POST', '/edge/multiple', { edgeIds })
+                    .then(function({ edges }) {
+                        return _.flatten(edges.map(e => [e.inVertexId, e.outVertexId]));
+                    })
+                ) : Promise.resolve([]);
+
+            edges.then(function(edgeVertexIds) {
+                const combined = _.uniq(edgeVertexIds.concat(vertexIds));
+                dispatch(api.updatePositions({
+                    productId,
+                    updateVertices: _.object(combined.map(id => [id, position || {}]))
+                }))
+            })
         },
 
         removeElements: ({ productId, elements }) => (dispatch, getState) => {

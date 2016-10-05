@@ -10,7 +10,6 @@ define([
     'use strict';
 
     const mimeTypes = [VISALLO_MIMETYPES.ELEMENTS];
-    //this.refs.graph.renderedPositionToPosition(position)
 
     const GraphContainer = redux.connect(
 
