@@ -15,6 +15,7 @@
         map: {
             '*': {
                 'lodash': 'underscore',
+                'reselect': 'Reselect',
                 'jquery-ui': 'jquery-ui-bundle',
                 'jquery-ui/droppable': 'jquery-ui-bundle',
                 'jquery-ui/core': 'jquery-ui-bundle',
@@ -75,6 +76,7 @@
             'react': '../libs/react/dist/react-with-addons',
             'react-dom': '../libs/react-dom/dist/react-dom',
             'react-redux': '../libs/react-redux/dist/react-redux',
+            'Reselect': '../libs/reselect/dist/reselect',
             'redux': '../libs/redux/dist/redux',
             'sf': '../libs/sf/sf',
             'text': '../libs/requirejs-text/text',
@@ -106,6 +108,7 @@
             'rangy-cssclassapplier': { deps: ['rangy-core'] },
             'rangy-serializer': { deps: ['rangy-core'] },
             'react': { exports: 'React' },
+            //'reselect': { init: function(e) { debugger; }},
             'jquery-scrollstop': { exports: 'jQuery', deps: ['jquery'] },
             'underscore': { exports: '_' },
             'videojs': { exports: 'videojs' }

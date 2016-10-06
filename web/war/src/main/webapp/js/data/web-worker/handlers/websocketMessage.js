@@ -30,6 +30,11 @@ define([
                     })
                 });
             },
+            workProductPreviewChange: function(data) {
+                require(['../store/product/actions-impl'], function(actions) {
+                    store.getStore().dispatch(actions.previewChanged(data.id, data.md5));
+                })
+            },
             workProductChange: function(data) {
                 require(['../store/product/actions-impl'], function(actions) {
                     store.getStore().dispatch(actions.changedOnServer(data.id));

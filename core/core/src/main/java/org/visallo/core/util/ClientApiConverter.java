@@ -380,7 +380,8 @@ public class ClientApiConverter extends org.visallo.web.clientapi.util.ClientApi
                 product.getTitle(),
                 product.getKind(),
                 product.getData(),
-                product.getExtendedData()
+                product.getExtendedData(),
+                product.getPreviewImageMD5()
         );
 
     }

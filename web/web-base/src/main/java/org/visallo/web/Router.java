@@ -207,6 +207,7 @@ public class Router extends HttpServlet {
 
             app.get("/product/all", authenticator, csrfProtector, ReadPrivilegeFilter.class, ProductAll.class);
             app.get("/product", authenticator, csrfProtector, ReadPrivilegeFilter.class, ProductGet.class);
+            app.get("/product/preview", authenticator, csrfProtector, ReadPrivilegeFilter.class, ProductPreview.class);
             app.post("/product", authenticator, csrfProtector, EditPrivilegeFilter.class, ProductUpdate.class);
             app.delete("/product", authenticator, csrfProtector, EditPrivilegeFilter.class, ProductDelete.class);
 

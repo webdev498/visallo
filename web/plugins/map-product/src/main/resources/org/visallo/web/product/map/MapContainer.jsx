@@ -14,7 +14,7 @@ define([
     return redux.connect(
 
         (state, props) => {
-            var //viewport = state.product.viewports[props.product.id] || { zoom: 1, pan: {x: 0, y: 0 }},
+            var viewport = state.product.viewports[props.product.id],
                 selection = state.selection.idsByType,
                 workspaceId = state.workspace.currentId,
                 ontologyProperties = state.ontology.properties,
@@ -30,7 +30,7 @@ define([
                 selection,
                 configProperties,
                 ontologyProperties,
-                //viewport,
+                viewport,
                 pixelRatio,
                 elements,
                 mimeTypes,
@@ -41,6 +41,8 @@ define([
         (dispatch, props) => {
             return {
                 onSelectElements: (selection) => dispatch(selectionActions.set(selection)),
+
+                onUpdatePreview: (id, dataUrl) => dispatch(productActions.updatePreview(id, dataUrl)),
 
                 // TODO: these should be mapActions
                 onUpdateViewport: (id, { pan, zoom }) => dispatch(productActions.updateViewport(id, { pan, zoom })),

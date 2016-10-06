@@ -1,5 +1,6 @@
 package org.visallo.core.model.workspace.product;
 
+import java.io.InputStream;
 import java.io.Serializable;
 
 public abstract class Product implements Serializable {
@@ -10,15 +11,19 @@ public abstract class Product implements Serializable {
     private final String kind;
     private final String data;
     private final String extendedData;
+    private final String previewImageMD5;
 
+    private transient final InputStream previewDataUrl;
 
-    public Product(String id, String workspaceId, String kind, String title, String data, String extendedData) {
+    public Product(String id, String workspaceId, String kind, String title, String data, String extendedData, InputStream previewDataUrl, String md5) {
         this.id = id;
         this.workspaceId = workspaceId;
         this.kind = kind;
         this.data = data;
         this.extendedData = extendedData;
         this.title = title;
+        this.previewDataUrl = previewDataUrl;
+        this.previewImageMD5 = md5;
     }
 
     public String getId() {
@@ -43,6 +48,14 @@ public abstract class Product implements Serializable {
 
     public String getExtendedData() {
         return extendedData;
+    }
+
+    public InputStream getPreviewDataUrl() {
+        return previewDataUrl;
+    }
+
+    public String getPreviewImageMD5() {
+        return previewImageMD5;
     }
 
     @Override

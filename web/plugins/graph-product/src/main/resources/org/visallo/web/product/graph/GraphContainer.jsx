@@ -4,30 +4,29 @@ define([
     'react-dom',
     'data/web-worker/store/selection/actions',
     'data/web-worker/store/product/actions',
+    'data/web-worker/store/product/selectors',
     'components/DroppableHOC',
     './Graph'
-], function(React, redux, ReactDom, selectionActions, productActions, DroppableHOC, Graph) {
+], function(React, redux, ReactDom, selectionActions, productActions, productSelectors, DroppableHOC, Graph) {
     'use strict';
 
     const mimeTypes = [VISALLO_MIMETYPES.ELEMENTS];
+    const style = { height: '100%' };
 
     const GraphContainer = redux.connect(
 
         (state, props) => {
             var viewport = state.product.viewports[props.product.id] || { zoom: 1, pan: {x: 0, y: 0 }},
-                selection = state.selection.idsByType,
-                workspaceId = state.workspace.currentId,
-                pixelRatio = state.screen.pixelRatio,
-                elements = state.element[workspaceId] || {};
+                pixelRatio = state.screen.pixelRatio;
 
             return {
                 ...props,
-                selection,
+                selection: productSelectors.getSelectedElementsInProduct(state),
                 viewport,
                 pixelRatio,
-                elements,
+                elements: productSelectors.getElementsInProduct(state),
                 mimeTypes,
-                style: { height: '100%' }
+                style
             }
         },
 
@@ -36,6 +35,8 @@ define([
                 onAddSelection: (selection) => dispatch(selectionActions.add(selection)),
                 onRemoveSelection: (selection) => dispatch(selectionActions.remove(selection)),
                 onClearSelection: () => dispatch(selectionActions.clear),
+
+                onUpdatePreview: (id, dataUrl) => dispatch(productActions.updatePreview(id, dataUrl)),
 
                 // TODO: these should be graphActions
                 onUpdatePositions: (id, positions) => dispatch(productActions.updatePositions(id, positions)),

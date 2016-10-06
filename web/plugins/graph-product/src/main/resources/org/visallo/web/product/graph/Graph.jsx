@@ -8,8 +8,12 @@ define([
     const PropTypes = React.PropTypes;
     const Graph = React.createClass({
 
+        propTypes: {
+            onUpdatePreview: PropTypes.func.isRequired
+        },
+
         getInitialState() {
-            return { viewport: this.props.viewport || {} }
+            return { viewport: this.props.viewport || {}, generatePreview: true }
         },
 
         saveViewport(props) {
@@ -22,10 +26,10 @@ define([
 
         componentWillReceiveProps(nextProps) {
             if (nextProps.product.id === this.props.product.id) {
-                this.setState({ viewport: {} })
+                this.setState({ viewport: {}, generatePreview: false })
             } else {
                 this.saveViewport(nextProps)
-                this.setState({ viewport: nextProps.viewport || {} })
+                this.setState({ viewport: nextProps.viewport || {}, generatePreview: true })
             }
         },
 
@@ -34,7 +38,7 @@ define([
         },
 
         render() {
-            var { viewport } = this.state,
+            var { viewport, generatePreview } = this.state,
                 config = {...CONFIGURATION(this.props), ...viewport},
                 events = {
                     onSelect: this.onSelect,
@@ -42,8 +46,8 @@ define([
                     onGrab: this.onGrab,
                     onFree: this.onFree,
                     onPosition: this.onPosition,
-                    onPan: this.onViewport,
                     onTap: this.onTap,
+                    onPan: this.onViewport,
                     onZoom: this.onViewport
                 };
             return (
@@ -51,10 +55,16 @@ define([
                     <Cytoscape
                         ref="cytoscape"
                         {...events}
+                        generatePreview={generatePreview}
                         config={config}
-                        elements={this.mapPropsToElements()}></Cytoscape>
+                        elements={this.mapPropsToElements()}
+                        onUpdatePreview={this.onUpdatePreview}></Cytoscape>
                 </div>
             )
+        },
+
+        onUpdatePreview(data) {
+            this.props.onUpdatePreview(this.props.product.id, data)
         },
 
         droppableTransformPosition(rpos) {
@@ -114,10 +124,10 @@ define([
 
         mapPropsToElements() {
             var { selection, product, elements } = this.props,
-                elementVertices = _.pick(elements.vertices, _.pluck(product.extendedData.vertices, 'id')),
-                elementEdges = _.pick(elements.edges, _.pluck(product.extendedData.edges, 'id')),
-                verticesSelectedById = _.indexBy(selection.vertices),
-                edgesSelectedById = _.indexBy(selection.edges),
+                elementVertices = elements.vertices,
+                elementEdges = elements.edges,
+                verticesSelectedById = selection.vertices,
+                edgesSelectedById = selection.edges,
                 data = this.props.product.extendedData,
                 { vertices, edges } = data,
                 cyElements = {

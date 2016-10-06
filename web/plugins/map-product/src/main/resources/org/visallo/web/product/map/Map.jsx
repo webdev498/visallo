@@ -7,19 +7,60 @@ define([
 
     const PropTypes = React.PropTypes;
     const Map = React.createClass({
+
         propTypes: {
             configProperties: PropTypes.object.isRequired,
+            onUpdateViewport: PropTypes.func.isRequired,
             onSelectElements: PropTypes.func.isRequired
         },
 
+        getInitialState() {
+            return { viewport: this.props.viewport, generatePreview: true }
+        },
+
         render() {
+            const { viewport, generatePreview } = this.state;
             return (
                 <OpenLayers
                     features={this.mapElementsToFeatures()}
+                    viewport={viewport}
+                    generatePreview={generatePreview}
+                    onPan={this.onViewport}
+                    onZoom={this.onViewport}
                     onSelectElements={this.props.onSelectElements}
+                    onUpdatePreview={this.props.onUpdatePreview.bind(this, this.props.product.id)}
                     {...this.getTilePropsFromConfiguration()}
                 />
             )
+        },
+
+        componentWillReceiveProps(nextProps) {
+            if (nextProps.product.id === this.props.product.id) {
+                this.setState({ viewport: {}, generatePreview: false })
+            } else {
+                this.saveViewport(this.props)
+                this.setState({ viewport: nextProps.viewport || {}, generatePreview: true })
+            }
+        },
+
+        componentWillUnmount() {
+            this.saveViewport(this.props)
+        },
+
+        onViewport(event) {
+            const view = event.target;
+
+            var zoom = view.getResolution(), pan = view.getCenter();
+            if (!this.currentViewport) this.currentViewport = {};
+            this.currentViewport[this.props.product.id] = { zoom, pan: [...pan] };
+        },
+
+        saveViewport(props) {
+            var productId = props.product.id;
+            if (this.currentViewport && productId in this.currentViewport) {
+                var viewport = this.currentViewport[productId];
+                props.onUpdateViewport(productId, viewport);
+            }
         },
 
         mapElementsToFeatures() {

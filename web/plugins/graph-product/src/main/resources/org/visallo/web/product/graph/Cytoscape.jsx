@@ -10,6 +10,13 @@ define([
     NavigationControls) {
 
     const ANIMATION = { duration: 400, easing: 'spring(250, 20)' };
+    const DEFAULT_PNG = Object.freeze({
+        bg: 'white',
+        full: true,
+        maxWidth: 300,
+        maxHeight: 300
+    });
+    const PREVIEW_DEBOUNCE_SECONDS = 3;
     const EVENTS = {
         drag: 'onDrag',
         free: 'onFree',
@@ -28,14 +35,20 @@ define([
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
+    const { PropTypes } = React;
 
     const Cytoscape = React.createClass({
+
+        propTypes: {
+            generatePreview: PropTypes.bool
+        },
 
         getDefaultProps() {
             const eventProps = _.mapObject(_.invert(EVENTS), () => () => {})
             return {
                 ...eventProps,
                 onReady() {},
+                generatePreview: false,
                 fit: false,
                 animate: true,
                 config: {},
@@ -44,14 +57,18 @@ define([
         },
 
         componentDidMount() {
+            this.updatePreview = _.debounce(this._updatePreview, PREVIEW_DEBOUNCE_SECONDS * 1000)
             this.previousConfig = this.prepareConfig();
             const cy = cytoscape(this.previousConfig);
             this.setState({ cy })
+
+            cy.on('add remove select unselect position data', () => this.updatePreview());
         },
 
         componentWillUnmount() {
             if (this.state.cy) {
                 this.state.cy.destroy();
+                this.unmounted = true;
             }
         },
 
@@ -77,6 +94,16 @@ define([
                 this.makeChanges(oldNodes, newNodes)
                 this.makeChanges(oldEdges, newEdges)
             })
+            //if (this.props.generatePreview) {
+                //this._updatePreview();
+            //}
+        },
+
+        _updatePreview() {
+            console.trace();
+            if (this.unmounted) return;
+            const { cy } = this.state;
+            this.props.onUpdatePreview(cy.png(DEFAULT_PNG));
         },
 
         prepareConfig() {

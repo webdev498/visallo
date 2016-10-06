@@ -13,6 +13,7 @@ define([
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
+    const noop = function() {};
 
     const MODE_NORMAL = 0,
         FEATURE_SIZE = [22, 40],
@@ -21,6 +22,9 @@ define([
         ANIMATION_DURATION = 200,
         MIN_FIT_ZOOM_RESOLUTION = 3000,
         MAX_FIT_ZOOM_RESOLUTION = 20000,
+        PREVIEW_WIDTH = 300,
+        PREVIEW_HEIGHT = 300,
+        PREVIEW_DEBOUNCE_SECONDS = 2,
         MODE_REGION_SELECTION_MODE_POINT = 1,
         MODE_REGION_SELECTION_MODE_RADIUS = 2,
         MODE_REGION_SELECTION_MODE_LOADING = 3;
@@ -31,11 +35,24 @@ define([
         propTypes: {
             source: PropTypes.string.isRequired,
             sourceOptions: PropTypes.object,
-            onSelectElements: PropTypes.func.isRequired
+            generatePreview: PropTypes.bool,
+            onSelectElements: PropTypes.func.isRequired,
+            onUpdatePreview: PropTypes.func.isRequired,
+
+            onZoom: PropTypes.func,
+            onPan: PropTypes.func
         },
 
         getInitialState() {
             return { panning: false }
+        },
+
+        getDefaultProps() {
+            return {
+                generatePreview: false,
+                onZoom: noop,
+                onPan: noop
+            }
         },
 
         componentDidUpdate() {
@@ -43,6 +60,7 @@ define([
                 const existingFeatures = _.indexBy(this.state.cluster.source.getFeatures(), f => f.getId());
                 const newFeatures = [];
                 const { source } = this.state.cluster;
+                var changed = false;
                 this.props.features.forEach(data => {
                     const { id, geoLocations, element, ...rest } = data;
                     const featureValues = {
@@ -59,6 +77,7 @@ define([
                         const existingValues = _.omit(data, 'geometry', 'element')
                         const newValues = _.omit(featureValues, 'geometry', 'element')
                         if (!_.isEqual(existingValues, newValues)) {
+                            changed = true
                             existingFeature.setProperties(featureValues)
                         }
                         delete existingFeatures[id];
@@ -69,23 +88,121 @@ define([
                     }
                 })
 
+                if (this.props.viewport && !_.isEmpty(this.props.viewport)) {
+                    this.state.map.getView().setCenter(this.props.viewport.pan);
+                    this.state.map.getView().setResolution(this.props.viewport.zoom);
+                }
+
                 if (newFeatures.length) {
+                    changed = true
                     source.addFeatures(newFeatures);
                 }
                 if (!_.isEmpty(existingFeatures)) {
+                    changed = true
                     _.forEach(existingFeatures, feature => source.removeFeature(feature));
+                }
+
+                if (this.props.generatePreview) {
+                    //this.state.map.once('postcompose', () => {
+                        //this.fit({ animate: false });
+                        console.log('hasviewport?', !this.props.viewport);
+                        this._updatePreview({ fit: !this.props.viewport });
+                    //})
+                    //this.state.map.renderSync();
+                } else if (changed) {
+                    this.updatePreview();
                 }
             }
         },
 
+        _updatePreview(options = {}) {
+            const { fit = false } = options;
+            const { map, cluster, baseLayerSource } = this.state;
+            const doFit = () => {
+                if (fit) this.fit({ animate: false });
+            };
+
+            console.log('updating preview', fit)
+
+            // Since this is delayed, make sure component not unmounted
+            if (!this._canvasPreviewBuffer) return;
+
+            doFit();
+            map.once('postcompose', (event) => {
+                if (!this._canvasPreviewBuffer) return;
+                var loading = 0, loaded = 0, events, captureTimer;
+
+                doFit();
+
+                const mapCanvas = event.context.canvas;
+                const capture = _.debounce(() => {
+                    if (!this._canvasPreviewBuffer) return;
+
+                    doFit();
+
+                    map.once('postrender', () => {
+                        const mapData = mapCanvas.toDataURL('image/png');
+                        const ctx = this._canvasPreviewBuffer.getContext('2d');
+                        const image = new Image();
+
+                        if (events) {
+                            events.forEach(key => ol.Observable.unByKey(key));
+                        }
+
+                        image.onload = () => {
+                            if (!this._canvasPreviewBuffer) return;
+
+                            var hRatio = PREVIEW_WIDTH / image.width;
+                            var vRatio = PREVIEW_HEIGHT / image.height;
+                            var ratio = Math.min(hRatio, vRatio);
+                            this._canvasPreviewBuffer.width = Math.trunc(image.width * ratio);
+                            this._canvasPreviewBuffer.height = Math.trunc(image.height * ratio);
+                            ctx.drawImage(
+                                image, 0, 0, image.width, image.height,
+                                0, 0, this._canvasPreviewBuffer.width, this._canvasPreviewBuffer.height
+                            );
+                            this.props.onUpdatePreview(this._canvasPreviewBuffer.toDataURL('image/png'));
+                        };
+                        image.onerror = (e) => console.error(e)
+                        image.src = mapData;
+                    });
+                    map.renderSync();
+                }, 100)
+
+                const tileLoadStart = () => {
+                    clearTimeout(captureTimer);
+                    ++loading;
+                };
+                const tileLoadEnd = (event) => {
+                    clearTimeout(captureTimer);
+                    if (loading === ++loaded) {
+                        captureTimer = capture();
+                    }
+                };
+
+                events = [
+                    baseLayerSource.on('tileloadstart', tileLoadStart),
+                    baseLayerSource.on('tileloadend', tileLoadEnd),
+                    baseLayerSource.on('tileloaderror', tileLoadEnd)
+                ];
+            });
+            map.renderSync();
+        },
+
         componentDidMount() {
+            this._canvasPreviewBuffer = document.createElement('canvas');
+            this._canvasPreviewBuffer.width = PREVIEW_WIDTH;
+            this._canvasPreviewBuffer.height = PREVIEW_HEIGHT;
+
             this.olEvents = [];
             this.domEvents = [];
-            const { map, cluster } = this.configureMap();
-            this.setState({ map, cluster })
+            this.updatePreview = _.debounce(this._updatePreview, PREVIEW_DEBOUNCE_SECONDS * 1000);
+            const { map, cluster, baseLayerSource } = this.configureMap();
+            this.setState({ map, cluster, baseLayerSource })
         },
 
         componentWillUnmount() {
+            this._canvasPreviewBuffer = null;
             if (this.state.cluster) {
                 this.olEvents.forEach(key => ol.Observable.unByKey(key));
                 this.olEvents = null;
@@ -166,7 +283,9 @@ define([
             }
         },
 
-        fit() {
+        fit(options = {}) {
+            console.trace();
+            const { animate = true } = options;
             const { map, cluster } = this.state;
             const extent = cluster.clusterSource.getExtent();
             const view = map.getView();
@@ -197,14 +316,16 @@ define([
                         extentWithPaddingSize[1] / viewportHeight
                     );
 
-                map.beforeRender(ol.animation.pan({
-                    source: view.getCenter(),
-                    duration: ANIMATION_DURATION
-                }))
-                map.beforeRender(ol.animation.zoom({
-                    resolution: resolution,
-                    duration: ANIMATION_DURATION
-                }));
+                if (animate) {
+                    map.beforeRender(ol.animation.pan({
+                        source: view.getCenter(),
+                        duration: ANIMATION_DURATION
+                    }))
+                    map.beforeRender(ol.animation.zoom({
+                        resolution: resolution,
+                        duration: ANIMATION_DURATION
+                    }));
+                }
 
                 view.setResolution(view.constrainResolution(
                     Math.min(MAX_FIT_ZOOM_RESOLUTION, Math.max(idealResolution, MIN_FIT_ZOOM_RESOLUTION)), -1
@@ -218,18 +339,27 @@ define([
 
                 view.setCenter([center[0] - lon, center[1] - lat]);
             } else {
-                map.beforeRender(ol.animation.zoom({
-                    resolution: view.getResolution(),
-                    duration: ANIMATION_DURATION
-                }));
-                map.beforeRender(ol.animation.pan({
-                    source: view.getCenter(),
-                    duration: ANIMATION_DURATION
-                }))
+                if (animate) {
+                    map.beforeRender(ol.animation.zoom({
+                        resolution: view.getResolution(),
+                        duration: ANIMATION_DURATION
+                    }));
+                    map.beforeRender(ol.animation.pan({
+                        source: view.getCenter(),
+                        duration: ANIMATION_DURATION
+                    }))
+                }
                 var params = this.getDefaultViewParameters();
                 view.setZoom(params.zoom);
                 view.setCenter(params.center);
             }
+        },
+
+        getDefaultViewParameters() {
+            return {
+                zoom: 2,
+                center: [0, 0]
+            };
         },
 
         configureMap() {
@@ -247,6 +377,8 @@ define([
 
             var baseLayerSource;
 
+            sourceOptions.crossOrigin = 'Anonymous';
+
             if (source in ol.source && _.isFunction(ol.source[source])) {
                 baseLayerSource = new ol.source[source](sourceOptions)
             } else {
@@ -257,12 +389,13 @@ define([
             map.addLayer(new ol.layer.Tile({ source: baseLayerSource }));
             map.addLayer(cluster.layer)
 
-            map.setView(new ol.View({
-                zoom: 2,
-                center: [0, 0]
-            }));
+            const view = new ol.View(this.getDefaultViewParameters());
+            this.olEvents.push(view.on('change:center', (event) => this.props.onPan(event)));
+            this.olEvents.push(view.on('change:resolution', (event) => this.props.onZoom(event)));
 
-            return { map, cluster }
+            map.setView(view);
+
+            return { map, cluster, baseLayerSource }
         },
 
         configureCluster() {

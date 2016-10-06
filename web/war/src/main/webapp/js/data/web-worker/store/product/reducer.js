@@ -13,12 +13,21 @@ define(['updeep'], function(updeep) {
 
             case 'PRODUCT_SELECT': return { ...state, selected: payload.productId }
             case 'PRODUCT_UPDATE': return { ...state, items: updateOrAddItem(state.items, payload.product) }
+            case 'PRODUCT_PREVIEW_UPDATE': return { ...state, items: updatePreview(state.items, payload) }
             case 'PRODUCT_REMOVE': return { ...state, items: removeItem(state.items, payload.productId) }
 
             case 'PRODUCT_UPDATE_VIEWPORT': return { ...state, viewports: updateItemViewport(state.viewports, payload) }
         }
 
         return state;
+    }
+
+    function updatePreview(items, { productId, md5 }) {
+        const item = _.findWhere(items, { id: productId });
+        if (item) {
+            return sort([..._.reject(items, (i) => i.id === productId), {...item, previewMD5: md5 }]);
+        }
+        return items;
     }
 
     function updateList(state, { loading, items }) {
@@ -59,12 +68,20 @@ define(['updeep'], function(updeep) {
     function updateItemViewport(viewports, { productId, ...viewport }) {
         var existingViewport = viewports[productId];
 
+        console.log('viewport updating', productId, existingViewport, '->', viewport)
         if (existingViewport) {
             const eq = (a, b) => Math.abs(b - a) <= 0.001;
-            const { x, y } = existingViewport
-            if (eq(x, viewport.x) && eq(y, viewport.y)) {
-                return viewports
+            const { pan, zoom } = existingViewport
+            var equal = true;
+            if (_.isArray(viewport.pan)) {
+                equal = eq(pan[0], viewport.pan[0]) && eq(pan[1], viewport.pan[1])
+            } else {
+                equal = eq(pan.x, viewport.x) && eq(pan.y, viewport.y);
             }
+            if (equal && eq(zoom, viewport.zoom)) {
+                console.log('No change', pan, zoom, '->', viewport);
+                return viewports
+            } else console.log('changed', productId, pan, zoom, '->', viewport)
         }
 
         return { ...viewports, [productId]: viewport };

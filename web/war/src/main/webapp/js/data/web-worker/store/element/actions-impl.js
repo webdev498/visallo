@@ -4,13 +4,24 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
     const api = {
         get: ({ vertexIds, edgeIds }) => (dispatch, getState) => {
             if (vertexIds && vertexIds.length) {
-                // TODO: don't request if in state
-                ajax('POST', '/vertex/multiple', { vertexIds })
-                    .then((result) => {
-                        const { vertices } = result;
-                        const edges = [];
-                        dispatch(api.update({ vertices, edges, workspaceId: getState().workspace.currentId }))
-                    })
+                const state = getState();
+                const workspaceId = state.workspace.currentId;
+                const elements = state.element[workspaceId]
+                const toRequest = { vertexIds, edgeIds };
+
+                // TODO: edgeIds
+                if (elements && elements.vertices) {
+                    toRequest.vertexIds = _.reject(toRequest.vertexIds, (vId) => vId in elements.vertices);
+                }
+
+                if (toRequest.vertexIds.length) {
+                    ajax('POST', '/vertex/multiple', { vertexIds: toRequest.vertexIds })
+                        .then((result) => {
+                            const { vertices } = result;
+                            const edges = [];
+                            dispatch(api.update({ vertices, edges, workspaceId: workspaceId }))
+                        })
+                }
             }
         },
 

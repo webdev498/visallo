@@ -5,12 +5,13 @@ define(['../actions', '../../util/ajax',
     actions.protectFromMain();
 
     const api = {
-        get: ({productId, invalidate}) => (dispatch, getState) => {
+        get: ({productId, invalidate, change}) => (dispatch, getState) => {
             var items = getState().product.items;
             var product = _.findWhere(items, { id: productId })
+            var request;
 
             if (invalidate || !product || !product.extendedData) {
-                return ajax('GET', '/product', {
+                request = ajax('GET', '/product', {
                     productId,
                     includeExtended: true,
                     params: {
@@ -18,7 +19,10 @@ define(['../actions', '../../util/ajax',
                         includeEdges: true
                     }
                 })
-                    .then(function(product) {
+            }
+
+            if (request) {
+                request.then(function(product) {
                         dispatch(api.update(product))
 
                         const { vertices, edges } = JSON.parse(product.extendedData)
@@ -29,7 +33,12 @@ define(['../actions', '../../util/ajax',
             }
         },
 
-        changedOnServer: (productId) => (dispatch, getState) => {
+        previewChanged: (productId, md5) => ({
+            type: 'PRODUCT_PREVIEW_UPDATE',
+            payload: { productId, md5 }
+        }),
+
+        changedOnServer: (productId, change) => (dispatch, getState) => {
             // TODO: Should check current workspace
             // not current ? just mark it invalid
             // is current  ? is it selected ? get : load list
@@ -43,13 +52,14 @@ define(['../actions', '../../util/ajax',
             }
         }),
 
-        updatePositions: ({ productId, updateVertices }) => (dispatch, getState) => {
-            var params = { updateVertices },
-                product = _.findWhere(getState().product.items, { id: productId }),
-                { kind } = product;
+        updatePreview: ({ productId, dataUrl }) => (dispatch, getState) => {
+            ajax('POST', '/product', { productId, preview: dataUrl })
+        },
 
+        updatePositions: ({ productId, updateVertices }) => (dispatch, getState) => {
+            var params = { updateVertices };
             if (!_.isEmpty(updateVertices)) {
-                return ajax('POST', '/product', { productId, kind, params })
+                return ajax('POST', '/product', { productId, params })
             }
         },
 

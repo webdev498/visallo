@@ -948,7 +948,7 @@ public abstract class WorkspaceRepository {
 
     public abstract Collection<Product> findAllProductsForWorkspace(String workspaceId, User user);
 
-    public abstract Product addOrUpdateProduct(String workspaceId, String productId, String title, String kind, JSONObject params, User user);
+    public abstract Product addOrUpdateProduct(String workspaceId, String productId, String title, String kind, String previewDataUrl, JSONObject params, User user);
 
     public abstract void deleteProduct(String workspaceId, String productId, User user);
 

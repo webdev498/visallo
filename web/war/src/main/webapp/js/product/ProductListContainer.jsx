@@ -2,8 +2,9 @@ define([
     'react',
     'react-redux',
     './ProductList',
-    'data/web-worker/store/product/actions'
-], function(React, redux, ProductList, productActions) {
+    'data/web-worker/store/product/actions',
+    'data/web-worker/store/product/selectors'
+], function(React, redux, ProductList, productActions, productSelectors) {
     'use strict';
 
     var requestProducts = _.once(function(dispatch) {
@@ -23,11 +24,10 @@ define([
 
         (state, props) => {
             const { items, ...rest } = state.product;
-            const workspaceId = state.workspace.currentId;
 
             return {
                 ...rest,
-                products: _.where(items, { workspaceId })
+                products: productSelectors.getProductsInWorkspace(state)
             }
         },
 

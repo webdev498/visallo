@@ -12,16 +12,22 @@ define([
             const { products, loading, error, selected } = this.props;
 
             var itemElements = products.map(item => {
-                    var isSelected = selected === item.id;
-                    var style = {
+                    const isSelected = selected === item.id;
+                    const style = {
                         padding: '0.5em',
                         background: isSelected ? '#0088cc' : 'inherit',
                         color: isSelected ? 'white' : 'inherit'
                     }
+                    const preview = item.previewMD5 ? (
+                        <img src={`/product/preview?productId=${encodeURIComponent(item.id)}&workspaceId=${encodeURIComponent(visalloData.currentWorkspaceId)}&md5=${item.previewMD5}`} width="300px" />
+                    ) : ''
+
                     return (
                         <div onClick={this.props.onSelectProduct.bind(null, item.id)} key={item.id}>
                             <button style={{float: 'right', marginTop: '0.3em'}} onClick={this.onDelete.bind(null, item.id)}>DELETE</button>
-                            <p style={style}>{item.title}<br/>{item.kind}<br/><i>{item.id}</i></p>
+                            <p style={style}>{item.title}<br/>{item.kind}<br/><i>{item.id}</i><br/>
+                            {preview}
+                            </p>
                         </div>
                     )
                 }),

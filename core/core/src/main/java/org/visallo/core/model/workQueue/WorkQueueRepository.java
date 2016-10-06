@@ -529,12 +529,27 @@ public abstract class WorkQueueRepository {
         broadcastJson(json);
     }
 
-    public void broadcastWorkProductChange(String workProductId, ClientApiWorkspace workspace) {
+    public void broadcastWorkProductChange(String workProductId, ClientApiWorkspace workspace, User user) {
         JSONObject json = new JSONObject();
         json.put("type", "workProductChange");
         json.put("permissions", getPermissionsWithUsers(workspace, null));
         JSONObject dataJson = new JSONObject();
         dataJson.put("id", workProductId);
+        json.put("data", dataJson);
+        broadcastJson(json);
+    }
+
+    public void broadcastWorkProductPreviewChange(String workProductId, User user, String md5) {
+        JSONObject json = new JSONObject();
+        json.put("type", "workProductPreviewChange");
+
+        JSONArray permissions = new JSONArray();
+        permissions.put(user.getUserId());
+        json.put("permissions", permissions);
+
+        JSONObject dataJson = new JSONObject();
+        dataJson.put("id", workProductId);
+        dataJson.putOpt("md5", md5);
         json.put("data", dataJson);
         broadcastJson(json);
     }

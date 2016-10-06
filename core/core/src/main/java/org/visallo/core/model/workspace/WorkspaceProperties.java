@@ -2,6 +2,7 @@ package org.visallo.core.model.workspace;
 
 import org.visallo.core.model.properties.types.BooleanSingleValueVisalloProperty;
 import org.visallo.core.model.properties.types.IntegerSingleValueVisalloProperty;
+import org.visallo.core.model.properties.types.StreamingVisalloProperty;
 import org.visallo.core.model.properties.types.StringSingleValueVisalloProperty;
 
 public class WorkspaceProperties {
@@ -28,4 +29,5 @@ public class WorkspaceProperties {
 
     public static final StringSingleValueVisalloProperty PRODUCT_KIND = new StringSingleValueVisalloProperty("http://visallo.org/product#kind");
     public static final StringSingleValueVisalloProperty PRODUCT_DATA = new StringSingleValueVisalloProperty("http://visallo.org/product#data");
+    public static final StreamingVisalloProperty PRODUCT_PREVIEW_DATA_URL = new StreamingVisalloProperty("http://visallo.org/product#previewDataUrl");
 }
