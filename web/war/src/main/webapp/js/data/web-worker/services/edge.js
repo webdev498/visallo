@@ -2,8 +2,9 @@
 define([
     '../util/ajax',
     './storeHelper',
-    '../store'
-], function(ajax, storeHelper, store) {
+    '../store',
+    'require'
+], function(ajax, storeHelper, store, require) {
     'use strict';
 
     var api = {
@@ -97,9 +98,11 @@ define([
 
         multiple: function(options) {
             const state = store.getStore().getState();
-            const elements = state.element[state.workspace.currentId];
-
-            var toRequest = options.edgeIds
+            const workspaceId = state.workspace.currentId;
+            const elements = state.element[workspaceId];
+            const returnSingular = !_.isArray(options.edgeIds);
+            const edgeIds = returnSingular ? [options.edgeIds] : options.edgeIds;
+            var toRequest = edgeIds;
             if (elements) {
                 toRequest = _.reject(toRequest, id => id in elements.edges);
             }
@@ -109,16 +112,24 @@ define([
                 ajax('POST', '/edge/multiple', { edgeIds: toRequest }) :
                 Promise.resolve({edges: []})
             ).then(function({edges}) {
+                if (edges.length) {
+                    require(['../store/element/actions-impl'], function(actions) {
+                        store.getStore().dispatch(actions.update({ edges, workspaceId }));
+                    });
+                }
+
                 if (elements) {
-                    const existing = _.pick(elements.edges, options.edgeIds)
+                    const existing = _.pick(elements.edges, edgeIds)
                     return Object.values(existing).concat(edges)
                 }
                 return edges;
+            }).then(function(ret) {
+                return returnSingular && ret.length ? ret[0] : ret;
             })
         },
 
         store: function(options) {
-            return api.multiple(options).then(edges => _.isArray(options.edgeIds) ? edges : edges[0])
+            return api.multiple(options)
         },
 
         setVisibility: function(edgeId, visibilitySource) {

@@ -106,9 +106,12 @@ define([
 
         multiple: function(options) {
             const state = store.getStore().getState();
-            const elements = state.element[state.workspace.currentId];
+            const workspaceId = state.workspace.currentId;
+            const elements = state.element[workspaceId];
+            const returnSingular = !_.isArray(options.vertexIds);
+            const vertexIds = returnSingular ? [options.vertexIds] : options.vertexIds;
 
-            var toRequest = options.vertexIds
+            var toRequest = vertexIds;
             if (elements) {
                 toRequest = _.reject(toRequest, id => id in elements.vertices);
             }
@@ -118,11 +121,20 @@ define([
                 ajax('POST', '/vertex/multiple', { vertexIds: toRequest }) :
                 Promise.resolve({vertices:[]})
             ).then(function({vertices}) {
+
+                if (vertices.length) {
+                    require(['../store/element/actions-impl'], function(actions) {
+                        store.getStore().dispatch(actions.update({ vertices, workspaceId }));
+                    });
+                }
+
                 if (elements) {
-                    const existing = _.pick(elements.vertices, options.vertexIds)
+                    const existing = _.pick(elements.vertices, vertexIds)
                     return Object.values(existing).concat(vertices)
                 }
                 return vertices;
+            }).then(function(ret) {
+                return returnSingular && ret.length ? ret[0] : ret;
             })
         },
 
@@ -201,7 +213,7 @@ define([
         },
 
         store: function(options) {
-            return api.multiple(options).then(vertices => _.isArray(options.vertexIds) ? vertices : vertices[0])
+            return api.multiple(options)
         },
 
         uploadImage: function(vertexId, file) {

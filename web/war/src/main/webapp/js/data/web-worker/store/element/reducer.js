@@ -34,7 +34,7 @@ define(['updeep'], function(updeep) {
             prevEdges = { ...prevEdges, ...newEdges };
         }
 
-        if (vertices.length || edges.length) {
+        if ((vertices && vertices.length) || (edges && edges.length)) {
             return { vertices: prevVertices, edges: prevEdges };
         }
 
