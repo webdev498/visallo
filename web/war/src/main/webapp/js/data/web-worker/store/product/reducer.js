@@ -68,7 +68,6 @@ define(['updeep'], function(updeep) {
     function updateItemViewport(viewports, { productId, ...viewport }) {
         var existingViewport = viewports[productId];
 
-        console.log('viewport updating', productId, existingViewport, '->', viewport)
         if (existingViewport) {
             const eq = (a, b) => Math.abs(b - a) <= 0.001;
             const { pan, zoom } = existingViewport
@@ -79,9 +78,8 @@ define(['updeep'], function(updeep) {
                 equal = eq(pan.x, viewport.x) && eq(pan.y, viewport.y);
             }
             if (equal && eq(zoom, viewport.zoom)) {
-                console.log('No change', pan, zoom, '->', viewport);
                 return viewports
-            } else console.log('changed', productId, pan, zoom, '->', viewport)
+            }
         }
 
         return { ...viewports, [productId]: viewport };

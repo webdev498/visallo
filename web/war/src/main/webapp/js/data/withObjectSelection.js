@@ -40,9 +40,7 @@ define([
             visalloData.selectedObjectsPromise = this.selectedObjectsPromise.bind(this);
 
             this.on('selectObjects', this.onSelectObjects);
-            this.on('selectAll', this.onSelectAll);
             this.on('selectConnected', this.onSelectConnected);
-
             this.on('deleteSelected', this.onDeleteSelected);
             this.on('edgesLoaded', this.onEdgesLoaded);
             this.on('edgesDeleted', function(event, data) {
@@ -120,11 +118,14 @@ define([
         this.onSelectAll = function(event, data) {
             var self = this;
 
+            /*
             this.displayInfo('graph.select.all.starting');
             this.on(document, 'objectsSelected objectsSelectedAborted', function handler() {
                 self.trigger('hideInformation');
                 self.off(document, 'objectsSelected objectsSelectedAborted', handler);
             })
+
+            visalloData.storePromise.then(store => {
             this.dataRequestPromise.done(function(dataRequest) {
                 Promise.all([
                     dataRequest('workspace', 'store'),
@@ -139,6 +140,7 @@ define([
                     });
                 });
             })
+            */
         };
 
         this.onSelectConnected = function(event, data) {

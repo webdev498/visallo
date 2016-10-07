@@ -260,5 +260,61 @@ function ajaxPostfilter(xmlHttpRequest, jsonResponse, request) {
         workspaceId = publicData.currentWorkspaceId;
     }
 
-    store.checkAjaxForPossibleCaching(xmlHttpRequest, jsonResponse, workspaceId, request);
+    /*
+    require(['data/web-worker/store'], function(store) {
+
+        //store.getStore().dispatch()
+
+        var url = request.url, cacheable;
+        var list = json.elements || json.vertices || json.edges;
+
+        if (resemblesVertex(json)) {
+            if (cacheDecisions.shouldCacheVertexAtUrl(json, url)) {
+                console.debug(request.url, 'causing vertex to cache', json);
+                cacheVertices(workspaceId, [json], cachePriorityForUrl(request.url));
+            }
+        }
+        if (resemblesVertices(list)) {
+            cacheable = _.filter(list, function(v) {
+                return cacheDecisions.shouldCacheVertexAtUrl(v, url);
+            });
+            if (cacheable.length) {
+                console.debug(request.url, 'causing ' + cacheable.length + ' vertices to cache');
+                cacheVertices(workspaceId, cacheable, cachePriorityForUrl(request.url));
+            }
+        }
+        if (resemblesEdge(json)) {
+            if (cacheDecisions.shouldCacheEdgeAtUrl(json, url)) {
+                cacheEdges(workspaceId, [json]);
+                cacheWorkspaceEdgeIfVerticesInWorkspace(workspaceId, json);
+                var edgeVertices = _.compact([json.source, json.target].map(function(v) {
+                    if (v && resemblesVertex(v)) {
+                        return v;
+                    }
+                }));
+                if (edgeVertices.length) {
+                    cacheVertices(workspaceId, edgeVertices);
+                }
+            }
+        }
+        if (resemblesEdges(list)) {
+            cacheable = _.filter(list, function(e) {
+                return cacheDecisions.shouldCacheEdgeAtUrl(e, url);
+            });
+            if (cacheable.length) {
+                cacheEdges(workspaceId, cacheable);
+            }
+        }
+        if (_.isArray(json.relationships) && json.relationships.length && 'vertex' in json.relationships[0]) {
+            var vertices = _.pluck(json.relationships, 'vertex');
+            if (resemblesVertices(vertices)) {
+                cacheable = _.filter(vertices, function(v) {
+                    return cacheDecisions.shouldCacheVertexAtUrl(v, url);
+                })
+                console.debug(request.url, 'causing ' + cacheable.length + ' vertices to cache');
+                cacheVertices(workspaceId, cacheable, Cache.Priority.LOW);
+            }
+        }
+    });
+    */
 }

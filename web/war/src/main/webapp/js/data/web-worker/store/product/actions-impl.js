@@ -87,7 +87,6 @@ define(['../actions', '../../util/ajax',
                 const nextPosition = () => {
                     if (currentPosition) {
                         currentPosition.x += xInc;
-                        console.log(currentPosition.x, position.x, (currentPosition.x - position.x));
                         if ((currentPosition.x - position.x) > maxX) {
                             currentPosition.x = position.x;
                             currentPosition.y += yInc;

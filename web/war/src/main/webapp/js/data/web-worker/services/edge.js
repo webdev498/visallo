@@ -1,8 +1,9 @@
 
 define([
     '../util/ajax',
-    './storeHelper'
-], function(ajax, storeHelper) {
+    './storeHelper',
+    '../store'
+], function(ajax, storeHelper, store) {
     'use strict';
 
     var api = {
@@ -95,16 +96,30 @@ define([
         },
 
         multiple: function(options) {
-            return ajax('POST', '/edge/multiple', options);
+            const state = store.getStore().getState();
+            const elements = state.element[state.workspace.currentId];
+
+            var toRequest = options.edgeIds
+            if (elements) {
+                toRequest = _.reject(toRequest, id => id in elements.edges);
+            }
+
+            return (
+                toRequest.length ?
+                ajax('POST', '/edge/multiple', { edgeIds: toRequest }) :
+                Promise.resolve({edges: []})
+            ).then(function({edges}) {
+                if (elements) {
+                    const existing = _.pick(elements.edges, options.edgeIds)
+                    return Object.values(existing).concat(edges)
+                }
+                return edges;
+            })
         },
 
-        store: storeHelper.createStoreAccessorOrDownloader(
-            'edge', 'edgeIds', 'edges',
-            function(toRequest) {
-                return api.multiple({
-                    edgeIds: toRequest
-                });
-            }),
+        store: function(options) {
+            return api.multiple(options).then(edges => _.isArray(options.edgeIds) ? edges : edges[0])
+        },
 
         setVisibility: function(edgeId, visibilitySource) {
             return ajax('POST', '/edge/visibility', {

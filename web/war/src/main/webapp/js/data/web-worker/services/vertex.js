@@ -1,8 +1,10 @@
 
 define([
     '../util/ajax',
-    './storeHelper'
-], function(ajax, storeHelper) {
+    './storeHelper',
+    '../store',
+    'require'
+], function(ajax, storeHelper, store, require) {
     'use strict';
 
     var api = {
@@ -61,6 +63,11 @@ define([
                 .then(function(query) {
                     return ajax('POST', query.url, query.parameters);
                 })
+                .tap(function({ elements }) {
+                    require(['../store/element/actions-impl'], function(actions) {
+                        store.getStore().dispatch(actions.putSearchResults(elements))
+                    });
+                })
         },
 
         'geo-search': function(lat, lon, radius) {
@@ -98,7 +105,25 @@ define([
         },
 
         multiple: function(options) {
-            return ajax('POST', '/vertex/multiple', options);
+            const state = store.getStore().getState();
+            const elements = state.element[state.workspace.currentId];
+
+            var toRequest = options.vertexIds
+            if (elements) {
+                toRequest = _.reject(toRequest, id => id in elements.vertices);
+            }
+
+            return (
+                toRequest.length ?
+                ajax('POST', '/vertex/multiple', { vertexIds: toRequest }) :
+                Promise.resolve({vertices:[]})
+            ).then(function({vertices}) {
+                if (elements) {
+                    const existing = _.pick(elements.vertices, options.vertexIds)
+                    return Object.values(existing).concat(vertices)
+                }
+                return vertices;
+            })
         },
 
         properties: function(vertexId) {
@@ -175,14 +200,9 @@ define([
             });
         },
 
-        store: storeHelper.createStoreAccessorOrDownloader(
-            'vertex', 'vertexIds', 'vertices',
-            function(toRequest) {
-                return api.multiple({
-                    vertexIds: toRequest
-                });
-            }
-        ),
+        store: function(options) {
+            return api.multiple(options).then(vertices => _.isArray(options.vertexIds) ? vertices : vertices[0])
+        },
 
         uploadImage: function(vertexId, file) {
             return ajax('POST', '/vertex/upload-image?' +

@@ -25,11 +25,11 @@ define(['updeep'], function(updeep) {
         let prevVertices = previous && previous.vertices || {};
         let prevEdges = previous && previous.edges || {};
 
-        if (vertices.length) {
+        if (vertices && vertices.length) {
             let newVertices = _.indexBy(vertices, 'id');
             prevVertices = { ...prevVertices, ...newVertices };
         }
-        if (edges.length) {
+        if (edges && edges.length) {
             let newEdges = _.indexBy(edges, 'id');
             prevEdges = { ...prevEdges, ...newEdges };
         }

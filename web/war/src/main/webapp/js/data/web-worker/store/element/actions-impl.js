@@ -32,6 +32,26 @@ define(['../actions', '../../util/ajax'], function(actions, ajax) {
 
         dragEnd: (payload) => (dispatch, getState) => {
             dispatch({ type: 'ELEMENT_DRAGEND', payload })
+        },
+
+        putSearchResults: (elements) => (dispatch, getState) => {
+            if (elements.length) {
+                const workspaceId = getState().workspace.currentId;
+                const withoutScore = elements.map(element => {
+                    const {score, ...rest} = element;
+                    return rest;
+                });
+                const grouped = _.groupBy(withoutScore, 'type');
+
+                dispatch({
+                    type: 'ELEMENT_UPDATE',
+                    payload: {
+                        workspaceId,
+                        vertices: grouped.vertex,
+                        edges: grouped.edge
+                    }
+                });
+            }
         }
     }
 

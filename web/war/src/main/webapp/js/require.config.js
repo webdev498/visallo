@@ -108,7 +108,6 @@
             'rangy-cssclassapplier': { deps: ['rangy-core'] },
             'rangy-serializer': { deps: ['rangy-core'] },
             'react': { exports: 'React' },
-            //'reselect': { init: function(e) { debugger; }},
             'jquery-scrollstop': { exports: 'jQuery', deps: ['jquery'] },
             'underscore': { exports: '_' },
             'videojs': { exports: 'videojs' }
