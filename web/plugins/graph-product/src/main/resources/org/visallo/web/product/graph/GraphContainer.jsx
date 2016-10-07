@@ -34,6 +34,8 @@ define([
             return {
                 onAddSelection: (selection) => dispatch(selectionActions.add(selection)),
                 onRemoveSelection: (selection) => dispatch(selectionActions.remove(selection)),
+                onUpdateSelection: (selection) => dispatch(selectionActions.addRemove(selection)),
+                onSetSelection: (selection) => dispatch(selectionActions.set(selection)),
                 onClearSelection: () => dispatch(selectionActions.clear),
 
                 onUpdatePreview: (id, dataUrl) => dispatch(productActions.updatePreview(id, dataUrl)),

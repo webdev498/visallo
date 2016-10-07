@@ -79,9 +79,28 @@ define(['../actions', '../../util/ajax',
 
             edges.then(function(edgeVertexIds) {
                 const combined = _.uniq(edgeVertexIds.concat(vertexIds));
+                const xInc = 175;
+                const yInc = 75;
+                const maxX = Math.round(Math.sqrt(combined.length)) * xInc;
+
+                var currentPosition;
+                const nextPosition = () => {
+                    if (currentPosition) {
+                        currentPosition.x += xInc;
+                        console.log(currentPosition.x, position.x, (currentPosition.x - position.x));
+                        if ((currentPosition.x - position.x) > maxX) {
+                            currentPosition.x = position.x;
+                            currentPosition.y += yInc;
+                        }
+                    } else {
+                        currentPosition = {...position} || { x: 0, y: 0 };
+                    }
+                    return {...currentPosition}
+                };
+
                 dispatch(api.updatePositions({
                     productId,
-                    updateVertices: _.object(combined.map(id => [id, position || {}]))
+                    updateVertices: _.object(combined.map(id => [id, nextPosition()]))
                 }))
             })
         },

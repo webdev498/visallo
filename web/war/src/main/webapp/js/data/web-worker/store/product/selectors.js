@@ -41,8 +41,8 @@ define(['reselect', '../element/selectors'], function(reselect, elementSelectors
     const getSelectedElementsInProduct = createSelector([getSelection, getElementIdsInProduct], (selection, elementIds) => {
         const { vertices, edges } = elementIds;
         return {
-            vertices: _.indexBy(_.union(selection.vertices, vertices)),
-            edges: _.indexBy(_.union(selection.edges, edges))
+            vertices: _.indexBy(_.intersection(selection.vertices, _.pluck(vertices, 'id'))),
+            edges: _.indexBy(_.intersection(selection.edges, _.pluck(edges, 'id')))
         };
     });
 
