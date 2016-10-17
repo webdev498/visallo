@@ -70,6 +70,7 @@ define(['../actions', '../../util/ajax',
 
         dropElements: ({ productId, elements, position }) => (dispatch, getState) => {
             const { vertexIds, edgeIds } = elements;
+            // TODO: get edges from store first
             var edges = (edgeIds && edgeIds.length) ? (
                 ajax('POST', '/edge/multiple', { edgeIds })
                     .then(function({ edges }) {
@@ -78,7 +79,9 @@ define(['../actions', '../../util/ajax',
                 ) : Promise.resolve([]);
 
             edges.then(function(edgeVertexIds) {
-                const combined = _.uniq(edgeVertexIds.concat(vertexIds));
+                const product = _.findWhere(getState().product.items, { id: productId });
+                const combined = _.without(_.uniq(edgeVertexIds.concat(vertexIds)), ..._.pluck(product.extendedData.vertices, 'id'));
+                if (!combined.length) return;
                 const xInc = 175;
                 const yInc = 75;
                 const maxX = Math.round(Math.sqrt(combined.length)) * xInc;
