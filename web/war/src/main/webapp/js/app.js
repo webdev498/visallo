@@ -481,7 +481,9 @@ define([
             data.element = event.target;
 
             VertexMenu.teardownAll();
-            VertexMenu.attachTo(document.body, data);
+            if (data && data.vertexId) {
+                VertexMenu.attachTo(document.body, data);
+            }
         };
 
         this.onMapAction = function(event, data) {

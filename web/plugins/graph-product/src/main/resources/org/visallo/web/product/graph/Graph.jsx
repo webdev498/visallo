@@ -6,10 +6,18 @@ define([
     'use strict';
 
     const PropTypes = React.PropTypes;
+    const noop = function() {};
     const Graph = React.createClass({
 
         propTypes: {
-            onUpdatePreview: PropTypes.func.isRequired
+            onUpdatePreview: PropTypes.func.isRequired,
+            onVertexMenu: PropTypes.func
+        },
+
+        getDefaultProps() {
+            return {
+                onVertexMenu: noop
+            }
         },
 
         getInitialState() {
@@ -47,6 +55,7 @@ define([
                     onFree: this.onFree,
                     onPosition: this.onPosition,
                     onTap: this.onTap,
+                    onContextTap: this.onContextTap,
                     onPan: this.onViewport,
                     onZoom: this.onViewport
                 };
@@ -79,8 +88,22 @@ define([
 
         onTap(event) {
             const { cy, cyTarget } = event;
-            if (!event.originalEvent.shiftKey && cy === cyTarget) {
+            if (event.originalEvent.ctrlKey) {
+                this.onContextTap(event);
+            } else if (!event.originalEvent.shiftKey && cy === cyTarget) {
                 this.props.onClearSelection();
+            }
+        },
+
+        onContextTap(event) {
+            const { cyTarget, cy, originalEvent } = event;
+            // TODO: show all selected objects if not on item
+            console.log(event.type, event.cyTarget)
+            if (cyTarget !== cy) {
+                const { pageX, pageY } = originalEvent;
+                this.props.onVertexMenu(originalEvent.target, cyTarget.id(), { x: pageX, y: pageY });
+            } else {
+                this.props.onVertexMenu(originalEvent.target);
             }
         },
 

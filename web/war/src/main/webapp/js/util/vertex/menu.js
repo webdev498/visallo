@@ -111,7 +111,6 @@ define([
 
         this.after('teardown', function() {
             this.$menu.remove();
-            $('.draggable-wrapper').remove();
             $(document).off('.vertexMenu');
         });
 
@@ -175,12 +174,7 @@ define([
 
         this.setupMenu = function(vertex) {
             var self = this,
-                title = F.string.truncate(F.vertex.title(vertex), 3),
-                wrapper = $('.draggable-wrapper');
-
-            if (wrapper.length === 0) {
-                wrapper = $('<div class="draggable-wrapper"/>').appendTo(document.body);
-            }
+                title = F.string.truncate(F.vertex.title(vertex), 3);
 
             this.$node.append(template({
                 items: this.appendMenuExtensions(vertex, createItems()),

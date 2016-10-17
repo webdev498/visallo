@@ -9,6 +9,7 @@ define([
     jsonpatch,
     NavigationControls) {
 
+    const { PropTypes } = React;
     const ANIMATION = { duration: 400, easing: 'spring(250, 20)' };
     const DEFAULT_PNG = Object.freeze({
         bg: 'white',
@@ -23,6 +24,7 @@ define([
         grab: 'onGrab',
         position: 'onPosition',
         tap: 'onTap',
+        cxttap: 'onContextTap',
         pan: 'onPan',
         zoom: 'onZoom',
         fit: 'onFit',
@@ -30,17 +32,19 @@ define([
         select: 'onSelect',
         unselect: 'onUnselect'
     };
+    const eventPropTypes = {};
+    _.each(EVENTS, propKey => { eventPropTypes[propKey] = PropTypes.func })
     const zoomAcceleration = 5.0;
     const zoomDamping = 0.8;
 
     const isEdge = data => (data.source !== undefined)
     const isNode = _.negate(isEdge)
-    const { PropTypes } = React;
 
     const Cytoscape = React.createClass({
 
         propTypes: {
-            generatePreview: PropTypes.bool
+            generatePreview: PropTypes.bool,
+            ...eventPropTypes
         },
 
         getDefaultProps() {
