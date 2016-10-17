@@ -38,6 +38,8 @@ define([
             generatePreview: PropTypes.bool,
             onSelectElements: PropTypes.func.isRequired,
             onUpdatePreview: PropTypes.func.isRequired,
+            onTap: PropTypes.func,
+            onContextTap: PropTypes.func,
 
             onZoom: PropTypes.func,
             onPan: PropTypes.func
@@ -50,6 +52,8 @@ define([
         getDefaultProps() {
             return {
                 generatePreview: false,
+                onTap: noop,
+                onContextTap: noop,
                 onZoom: noop,
                 onPan: noop
             }
@@ -103,12 +107,7 @@ define([
                 }
 
                 if (this.props.generatePreview) {
-                    //this.state.map.once('postcompose', () => {
-                        //this.fit({ animate: false });
-                        console.log('hasviewport?', !this.props.viewport);
-                        this._updatePreview({ fit: !this.props.viewport });
-                    //})
-                    //this.state.map.renderSync();
+                    this._updatePreview({ fit: !this.props.viewport });
                 } else if (changed) {
                     this.updatePreview();
                 }
@@ -519,9 +518,16 @@ define([
             }));
 
             this.olEvents.push(map.on('click', function(event) {
+                self.props.onTap(event);
                 // TODO:
                 //self.closeMenu();
                 //self.onMapClicked(event, map);
+            }));
+            this.olEvents.push(map.on('pointerup', function(event) {
+                const { pointerEvent } = event;
+                if (pointerEvent && pointerEvent.button === 2) {
+                    self.props.onContextTap(event);
+                }
             }));
 
             this.olEvents.push(cluster.clusterSource.on(ol.events.EventType.CHANGE, _.debounce(function() {

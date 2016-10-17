@@ -57,6 +57,10 @@ define([
                         const data = JSON.parse(dataStr);
                         dispatch(productActions.dropElements(props.product.id, data.elements))
                     }
+                },
+
+                onVertexMenu: (element, vertexId, position) => {
+                    $(element).trigger('showVertexContextMenu', { vertexId, position });
                 }
             }
         }

@@ -11,7 +11,8 @@ define([
         propTypes: {
             configProperties: PropTypes.object.isRequired,
             onUpdateViewport: PropTypes.func.isRequired,
-            onSelectElements: PropTypes.func.isRequired
+            onSelectElements: PropTypes.func.isRequired,
+            onVertexMenu: PropTypes.func.isRequired
         },
 
         getInitialState() {
@@ -27,6 +28,7 @@ define([
                     generatePreview={generatePreview}
                     onPan={this.onViewport}
                     onZoom={this.onViewport}
+                    onContextTap={this.onContextTap}
                     onSelectElements={this.props.onSelectElements}
                     onUpdatePreview={this.props.onUpdatePreview.bind(this, this.props.product.id)}
                     {...this.getTilePropsFromConfiguration()}
@@ -45,6 +47,24 @@ define([
 
         componentWillUnmount() {
             this.saveViewport(this.props)
+        },
+
+        onContextTap({map, pixel, originalEvent}) {
+            const vertexIds = [];
+            map.forEachFeatureAtPixel(pixel, cluster => {
+                cluster.get('features').forEach(f => {
+                    vertexIds.push(f.getId());
+                })
+            })
+
+            if (vertexIds.length) {
+                const { pageX, pageY } = originalEvent;
+                this.props.onVertexMenu(
+                    originalEvent.target,
+                    vertexIds[0],
+                    { x: pageX, y: pageY }
+                );
+            }
         },
 
         onViewport(event) {
