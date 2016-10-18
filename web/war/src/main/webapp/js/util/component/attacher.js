@@ -12,21 +12,27 @@ define([
     Promise) {
 
     var API_VERSIONS = ['v1'],
+        self = this,
         cachedApiVersions = null;
 
     /**
      * Abstracts the attachment of flight and react nodes
      */
-    function Attacher() {}
+    function Attacher() {
+        return this === self ? new Attacher() : this;
+    }
 
     ['path', 'component', 'params', 'behavior', 'legacyMapping'].forEach(createSetter);
 
     Attacher.prototype.node = function(node) {
-         this._node = _.isFunction(node.get) ? node.get(0) : node;
-         return this;
+        if (arguments.length === 0) return this._node;
+        this._node = _.isFunction(node.get) ? node.get(0) : node;
+        return this;
     };
-    Attacher.prototype.mapLegacyBehaviors = function() { };
-    Attacher.prototype.verifyState = function() {
+
+    Attacher.prototype._mapLegacyBehaviors = function() { };
+
+    Attacher.prototype._verifyState = function() {
         if (!_.isElement(this._node)) {
             throw new Error('Node is not an Element')
         }
@@ -42,16 +48,19 @@ define([
             }
         }
     };
+
     Attacher.prototype.teardown = function() {
         if (!this._node) throw new Error('No node specified');
         ReactDOM.unmountComponentAtNode(this._node);
         $(this._node).teardownAllComponents();
+        return this;
     };
+
     Attacher.prototype.attach = function(options) {
         var self = this,
             params = _.extend({}, this._params) || {};
 
-        return Promise.try(this.verifyState.bind(this))
+        return Promise.try(this._verifyState.bind(this))
             .then(function() {
                 return Promise.all([
                     self._component || Promise.require(self._path),
@@ -76,42 +85,52 @@ define([
                 } else {
                     var addedEvents = addLegacyListeners(self._node, self._behavior, self._legacyMapping);
                     Component.attachTo(self._node, params);
-                    removeLegacyListenersOnTeardown(self._node, Component, addedEvents)
+                    removeLegacyListenersOnTeardown(self, eventNode || self._node, Component, addedEvents)
                     self._flightComponent = Component;
+                } else {
+                    var reactElement = React.createElement(Component, _.extend(params, wrapBehavior(self)));
+                    ReactDOM.render(reactElement, self._node);
+                    self._reactElement = reactElement;
                 }
                 return self;
             })
     };
 
-    return function() {
-        return new Attacher();
-    };
+    return Attacher;
 
-    function addLegacyListeners(node, behavior, legacyMapping) {
-        var mapping = legacyMapping || {},
+    function addLegacyListeners(inst, node) {
+        var mapping = inst._legacyMapping || {},
             addedEvents = {};
-        _.each(behavior, function(callback, name) {
+        _.each(inst._behavior, function(callback, name) {
             if (name in mapping) {
                 name = mapping[name];
             }
             if (!(name in addedEvents)) {
                 addedEvents[name] = function(event, data) {
                     event.stopPropagation();
-                    callback(data);
+                    callback(inst, data);
                 };
-                $(node).on(name, addedEvents[name]);
+                $(node || inst._node).on(name, addedEvents[name]);
             }
         })
         return addedEvents;
     }
 
-    function removeLegacyListenersOnTeardown(node, Component, addedEvents) {
-        var comp = $(node).lookupComponent(Component)
+    function wrapBehavior(inst) {
+        return _.mapObject(inst._behavior, function(fn) {
+            return function(data) {
+                return fn.apply(this, [inst].concat(_.toArray(arguments)));
+            }
+        })
+    }
+
+    function removeLegacyListenersOnTeardown(inst, eventNode, Component, addedEvents) {
+        var comp = $(inst._node).lookupComponent(Component)
         if (comp) {
             comp.before('teardown', function() {
                 var $node = this.$node;
                 _.each(addedEvents, function(handler, name) {
-                    $node.off(name, handler);
+                    $(eventNode).off(name, handler);
                 })
             })
         }
@@ -133,13 +152,17 @@ define([
             })
     }
 
-    function isReact(Component) {
-        return Component.prototype && Component.prototype.isReactComponent;
+    function isFlight(Component) {
+        return _.isFunction(Component.attachTo);
     }
 
     function createSetter(name) {
         Attacher.prototype[name] = function(value) {
-            this['_' + name] = value;
+            var key = `_${name}`;
+            if (arguments.length === 0) {
+                return this[key];
+            }
+            this[key] = value;
             return this;
         }
     }
