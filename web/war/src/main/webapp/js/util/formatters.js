@@ -1,5 +1,5 @@
 
-define([
+define('util/formatters', [
     'sf',
     'chrono',
     'jstz',
@@ -10,6 +10,8 @@ define([
     'underscore'
 ], function(sf, chrono, jstz, moment, Duration, i18n) {
     'use strict';
+
+    console.log("duration req", Duration);
 
     var BITS_FOR_INDEX = 12,
         BITS_FOR_OFFSET = 32 - BITS_FOR_INDEX,

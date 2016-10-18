@@ -181,6 +181,7 @@ define([
                     });
 
                 function buildTree(concepts, root) {
+                    console.log(concepts, root);
                     var groupedByParent = _.groupBy(concepts, 'parentConcept'),
                         ignoreColorWarnings = _.chain(extensions)
                             .pluck('ignoreColorWarnings')

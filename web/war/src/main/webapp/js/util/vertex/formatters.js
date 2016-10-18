@@ -1,5 +1,4 @@
-
-define([
+define('util/vertex/formatters', [
     '../formatters',
     './urlFormatters',
     './formula',
@@ -952,6 +951,7 @@ define([
             throw new Error('Vertex is invalid', vertex);
         }
         if (!propertyName || !_.isString(propertyName)) {
+            console.log("propertyName", propertyName);
             throw new Error('Property name is invalid', propertyName);
         }
     }

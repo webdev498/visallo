@@ -1,4 +1,3 @@
-
 // Global Mocks
 $ = { extend: _.extend };
 window = this;
@@ -11,6 +10,11 @@ console = {
     error: consoleError
 };
 window.addEventListener = function() { };
+Object.values = function(obj) {
+    return _.values(obj);
+};
+global.require = global.requirejsVars.require;
+global.define = global.requirejsVars.define;
 
 require.config({
     baseUrl: '',
@@ -20,7 +24,7 @@ require.config({
         'sf': 'libs/sf',
         'timezone-js': 'libs/date',
         'underscore': 'libs/underscore',
-        'bluebird': 'libs/promise-6.0.0',
+        'bluebird': 'libs/bluebird.min',
         'duration-js': 'libs/duration',
         'moment': 'libs/moment-with-locales',
         'moment-timezone': 'libs/moment-timezone-with-data',
@@ -32,6 +36,7 @@ require.config({
         'util/ajax': 'mocks/ajax',
         'util/memoize': 'mocks/memoize',
         'configuration/plugins/registry': 'mocks/registry',
+        'store': 'mocks/store',
 
         // SRC
         'util/formatters': 'util_formatters',
@@ -42,7 +47,9 @@ require.config({
         'util/service/ontologyPromise': 'util_service_ontologyPromise',
         'util/vertex/formatters': 'util_vertex_formatters',
         'util/vertex/formula': 'util_vertex_formula',
-        'util/vertex/urlFormatters': 'util_vertex_urlFormatters'
+        'util/vertex/urlFormatters': 'util_vertex_urlFormatters',
+        'service/config': 'service/config',
+        'service/ontology': 'service/ontology'
     },
     shims: {
         'bluebird': { exports: 'Promise' },
@@ -53,20 +60,39 @@ require.config({
 define('util/visibility/util', [], {});
 
 var timerLoop = makeWindowTimer(this, function () { });
-
-require(['util/vertex/formatters'], function(F) {
-    var createFunction = function(name) {
-            return function(json) {
-                 return F.vertex[name](JSON.parse(json));
-            }
-        };
-
-    window.evaluateTitleFormulaJson = createFunction('title');
-    window.evaluateTimeFormulaJson = createFunction('time');
-    window.evaluateSubtitleFormulaJson = createFunction('subtitle');
-    window.evaluatePropertyFormulaJson = function(json, propertyKey, propertyName) {
-        return F.vertex['prop'](JSON.parse(json), propertyName, propertyKey);
-    }
+require([
+    'util/messages'], function(){
+    console.log(arguments);
+}, function(err){
+    console.log(err);
 });
+
+//require([ 'util/requirejs/promise',
+//    'util/messages',
+//    'util/requirejs/promise!../service/ontologyPromise',
+//    'util/visibility/util'], function(){
+//    console.log(arguments);
+//}, function(err){
+//    console.log(err);
+//})
+
+
+
+//ORIGINAL FORMATTERS TO ADD WINDOWS
+
+//require(['util/vertex/formatters'], function(F) {
+//    var createFunction = function(name) {
+//            return function(json) {
+//                 return F.vertex[name](JSON.parse(json));
+//            }
+//        };
+//
+//    window.evaluateTitleFormulaJson = createFunction('title');
+//    window.evaluateTimeFormulaJson = createFunction('time');
+//    window.evaluateSubtitleFormulaJson = createFunction('subtitle');
+//    window.evaluatePropertyFormulaJson = function(json, propertyKey, propertyName) {
+//        return F.vertex['prop'](JSON.parse(json), propertyName, propertyKey);
+//    }
+//});
 
 timerLoop();

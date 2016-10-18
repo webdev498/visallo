@@ -1,5 +1,5 @@
 
-define([
+define('util/messages', [
     'util/requirejs/promise!./service/messagesPromise'
 ], function(messages) {
     'use strict';
