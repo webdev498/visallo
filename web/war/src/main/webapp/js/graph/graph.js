@@ -2,8 +2,6 @@
 define([
     'flight/lib/component',
     'cytoscape',
-    'arbor',
-    'cytoscape-arbor',
     './stylesheet',
     './withControlDrag',
     './layouts/grid',
@@ -23,8 +21,6 @@ define([
 ], function(
     defineComponent,
     cytoscape,
-    arbor,
-    cyarbor,
     stylesheet,
     withControlDrag,
     BetterGrid,
@@ -42,8 +38,6 @@ define([
     registry,
     colorjs) {
     'use strict';
-
-    cyarbor(cytoscape, arbor);
 
         // Delay before showing hover effect on graph
     var HOVER_FOCUS_DELAY_SECONDS = 0.25,
@@ -77,7 +71,7 @@ define([
             LAYOUT_OPTIONS = {
                 // Customize layout options
                 random: { padding: 10 },
-                arbor: { friction: 0.6, repulsion: 5000 * retina.devicePixelRatio, targetFps: 60, stiffness: 300 },
+                cose: { animate: true, edgeElasticity: 10 },
                 breadthfirst: {
                     roots: function(nodes, options) {
                         if (options && options.onlySelected) {

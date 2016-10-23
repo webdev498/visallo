@@ -1229,11 +1229,6 @@
       "from": "cytoscape@2.6.6",
       "resolved": "https://registry.npmjs.org/cytoscape/-/cytoscape-2.6.6.tgz"
     },
-    "cytoscape-arbor": {
-      "version": "1.2.0",
-      "from": "cytoscape-arbor@1.2.0",
-      "resolved": "https://registry.npmjs.org/cytoscape-arbor/-/cytoscape-arbor-1.2.0.tgz"
-    },
     "d": {
       "version": "0.1.1",
       "from": "d@>=0.1.1 <0.2.0",

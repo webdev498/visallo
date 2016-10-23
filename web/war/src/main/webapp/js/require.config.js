@@ -25,7 +25,6 @@
             }
         },
         paths: {
-            'arbor': '../libs/cytoscape-arbor/arbor',
             'async': '../libs/requirejs-plugins/src/async',
             'atmosphere': '../libs/atmosphere.js/lib/atmosphere',
             'beautify': '../libs/js-beautify/js/lib/beautify',
@@ -37,7 +36,6 @@
             'classnames': '../libs/classnames/index',
             'colorjs': '../libs/color-js/color',
             'cytoscape': '../libs/cytoscape/dist/cytoscape',
-            'cytoscape-arbor': '../libs/cytoscape-arbor/cytoscape-arbor',
             'd3': '../libs/d3/d3.min',
             'd3-tip': '../libs/d3-tip/index',
             'd3-plugins': '../libs/d3-plugins-dist/dist/mbostock',
@@ -80,7 +78,6 @@
             'videojs': '../libs/video.js/dist/video'
         },
         shim: {
-            'arbor': { exports: 'arbor', deps: ['jquery'] },
             'atmosphere': { init: function() { return $.atmosphere; }, deps: ['jquery'] },
             'bootstrap': { exports: 'window', deps: ['jquery', 'jquery-ui-bundle'] },
             'bootstrap-datepicker': { exports: 'window', deps: ['bootstrap'] },
