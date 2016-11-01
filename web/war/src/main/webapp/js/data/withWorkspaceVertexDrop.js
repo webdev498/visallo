@@ -58,7 +58,7 @@ define([], function() {
                                 }
                             })
                     };
-                    
+
                     droppable.droppable({
                         tolerance: 'pointer',
                         accept: function(item) {
