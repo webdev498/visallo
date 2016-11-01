@@ -1,11 +1,13 @@
 define([
+    './NotificationList',
     'flight/lib/component',
     'util/withDataRequest',
+    'react-dom',
     'd3'
-], function(defineComponent, withDataRequest, d3) {
+], function(NotificationList, defineComponent, withDataRequest, ReactDOM, d3) {
     'use strict';
 
-    var NOTIFICATION_HOVER_EXPAND_DELAY_MILLIS = 250;
+    const NOTIFICATION_HOVER_EXPAND_DELAY_MILLIS = 250;
 
     return defineComponent(Notifications, withDataRequest);
 
@@ -21,7 +23,7 @@ define([
         });
 
         this.after('initialize', function() {
-            var self = this;
+            const self = this;
 
             if ('localStorage' in window) {
                 var previouslyDismissed = localStorage.getItem('notificationsDismissed');
@@ -109,10 +111,15 @@ define([
         this.displayNotifications = function(notifications) {
             var self = this,
                 shouldDisplay = notifications && _.filter(notifications, function(n) {
+                    if (n.messageType) {
+                        return true;
+                    }
+
                     if (self.attr.showUserDismissed !== true &&
                         self.userDismissed[n.id] && self.userDismissed[n.id] === n.hash) {
                         return false;
                     }
+
                     if (n.type === 'user') {
                         return true;
                     }
@@ -227,122 +234,27 @@ define([
                 .done();
         };
 
-        this.canDismissNotification = function(notification) {
-            return this.attr.allowSystemDismiss !== false || notification.type !== 'system';
-        };
+        this.onNotificationClick = function(notification) {
+           if (notification.actionEvent === 'EXTERNAL_URL' &&
+               notification.actionPayload &&
+               notification.actionPayload.url) {
+               window.open(notification.actionPayload.url);
+           } else {
+               _.defer(() => {
+                   this.trigger(notification.actionEvent, notification.actionPayload);
+               });
+           }
+        }
 
         this.update = function(forceAnimation) {
-            var self = this;
-
-            d3.select(this.$container[0])
-                .selectAll('.notification')
-                .data(this.stack || [], function(n) {
-                    return n.id;
-                })
-                .call(function() {
-                    var newOnes = this.enter().append('li')
-                        .attr('class', 'notification')
-                        .style('opacity', 0)
-                        .style('left', '-50px')
-                        .call(function() {
-                            this.append('h1')
-                            this.append('h2')
-                            this.append('button').style('display', 'none');
-                        })
-
-                    this.on('click', function(clicked) {
-                        var clickedButton = $(d3.event.target).is('button');
-                        if (!clickedButton && clicked.actionEvent) {
-                            if (clicked.actionEvent === 'EXTERNAL_URL' &&
-                                clicked.actionPayload &&
-                                clicked.actionPayload.url) {
-                                window.open(clicked.actionPayload.url);
-                            } else {
-                                _.defer(function() {
-                                    self.trigger(clicked.actionEvent, clicked.actionPayload);
-                                });
-                            }
-                        }
-
-                        if (clickedButton) {
-                            if (self.canDismissNotification(clicked)) {
-                                self.dismissNotification(clicked, {
-                                    immediate: true,
-                                    animate: true
-                                });
-                            }
-                        }
-                    });
-                    this.classed('critical', function(n) {
-                        return (/CRITICAL/i).test(n.severity);
-                    })
-                    this.classed('warning', function(n) {
-                        return (/WARNING/i).test(n.severity);
-                    });
-                    this.classed('informational', function(n) {
-                        return !n.severity || (/INFO/i).test(n.severity);
-                    });
-                    this.classed('canDismiss', function(n) {
-                        return self.canDismissNotification(n);
-                    });
-                    this.select('button').style('display', function(n) {
-                        return self.canDismissNotification(n) ? '' : 'none';
-                    });
-                    this.select('h1').text(function(n) {
-                        return n.title
-                    }).style('cursor', function(n) {
-                        return n.actionPayload ? 'pointer' : 'default';
-                    });
-                    this.select('h2').text(function(n) {
-                        return n.message
-                    }).style('cursor', function(n) {
-                        return n.actionPayload ? 'pointer' : 'default';
-                    });
-
-                    if (forceAnimation || self.attr.animated !== false) {
-                        newOnes = newOnes.transition()
-                            .delay(function(d, i) {
-                                return i / newOnes.size() * 100 + 100;
-                            })
-                            .duration(750)
-                    }
-
-                    newOnes
-                        .style('left', '0px')
-                        .style('opacity', 1)
-
-                    var exiting = this.exit(),
-                        exitingSize = exiting.size();
-
-                    self.$container.css('min-width', Math.max(self.$container.width(), 200) + 'px');
-
-                    if (forceAnimation || self.attr.animated !== false) {
-                        exiting = exiting
-                            .style('left', '0px')
-                            .transition()
-                            .delay(function(d, i) {
-                                if (exitingSize === 1) {
-                                    return 0;
-                                } else {
-                                    return (exitingSize - 1 - i) / exitingSize * 100 + 100;
-                                }
-                            })
-                            .duration(500)
-                            .style('left', '-50px')
-                            .style('opacity', 0)
-                    }
-
-                    exiting.remove()
-                });
-
-            if (this.attr.emptyMessage) {
-                this.$container.find('.empty').remove();
-                if (!this.stack.length) {
-                    this.$container.append('<li class="empty">No Notifications Found</li>');
-                }
-            }
+            ReactDOM.render(NotificationList({
+                notifications: this.stack,
+                animated: this.attr.animated || forceAnimation,
+                allowSystemDismiss: this.attr.allowSystemDismiss,
+                onDismissClick: this.dismissNotification.bind(this),
+                onNotificationClick: this.onNotificationClick.bind(this)
+            }), this.$container[0]);
         };
-
     }
 
     function collapseDuplicates(notifications) {
