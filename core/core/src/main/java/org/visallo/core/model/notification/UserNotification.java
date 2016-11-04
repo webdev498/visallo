@@ -27,6 +27,12 @@ public class UserNotification extends Notification {
     @Field
     private boolean notified;
 
+    @Field
+    private String messageType;
+
+    @Field
+    private JSONObject notificationData;
+
     // Used by SimpleOrm to create instance
     @SuppressWarnings("UnusedDeclaration")
     protected UserNotification() {
@@ -73,6 +79,10 @@ public class UserNotification extends Notification {
     public String getUserId() {
         return userId;
     }
+
+    public String getMessageType() { return messageType; }
+
+    public void setMessageType(String messageType) { this.messageType = messageType; }
 
     public Date getSentDate() {
         return sentDate;
@@ -123,6 +133,10 @@ public class UserNotification extends Notification {
         return cal.getTime();
     }
 
+    public JSONObject getNotificationData() { return this.notificationData; }
+
+    public void setNotificationData(JSONObject jsonData) { this.notificationData = jsonData; }
+
     @Override
     protected String getType() {
         return "user";
@@ -132,9 +146,11 @@ public class UserNotification extends Notification {
     public void populateJSONObject(JSONObject json) {
         json.put("userId", getUserId());
         json.put("sentDate", getSentDate());
+        json.put("messageType", getMessageType());
         json.put("expirationAge", getExpirationAge());
         json.put("markedRead", isMarkedRead());
         json.put("notified", isNotified());
+        json.put("data", getNotificationData());
     }
 
     @Override
@@ -143,6 +159,7 @@ public class UserNotification extends Notification {
                 "userId='" + userId + '\'' +
                 ", title=" + getTitle() +
                 ", sentDate=" + sentDate +
+                ", messageType=" + messageType +
                 ", expirationAgeAmount=" + expirationAgeAmount +
                 ", expirationAgeUnit=" + expirationAgeUnit +
                 ", markedRead=" + markedRead +

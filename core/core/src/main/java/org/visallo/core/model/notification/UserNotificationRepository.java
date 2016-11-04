@@ -106,7 +106,7 @@ public class UserNotificationRepository extends NotificationRepository {
         return notification;
     }
 
-    private void saveNotification(UserNotification notification, User authUser) {
+    public void saveNotification(UserNotification notification, User authUser) {
         getSimpleOrmSession().save(notification, VISIBILITY_STRING, getUserRepository().getSimpleOrmContext(authUser));
         workQueueRepository.pushUserNotification(notification);
     }
