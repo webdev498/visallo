@@ -12,8 +12,7 @@ define([
         'Customize the displays of notification types',
         function(e) {
             return e.componentPath;
-        },
-        'http://docs.visallo.org/extension-points/front-end/detailToolbar' //TODO: documentation url
+        } //TODO: documentation url
     );
 
     let displayExtensions = registry.extensionsForPoint('com.visallo.notification.display');
@@ -31,10 +30,10 @@ define([
                 transitionLeaveTimeout={500}
             >
                 {notifications.map((notification) => {
-                    const { type, messageType, id } = notification;
+                    const { type, messageType, hash } = notification;
                     const canDismiss = allowSystemDismiss || notification.type.toLowerCase() !== 'system';
                     const notificationProps = {
-                        key: id,
+                        key: hash,
                         notification: notification,
                         onDismissClick: (canDismiss ? onDismissClick : undefined),
                         ...props
