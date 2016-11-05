@@ -95,6 +95,11 @@ public class UserNotification extends Notification {
         return null;
     }
 
+    public void setExpirationAge(Integer amount, ExpirationAgeUnit expirationAgeUnit) {
+        this.expirationAgeAmount = amount;
+        this.expirationAgeUnit = expirationAgeUnit;
+    }
+
     public boolean isMarkedRead() {
         return markedRead;
     }
