@@ -111,12 +111,22 @@ public class UserNotificationRepository extends NotificationRepository {
         workQueueRepository.pushUserNotification(notification);
     }
 
+    public UserNotification updateNotification(UserNotification notification, User authUser) {
+        getSimpleOrmSession().save(notification, VISIBILITY_STRING, getUserRepository().getSimpleOrmContext(authUser));
+        return notification;
+    }
+
     public UserNotification getNotification(String notificationId, User user) {
         return getSimpleOrmSession().findById(
                 UserNotification.class,
                 notificationId,
                 getUserRepository().getSimpleOrmContext(user)
         );
+    }
+
+    public void endNotification(UserNotification notification, User user) {
+        notification.setExpirationAge(0, ExpirationAgeUnit.SECOND);
+        updateNotification(notification, user);
     }
 
     /**

@@ -845,9 +845,14 @@ public abstract class WorkQueueRepository {
         broadcastJson(json);
     }
 
+    @Deprecated
     public void pushSystemNotificationEnded(String notificationId) {
+        pushNotificationEnded(notificationId);
+    }
+
+    public void pushNotificationEnded(String notificationId) {
         JSONObject json = new JSONObject();
-        json.put("type", "systemNotificationEnded");
+        json.put("type", "notificationEnded");
         JSONObject data = new JSONObject();
         json.put("data", data);
         data.put("notificationId", notificationId);

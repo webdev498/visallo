@@ -190,17 +190,21 @@ define([
                     data: data
                 });
             },
+            notificationEnded: function(data) {
+                dispatchMain('rebroadcastEvent', {
+                    eventName: 'notificationDeleted',
+                    data: data
+                });
+            },
             systemNotificationUpdated: function(data) {
                 dispatchMain('rebroadcastEvent', {
                     eventName: 'notificationUpdated',
                     data: data
                 });
             },
+            //deprecated
             systemNotificationEnded: function(data) {
-                dispatchMain('rebroadcastEvent', {
-                    eventName: 'notificationDeleted',
-                    data: data
-                });
+                socketHandlers.notificationEnded(data);
             }
         },
         callHandlersForName = function(name, data) {

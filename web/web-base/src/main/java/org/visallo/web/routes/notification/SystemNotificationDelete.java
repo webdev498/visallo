@@ -36,7 +36,7 @@ public class SystemNotificationDelete implements ParameterizedHandler {
         }
 
         systemNotificationRepository.endNotification(notification, user);
-        workQueueRepository.pushSystemNotificationEnded(notificationId);
+        workQueueRepository.pushNotificationEnded(notificationId);
         return VisalloResponse.SUCCESS;
     }
 }
