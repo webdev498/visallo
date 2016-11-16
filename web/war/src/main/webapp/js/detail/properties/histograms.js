@@ -241,17 +241,31 @@ define([
 
                                                 d.values = values;
 
+                                                var createBin = function(props) {
+                                                    return _.reject(
+                                                        d3.layout.histogram().value(_.property('value'))(props), function(bin) {
+                                                            return bin.length === 0;
+                                                        });
+                                                };
+
                                                 if (ontologyProperty &&
                                                     ~BINABLE_TYPES.indexOf(ontologyProperty.dataType) &&
                                                    !ontologyProperty.possibleValues) {
 
-                                                    var bins = _.reject(
-                                                        d3.layout.histogram().value(_.property('value'))(d[1]), function(bin) {
-                                                        return bin.length === 0;
-                                                    });
+                                                    var lessThanZeroBins = createBin(_.filter(d[1], function(prop) {
+                                                        return prop.value < 0;
+                                                    }));
+                                                    var greaterThanZeroBins = createBin(_.filter(d[1], function(prop) {
+                                                        return prop.value > 0;
+                                                    }));
+                                                    var zeroBins = createBin(_.filter(d[1], function(prop) {
+                                                        return prop.value === 0;
+                                                    }));
 
-                                                    d.bins = bins;
-                                                    return bins.length * BAR_HEIGHT;
+                                                    d.bins = lessThanZeroBins
+                                                        .concat(zeroBins)
+                                                        .concat(greaterThanZeroBins);
+                                                    return d.bins.length * BAR_HEIGHT;
                                                 }
 
                                                 if ('bins' in d) {
