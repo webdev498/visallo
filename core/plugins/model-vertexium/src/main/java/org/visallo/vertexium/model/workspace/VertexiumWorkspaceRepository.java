@@ -1022,6 +1022,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         Visibility visibility = VISIBILITY.getVisibility();
 
         AtomicBoolean isNew = new AtomicBoolean();
+        List<String> linkedProductIds;
         Vertex productVertex;
         try (GraphUpdateContext ctx = graphRepository.beginGraphUpdate(Priority.NORMAL, user, authorizations)) {
             productVertex = ctx.getOrCreateVertexAndUpdate(productId, visibility, elemCtx -> {
@@ -1057,8 +1058,8 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
                     edgeCtx -> {
                     }
             );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+            linkedProductIds = updateLinkedProducts(ctx, workspaceVertex, productVertex, params, visibility, user, authorizations);
         }
 
         getGraph().flush();
@@ -1074,6 +1075,9 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
             }
         }
         getWorkQueueRepository().broadcastWorkProductChange(productVertex.getId(), userWorkspace, user, skipSourceId);
+        for (String linkedProductId : linkedProductIds) {
+            getWorkQueueRepository().broadcastWorkProductChange(linkedProductId, userWorkspace, user, null);
+        }
 
         Product product = productVertexToProduct(workspaceId, productVertex, authorizations, null, user);
         if (isNew.get()) {
@@ -1081,6 +1085,30 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         }
         fireWorkspaceProductUpdated(product, params, user);
         return product;
+    }
+
+    private List<String> updateLinkedProducts(
+            GraphUpdateContext ctx,
+            Vertex workspaceVertex,
+            Vertex sourceProduct,
+            JSONObject params,
+            Visibility visibility,
+            User user,
+            Authorizations authorizations
+    ) {
+        List<String> linkedProductIds = new ArrayList<>();
+        Iterable<Vertex> linkedProducts = sourceProduct.getVertices(
+                Direction.BOTH,
+                WorkspaceProperties.PRODUCT_TO_PRODUCT_RELATIONSHIP_IRI,
+                authorizations
+        );
+        for (Vertex linkedProduct : linkedProducts) {
+            String kind = WorkspaceProperties.PRODUCT_KIND.getPropertyValue(linkedProduct, null);
+            WorkProduct workProduct = getWorkProductByKind(kind);
+            workProduct.updateLinked(ctx, workspaceVertex, sourceProduct, linkedProduct, params, user, visibility, authorizations);
+            linkedProductIds.add(linkedProduct.getId());
+        }
+        return linkedProductIds;
     }
 
     public void deleteProduct(String workspaceId, String productId, User user) {
@@ -1309,6 +1337,90 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
             }
         }
         return false;
+    }
+
+    @Override
+    public void linkWorkProducts(Product product1, Product product2, User user) {
+        if (!product1.getWorkspaceId().equals(product2.getWorkspaceId())) {
+            throw new VisalloException(
+                    "Cannot link products (" + product1.getId() + "," + product2.getId() + ") "
+                            + "from different workspaces "
+                            + "(" + product1.getWorkspaceId() + " != " + product2.getWorkspaceId() + ")"
+            );
+        }
+
+        if (product1.getId().equals(product2.getId())) {
+            throw new VisalloException("Cannot link product to itself (productId: " + product1.getId() + ")");
+        }
+
+        if (!hasWritePermissions(product1.getWorkspaceId(), user)) {
+            throw new VisalloAccessDeniedException(
+                    "user " + user.getUserId() + " does not have write access to workspace " + product1.getWorkspaceId(),
+                    user,
+                    product1.getWorkspaceId()
+            );
+        }
+
+        // always order products alphabetically to eliminate possibility of duplicate links
+        if (product1.getId().compareTo(product2.getId()) > 0) {
+            Product temp = product1;
+            product1 = product2;
+            product2 = temp;
+        }
+
+        Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
+                user,
+                VISIBILITY_STRING,
+                product1.getWorkspaceId()
+        );
+        try (GraphUpdateContext ctx = graphRepository.beginGraphUpdate(Priority.HIGH, user, authorizations)) {
+            String linkEdgeId = product1.getId() + "_link_" + product2.getId();
+            Visibility visibility = VISIBILITY.getVisibility();
+            ctx.getOrCreateEdgeAndUpdate(
+                    linkEdgeId,
+                    product1.getId(),
+                    product2.getId(),
+                    WorkspaceProperties.PRODUCT_TO_PRODUCT_RELATIONSHIP_IRI,
+                    visibility,
+                    elemCtx -> {
+                    }
+            );
+        }
+
+        fireWorkspaceWorkProductsLinked(product1, product2, user);
+    }
+
+    @Override
+    public void unlinkWorkProducts(Product product1, Product product2, User user) {
+        if (!hasWritePermissions(product1.getWorkspaceId(), user)) {
+            throw new VisalloAccessDeniedException(
+                    "user " + user.getUserId() + " does not have write access to workspace " + product1.getWorkspaceId(),
+                    user,
+                    product1.getWorkspaceId()
+            );
+        }
+
+        // always order products alphabetically to eliminate possibility of duplicate links
+        if (product1.getId().compareTo(product2.getId()) > 0) {
+            Product temp = product1;
+            product1 = product2;
+            product2 = temp;
+        }
+
+        Authorizations authorizations = getAuthorizationRepository().getGraphAuthorizations(
+                user,
+                VISIBILITY_STRING,
+                product1.getWorkspaceId()
+        );
+        String linkEdgeId = product1.getId() + "_link_" + product2.getId();
+        Edge linkEdge = getGraph().getEdge(linkEdgeId, authorizations);
+        if (linkEdge == null) {
+            throw new VisalloException("No link exists between products " + product1.getId() + " and " + product2.getId());
+        }
+
+        getGraph().softDeleteEdge(linkEdge, authorizations);
+
+        fireWorkspaceWorkProductsUnlinked(product1, product2, user);
     }
 
     @Override

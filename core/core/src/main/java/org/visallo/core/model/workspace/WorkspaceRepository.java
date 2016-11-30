@@ -158,6 +158,10 @@ public abstract class WorkspaceRepository {
 
     public abstract void deleteUserFromWorkspace(Workspace workspace, String userId, User user);
 
+    public abstract void linkWorkProducts(Product product1, Product product2, User user);
+
+    public abstract void unlinkWorkProducts(Product product1, Product product2, User user);
+
     public abstract UpdateUserOnWorkspaceResult updateUserOnWorkspace(
             Workspace workspace,
             String userId,
@@ -949,6 +953,18 @@ public abstract class WorkspaceRepository {
 
     protected AuthorizationRepository getAuthorizationRepository() {
         return authorizationRepository;
+    }
+
+    protected void fireWorkspaceWorkProductsLinked(Product product1, Product product2, User user) {
+        for (WorkspaceListener workspaceListener : getWorkspaceListeners()) {
+            workspaceListener.workspaceWorkProductsLinked(product1, product2, user);
+        }
+    }
+
+    protected void fireWorkspaceWorkProductsUnlinked(Product product1, Product product2, User user) {
+        for (WorkspaceListener workspaceListener : getWorkspaceListeners()) {
+            workspaceListener.workspaceWorkProductsUnlinked(product1, product2, user);
+        }
     }
 
     protected void fireWorkspaceBeforeDelete(Workspace workspace, User user) {

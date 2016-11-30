@@ -14,6 +14,7 @@ public class WorkspaceProperties {
     public static final String WORKSPACE_TO_DASHBOARD_RELATIONSHIP_IRI = "http://visallo.org/workspace#toDashboard";
     public static final String WORKSPACE_TO_PRODUCT_RELATIONSHIP_IRI = "http://visallo.org/workspace#toProduct";
     public static final String DASHBOARD_TO_DASHBOARD_ITEM_RELATIONSHIP_IRI = "http://visallo.org/workspace#toDashboardItem";
+    public static final String PRODUCT_TO_PRODUCT_RELATIONSHIP_IRI = "http://visallo.org/workspace#productLink";
 
     public static final StringSingleValueVisalloProperty TITLE = new StringSingleValueVisalloProperty("http://visallo.org/workspace#workspace/title");
     public static final BooleanSingleValueVisalloProperty WORKSPACE_TO_USER_IS_CREATOR = new BooleanSingleValueVisalloProperty("http://visallo.org/workspace#toUser/creator");

@@ -11,8 +11,6 @@ import org.visallo.core.util.VisalloLogger;
 import org.visallo.core.util.VisalloLoggerFactory;
 
 public class MapWorkProduct extends WorkProductElements {
-    private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(MapWorkProduct.class);
-
     @Inject
     public MapWorkProduct(OntologyRepository ontologyRepository) {
         super(ontologyRepository);

@@ -23,6 +23,20 @@ public interface WorkProduct {
     );
 
     /**
+     * Called when a linked product gets updated
+     */
+    void updateLinked(
+            GraphUpdateContext ctx,
+            Vertex workspaceVertex,
+            Vertex sourceProductVertex,
+            Vertex linkedProductVertex,
+            JSONObject params,
+            User user,
+            Visibility visibility,
+            Authorizations authorizations
+    );
+
+    /**
      * Get custom extended data from the work product. This does not include the extended data stored on the
      * product itself.
      */

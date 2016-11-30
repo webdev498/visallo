@@ -77,6 +77,20 @@ public abstract class WorkProductElements implements WorkProduct, WorkProductHas
     }
 
     @Override
+    public void updateLinked(
+            GraphUpdateContext ctx,
+            Vertex workspaceVertex,
+            Vertex sourceProductVertex,
+            Vertex linkedProductVertex,
+            JSONObject params,
+            User user,
+            Visibility visibility,
+            Authorizations authorizations
+    ) {
+        update(ctx, workspaceVertex, linkedProductVertex, params, user, visibility, authorizations);
+    }
+
+    @Override
     public JSONObject getExtendedData(
             Graph graph,
             Vertex workspaceVertex,

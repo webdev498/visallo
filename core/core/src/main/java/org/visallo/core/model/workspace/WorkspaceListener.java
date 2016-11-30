@@ -23,4 +23,8 @@ public interface WorkspaceListener {
     void workspaceBeforeDeleteProduct(String workspaceId, String productId, User user);
 
     void workspaceDeleteUser(Workspace workspace, String userId, User user);
+
+    void workspaceWorkProductsLinked(Product product1, Product product2, User user);
+
+    void workspaceWorkProductsUnlinked(Product product1, Product product2, User user);
 }

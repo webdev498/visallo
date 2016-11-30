@@ -47,4 +47,14 @@ public class DefaultWorkspaceListener implements WorkspaceListener {
     public void workspaceDeleteUser(Workspace workspace, String userId, User user) {
 
     }
+
+    @Override
+    public void workspaceWorkProductsLinked(Product product1, Product product2, User user) {
+
+    }
+
+    @Override
+    public void workspaceWorkProductsUnlinked(Product product1, Product product2, User user) {
+
+    }
 }
