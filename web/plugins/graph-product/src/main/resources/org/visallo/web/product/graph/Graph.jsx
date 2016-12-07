@@ -91,6 +91,11 @@ define([
                         }
                     });
                 },
+                menubarToggleDisplay: { node: document, handler: (event, data) => {
+                    if (data.name === 'products-full') {
+                        this.teardownPreviews();
+                    }
+                }},
                 finishedVertexConnection: this.cancelDraw,
                 'zoomOut zoomIn fit': this.onKeyboard,
                 createVertex: event => this.createVertex(),
@@ -209,9 +214,11 @@ define([
             })
         },
 
-        onFocusPathsAdd(event, data) {
-            if (data) {
-                const { vertexIds } = data;
+        onFocusPathsAdd(event) {
+            const { paths } = this.state;
+            if (paths) {
+                const limitedPaths = paths.paths.slice(0, MaxPathsToFocus);
+                const vertexIds = _.chain(limitedPaths).flatten().uniq().value();
                 this.props.onDropElementIds({ vertexIds });
             }
         },
@@ -546,7 +553,6 @@ define([
                 data = product.extendedData,
                 { vertices, edges } = data;
                 const nodeIds = {};
-                const deletedVertexIds = [];
                 const cyNodes = _.compact(_.flatten(
                     vertices.map(({ id, pos }) => {
                         const data = mapVertexToData(id, elementVertices,
@@ -569,7 +575,6 @@ define([
                         if (id in elementVertices) {
                             const markedAsDeleted = elementVertices[id] === null;
                             if (markedAsDeleted) {
-                                deletedVertexIds.push(id);
                                 return;
                             }
                             const vertex = elementVertices[id];
@@ -637,10 +642,6 @@ define([
                         }
                     })
                     .value()
-
-            if (deletedVertexIds.length) {
-                this.props.onRemoveElementIds({ vertexIds: deletedVertexIds })
-            }
 
             return { nodes: cyNodes, edges: cyEdges };
         },
