@@ -25,6 +25,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.vertexium</groupId>
             <artifactId>vertexium-inmemory</artifactId>
             <scope>compile</scope>
