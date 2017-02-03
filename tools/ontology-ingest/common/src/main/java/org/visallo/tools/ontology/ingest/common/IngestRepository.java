@@ -270,7 +270,6 @@ public class IngestRepository {
         if (entity.getProperties() == null || !entity.getProperties().contains(property)) {
             if (entity instanceof Concept) {
                 Concept parentConcept = ontologyRepository.getParentConcept((Concept) entity);
-                parentConcept = ontologyRepository.getConceptByIRI(parentConcept.getIRI());
                 if (parentConcept != null) {
                     return isPropertyValidForEntity(parentConcept, property);
                 }
