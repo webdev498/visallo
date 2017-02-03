@@ -468,7 +468,10 @@ public class VertexiumOntologyRepository extends OntologyRepositoryBase {
         if (parentConceptVertex == null) {
             return null;
         }
-        return createConcept(parentConceptVertex);
+
+        Concept parentConcept = createConcept(parentConceptVertex);
+
+        return getConceptByIRI(parentConcept.getIRI());
     }
 
     private List<Concept> toConcepts(Iterable<Vertex> vertices) {
