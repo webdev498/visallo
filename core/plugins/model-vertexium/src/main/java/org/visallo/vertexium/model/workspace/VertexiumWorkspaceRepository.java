@@ -968,6 +968,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
         Iterable<Vertex> productVertices = workspaceVertex.getVertices(
                 Direction.OUT,
                 WorkspaceProperties.WORKSPACE_TO_PRODUCT_RELATIONSHIP_IRI,
+                FetchHint.ALL,
                 authorizations
         );
         return stream(productVertices)
