@@ -1217,7 +1217,7 @@ public class VertexiumWorkspaceRepository extends WorkspaceRepository {
                 VISIBILITY_STRING,
                 workspaceId
         );
-        Vertex productVertex = getGraph().getVertex(productId, authorizations);
+        Vertex productVertex = getGraph().getVertex(productId, FetchHint.ALL, authorizations);
         if (productVertex == null) {
             return null;
         }

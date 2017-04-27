@@ -230,7 +230,7 @@ public abstract class GraphUpdateContext implements AutoCloseable {
             Visibility visibility,
             Update<Vertex> updateFn
     ) {
-        Vertex existingVertex = graph.getVertex(vertexId, getAuthorizations());
+        Vertex existingVertex = graph.getVertex(vertexId, FetchHint.ALL, getAuthorizations());
         ElementMutation<Vertex> m = existingVertex == null
                 ? graph.prepareVertex(vertexId, timestamp, visibility)
                 : existingVertex.prepareMutation();
@@ -265,7 +265,7 @@ public abstract class GraphUpdateContext implements AutoCloseable {
             Visibility visibility,
             Update<Edge> updateFn
     ) {
-        Edge existingEdge = graph.getEdge(edgeId, getAuthorizations());
+        Edge existingEdge = graph.getEdge(edgeId, FetchHint.ALL, getAuthorizations());
         ElementMutation<Edge> m = existingEdge == null
                 ? graph.prepareEdge(edgeId, outVertexId, inVertexId, label, timestamp, visibility)
                 : existingEdge.prepareMutation();
